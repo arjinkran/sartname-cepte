@@ -10,13 +10,21 @@ export * from './core/errors.ts';
 export * from './core/format.ts';
 
 import { VoltageDropEngine } from './engines/voltageDrop/index.ts';
+import { AmpacityOGEngine } from './engines/ampacityOG/index.ts';
 
-export { VoltageDropEngine };
+export { VoltageDropEngine, AmpacityOGEngine };
 export type {
   VoltageDropInput,
   VoltageDropOutput,
   PhaseType as VoltageDropPhaseType,
 } from './engines/voltageDrop/index.ts';
+export type {
+  AmpacityOGInput,
+  AmpacityOGOutput,
+  AmpacityConductor,
+  AmpacityCondition,
+  VoltageLevel as AmpacityVoltageLevel,
+} from './engines/ampacityOG/index.ts';
 
 /** Şu an aktif (gerçek veya demo) hesap motorlarının kayıt listesi. */
-export const CALCULATION_ENGINES = [VoltageDropEngine] as const;
+export const CALCULATION_ENGINES = [VoltageDropEngine, AmpacityOGEngine] as const;

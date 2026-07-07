@@ -85,7 +85,8 @@ sartname-cepte/
 │   ├── sartname/                 ← İnce rota dosyaları → modules/mevzuat/screens'e re-export
 │   └── hesaplayicilar/
 │       ├── index.tsx             ← Hesaplayıcı listesi
-│       └── gerilim-dusumu.tsx    ← src/calculations/engines/voltageDrop DEMO motoruna bağlı ekran
+│       ├── gerilim-dusumu.tsx    ← src/calculations/engines/voltageDrop DEMO motoruna bağlı ekran
+│       └── og-akim-tasima.tsx    ← src/calculations/engines/ampacityOG motoruna bağlı ekran
 ├── modules/
 │   └── mevzuat/                  ← Şartname / Mevzuat modülü (kendi kendine yeten)
 │       ├── screens/              ← Ekran bileşenleri (app/sartname/* buradan re-export eder)
@@ -99,9 +100,9 @@ sartname-cepte/
 │   ├── calculations/              ← Hesaplama motoru altyapısı (UI hesap yapmaz)
 │   │   ├── core/                 ← types.ts, validation.ts, errors.ts, format.ts (ortak)
 │   │   └── engines/
-│   │       ├── voltageDrop/      ← Tek çalışan motor: DEMO gerilim düşümü hesabı
+│   │       ├── voltageDrop/      ← DEMO motor: basitleştirilmiş gerilim düşümü formülü
+│   │       ├── ampacityOG/       ← OG iletken veri tabanı + akım taşıma kapasitesi (lookup motoru)
 │   │       ├── ampacityAG/       ← İskelet (types.ts) — motor henüz yok
-│   │       ├── ampacityOG/       ← İskelet (types.ts) — motor henüz yok
 │   │       ├── sag/              ← İskelet (types.ts) — motor henüz yok
 │   │       └── tension/          ← İskelet (types.ts) — motor henüz yok
 │   ├── data/elektrik.ts          ← (legacy) eski gerilim düşümü sabitleri — artık UI'a bağlı değil

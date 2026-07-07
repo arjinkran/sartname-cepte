@@ -29,6 +29,7 @@ export default function RootLayout() {
         <Stack.Screen name="sartname/[id]" options={{ title: 'Bilgi Kartı' }} />
         <Stack.Screen name="hesaplayicilar/index" options={{ title: 'Cep Hesaplayıcılar' }} />
         <Stack.Screen name="hesaplayicilar/gerilim-dusumu" options={{ title: 'Gerilim Düşümü' }} />
+        <Stack.Screen name="hesaplayicilar/og-akim-tasima" options={{ title: 'OG Akım Taşıma Kapasitesi' }} />
       </Stack>
 
       {/* İlk açılış sorumluluk reddi */}

@@ -1,4 +1,4 @@
-// Hesaplayıcı listesi. İlk sürümde Gerilim Düşümü aktif;
+// Hesaplayıcı listesi. Gerilim Düşümü ve OG Akım Taşıma Kapasitesi aktif;
 // diğer hesaplayıcılar sırayla eklenecek.
 import React from 'react';
 import { ScrollView, Text, View, Pressable, StyleSheet } from 'react-native';
@@ -6,14 +6,15 @@ import { useRouter } from 'expo-router';
 import { colors, spacing, radius } from '../../src/theme';
 
 const HESAPLAYICILAR = [
-  { id: 'gerilim-dusumu', ad: 'Gerilim Düşümü', aciklama: 'Mono/trifaze %e ve minimum kesit', aktif: true },
-  { id: 'akim-guc', ad: 'Akım / Güç', aciklama: 'I, P, cosφ dönüşümleri', aktif: false },
-  { id: 'kablo-kesiti', ad: 'Kablo Kesiti Seçimi', aciklama: 'Akım taşıma + düşüm birlikte', aktif: false },
-  { id: 'kisa-devre', ad: 'Kısa Devre (Yaklaşık)', aciklama: 'Trafo empedansından Ik', aktif: false },
-  { id: 'trafo-yuklenme', ad: 'Trafo Yüklenme', aciklama: 'kVA, yük oranı, akım', aktif: false },
-  { id: 'sigorta-salter', ad: 'Sigorta / Şalter Seçimi', aciklama: 'Yüke göre koruma kademesi', aktif: false },
-  { id: 'kompanzasyon', ad: 'Kompanzasyon', aciklama: 'Gerekli kondansatör gücü', aktif: false },
-  { id: 'ag-og', ad: 'AG-OG Dönüşümler', aciklama: 'Oranlar, birim çevrimleri', aktif: false },
+  { id: 'gerilim-dusumu', ad: 'Gerilim Düşümü', aciklama: 'Mono/trifaze %e ve minimum kesit', aktif: true, rota: '/hesaplayicilar/gerilim-dusumu' },
+  { id: 'og-akim-tasima', ad: 'OG Akım Taşıma Kapasitesi', aciklama: 'YG/OG hava hattı iletkenleri için akım kapasitesi ve iletken özellikleri', aktif: true, rota: '/hesaplayicilar/og-akim-tasima' },
+  { id: 'akim-guc', ad: 'Akım / Güç', aciklama: 'I, P, cosφ dönüşümleri', aktif: false, rota: '' },
+  { id: 'kablo-kesiti', ad: 'Kablo Kesiti Seçimi', aciklama: 'Akım taşıma + düşüm birlikte', aktif: false, rota: '' },
+  { id: 'kisa-devre', ad: 'Kısa Devre (Yaklaşık)', aciklama: 'Trafo empedansından Ik', aktif: false, rota: '' },
+  { id: 'trafo-yuklenme', ad: 'Trafo Yüklenme', aciklama: 'kVA, yük oranı, akım', aktif: false, rota: '' },
+  { id: 'sigorta-salter', ad: 'Sigorta / Şalter Seçimi', aciklama: 'Yüke göre koruma kademesi', aktif: false, rota: '' },
+  { id: 'kompanzasyon', ad: 'Kompanzasyon', aciklama: 'Gerekli kondansatör gücü', aktif: false, rota: '' },
+  { id: 'ag-og', ad: 'AG-OG Dönüşümler', aciklama: 'Oranlar, birim çevrimleri', aktif: false, rota: '' },
 ] as const;
 
 export default function Hesaplayicilar() {
@@ -24,7 +25,7 @@ export default function Hesaplayicilar() {
         <Pressable
           key={h.id}
           disabled={!h.aktif}
-          onPress={() => router.push('/hesaplayicilar/gerilim-dusumu')}
+          onPress={() => h.rota && router.push(h.rota)}
           style={({ pressed }) => [
             styles.satir,
             !h.aktif && styles.satirPasif,
