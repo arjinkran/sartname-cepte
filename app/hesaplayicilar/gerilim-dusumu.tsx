@@ -1,58 +1,51 @@
-// Gerilim Düşümü hesaplayıcısı (StyleSheet tabanlı sade sürüm).
-// Girdiler: faz tipi, iletken malzemesi, hat uzunluğu, güç, kesit,
-// gerilim (düzenlenebilir), izin verilen limit.
-// Çıktılar: %e, ΔU (V), yük akımı, uygunluk ve önerilen minimum kesit.
+// Gerilim Düşümü hesaplayıcısı — src/calculations altyapısına bağlı DEMO ekranı.
+// UI hesap yapmaz: tüm hesap mantığı VoltageDropEngine (src/calculations/
+// engines/voltageDrop) içindedir. Gerçek Excel formülleri henüz eklenmedi.
 import React, { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View,
 } from 'react-native';
-import { Card, NumberField, Secim, YongaSecimi, SonucSatiri, tr } from '../../src/common/components/UI';
-import {
-  hesaplaGerilimDusumu,
-  gerekliMinKesit,
-  hesaplaAkim,
-  sayiyaCevir,
-} from '../../src/logic/gerilimDusumu';
-import {
-  STANDART_KESITLER,
-  GERILIM_DUSUMU_LIMITLERI,
-  VARSAYILAN_GERILIM,
-  type Faz,
-  type Malzeme,
-} from '../../src/data/elektrik';
+import { Card, NumberField, Secim, SonucSatiri, tr } from '../../src/common/components/UI';
+import { VoltageDropEngine } from '../../src/calculations';
+import type { PhaseType, VoltageDropInput } from '../../src/calculations/engines/voltageDrop/types';
 import { colors, spacing } from '../../src/theme';
 
+// Metin girişini sayıya çevirir ("12,5" → 12.5); bu bir UI girdi ayrıştırma
+// yardımcısıdır, hesap mantığı değildir.
+function sayiyaCevir(metin: string): number {
+  if (typeof metin !== 'string' || metin.trim() === '') return NaN;
+  return Number(metin.replace(',', '.'));
+}
+
+const VARSAYILAN_GERILIM: Record<PhaseType, number> = { mono: 230, tri: 400 };
+
 export default function GerilimDusumu() {
-  const [faz, setFaz] = useState<Faz>('tri');
-  const [malzeme, setMalzeme] = useState<Malzeme>('bakir');
-  const [uzunluk, setUzunluk] = useState('');
-  const [guc, setGuc] = useState('');
-  const [kesit, setKesit] = useState(4);
+  const [faz, setFaz] = useState<PhaseType>('tri');
   const [gerilim, setGerilim] = useState(String(VARSAYILAN_GERILIM.tri));
-  const [limit, setLimit] = useState(3);
-  const [cosfi, setCosfi] = useState('0,90');
+  const [akim, setAkim] = useState('');
+  const [uzunluk, setUzunluk] = useState('');
+  const [direnc, setDirenc] = useState('');
 
   // Faz değişince şebeke gerilimini de varsayılana çek
-  const fazSec = (yeniFaz: Faz) => {
+  const fazSec = (yeniFaz: PhaseType) => {
     setFaz(yeniFaz);
     setGerilim(String(VARSAYILAN_GERILIM[yeniFaz]));
   };
 
+  const girdiTamam = [akim, uzunluk, direnc].every((v) => v.trim() !== '');
+
   const sonuc = useMemo(() => {
-    const L = sayiyaCevir(uzunluk);
-    const P_kW = sayiyaCevir(guc);
-    const U = sayiyaCevir(gerilim);
-    const cf = sayiyaCevir(cosfi);
-    if (!(L > 0) || !(P_kW > 0) || !(U > 0)) return null;
-    try {
-      const { eYuzde, deltaU } = hesaplaGerilimDusumu({ faz, L, P_kW, S: kesit, U, malzeme });
-      const min = gerekliMinKesit({ faz, L, P_kW, U, malzeme, limitYuzde: limit });
-      const akim = cf > 0 && cf <= 1 ? hesaplaAkim({ faz, P_kW, U, cosfi: cf }) : null;
-      return { eYuzde, deltaU, min, akim, uygun: eYuzde <= limit };
-    } catch {
-      return null;
-    }
-  }, [faz, malzeme, uzunluk, guc, kesit, gerilim, limit, cosfi]);
+    const input: VoltageDropInput = {
+      voltage: sayiyaCevir(gerilim),
+      current: sayiyaCevir(akim),
+      length: sayiyaCevir(uzunluk),
+      resistancePerKm: sayiyaCevir(direnc),
+      phaseType: faz,
+    };
+    return VoltageDropEngine.calculate(input);
+  }, [faz, gerilim, akim, uzunluk, direnc]);
+
+  const output = sonuc.output;
 
   return (
     <KeyboardAvoidingView
@@ -64,8 +57,14 @@ export default function GerilimDusumu() {
         contentContainerStyle={{ padding: spacing.m, paddingBottom: 48 }}
         keyboardShouldPersistTaps="handled"
       >
+        {VoltageDropEngine.isDemo && (
+          <View style={styles.demoUyari}>
+            <Text style={styles.demoUyariText}>⚠️ {VoltageDropEngine.description}</Text>
+          </View>
+        )}
+
         <Card>
-          <Secim<Faz>
+          <Secim<PhaseType>
             label="Faz tipi"
             secenekler={[
               { deger: 'mono', etiket: 'Monofaze' },
@@ -74,83 +73,58 @@ export default function GerilimDusumu() {
             secili={faz}
             onSec={fazSec}
           />
-          <Secim<Malzeme>
-            label="İletken malzemesi"
-            secenekler={[
-              { deger: 'bakir', etiket: 'Bakır (k=56)' },
-              { deger: 'aluminyum', etiket: 'Alüminyum (k=35)' },
-            ]}
-            secili={malzeme}
-            onSec={setMalzeme}
-          />
+          <NumberField label="Şebeke gerilimi" value={gerilim} onChangeText={setGerilim} suffix="V" />
+          <NumberField label="Akım" value={akim} onChangeText={setAkim} suffix="A" placeholder="örn. 30" />
           <NumberField label="Hat uzunluğu" value={uzunluk} onChangeText={setUzunluk} suffix="m" placeholder="örn. 80" />
-          <NumberField label="Güç" value={guc} onChangeText={setGuc} suffix="kW" placeholder="örn. 15" />
-          <YongaSecimi
-            label="Kablo kesiti (mm²)"
-            degerler={STANDART_KESITLER}
-            secili={kesit}
-            onSec={setKesit}
-            bicim={(s) => tr(s, s % 1 === 0 ? 0 : 1)}
-          />
-          <View style={styles.yanYana}>
-            <View style={{ flex: 1, marginRight: spacing.s }}>
-              <NumberField label="Şebeke gerilimi" value={gerilim} onChangeText={setGerilim} suffix="V" />
-            </View>
-            <View style={{ flex: 1, marginLeft: spacing.s }}>
-              <NumberField label="cosφ (akım için)" value={cosfi} onChangeText={setCosfi} />
-            </View>
-          </View>
-          <Secim<number>
-            label="İzin verilen düşüm limiti"
-            secenekler={GERILIM_DUSUMU_LIMITLERI}
-            secili={limit}
-            onSec={setLimit}
+          <NumberField
+            label="İletken direnci"
+            value={direnc}
+            onChangeText={setDirenc}
+            suffix="Ω/km"
+            placeholder="örn. 1,5"
           />
         </Card>
 
-        {sonuc ? (
+        {!girdiTamam ? (
+          <Card>
+            <Text style={styles.bekleme}>
+              Sonucu görmek için akım, hat uzunluğu ve iletken direnci değerlerini girin.
+            </Text>
+          </Card>
+        ) : output ? (
           <Card
             style={[
               styles.sonucKart,
-              { borderColor: sonuc.uygun ? colors.success : colors.danger },
+              { borderColor: output.isWithinLimit ? colors.success : colors.danger },
             ]}
           >
             <View
               style={[
                 styles.durumSerit,
-                { backgroundColor: sonuc.uygun ? colors.success : colors.danger },
+                { backgroundColor: output.isWithinLimit ? colors.success : colors.danger },
               ]}
             >
               <Text style={styles.durumText}>
-                {sonuc.uygun ? '✓ UYGUN' : '✗ LİMİT AŞILIYOR'} (limit %{tr(limit, 1)})
+                {output.isWithinLimit ? '✓ UYGUN' : '✗ LİMİT AŞILIYOR'}
               </Text>
             </View>
             <SonucSatiri
               etiket="Gerilim düşümü"
-              deger={`%${tr(sonuc.eYuzde)}`}
+              deger={`%${tr(output.voltageDropPercent)}`}
               vurgulu
-              renk={sonuc.uygun ? colors.success : colors.danger}
+              renk={output.isWithinLimit ? colors.success : colors.danger}
             />
-            <SonucSatiri etiket="Düşüm (volt)" deger={`${tr(sonuc.deltaU)} V`} />
-            {sonuc.akim != null && <SonucSatiri etiket="Yük akımı" deger={`${tr(sonuc.akim)} A`} />}
-            <SonucSatiri
-              etiket="Limite göre min. kesit"
-              deger={
-                sonuc.min.standart
-                  ? `${tr(sonuc.min.standart, sonuc.min.standart % 1 === 0 ? 0 : 1)} mm²`
-                  : '300 mm² yetersiz!'
-              }
-            />
-            <Text style={styles.uyari}>
-              Omik düşüm yaklaşımıdır; büyük kesit ve uzun hatlarda reaktans etkisini
-              ayrıca değerlendirin. Kesin tasarımda yönetmelik ve şartname esastır.
-            </Text>
+            <SonucSatiri etiket="Düşüm (volt)" deger={`${tr(output.voltageDropVolt)} V`} />
+            {sonuc.warnings.map((w) => (
+              <Text key={w.code} style={styles.uyariText}>⚠ {w.message}</Text>
+            ))}
           </Card>
         ) : (
-          <Card>
-            <Text style={styles.bekleme}>
-              Sonucu görmek için hat uzunluğu ve güç değerlerini girin.
-            </Text>
+          <Card style={{ borderColor: colors.danger, borderWidth: 1.5 }}>
+            <Text style={styles.hataBaslik}>Girdi hataları</Text>
+            {sonuc.errors.map((e) => (
+              <Text key={`${e.code}-${e.field ?? ''}`} style={styles.hataText}>• {e.message}</Text>
+            ))}
           </Card>
         )}
       </ScrollView>
@@ -159,7 +133,13 @@ export default function GerilimDusumu() {
 }
 
 const styles = StyleSheet.create({
-  yanYana: { flexDirection: 'row' },
+  demoUyari: {
+    backgroundColor: '#FBE9C9',
+    borderRadius: 10,
+    padding: spacing.m,
+    marginBottom: spacing.m,
+  },
+  demoUyariText: { fontSize: 13, color: '#8C6D1F', lineHeight: 19, fontWeight: '600' },
   sonucKart: { borderWidth: 2, paddingTop: 0, overflow: 'hidden' },
   durumSerit: {
     marginHorizontal: -16,
@@ -168,6 +148,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.s,
   },
   durumText: { color: '#FFFFFF', fontWeight: '800', fontSize: 14, letterSpacing: 0.5 },
-  uyari: { fontSize: 12, color: colors.textMuted, marginTop: spacing.m, lineHeight: 17 },
+  uyariText: { fontSize: 12, color: colors.textMuted, marginTop: spacing.s, lineHeight: 17 },
   bekleme: { fontSize: 14, color: colors.textMuted, textAlign: 'center', paddingVertical: spacing.s },
+  hataBaslik: { fontSize: 14, fontWeight: '800', color: colors.danger, marginBottom: spacing.s },
+  hataText: { fontSize: 13, color: colors.text, marginBottom: 4, lineHeight: 18 },
 });

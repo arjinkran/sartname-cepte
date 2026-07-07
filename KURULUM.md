@@ -71,7 +71,7 @@ ekran kodları stub arayüzünü kullandığı için değişiklik gerektirmeyece
 ## Testler
 
 ```
-npm test            → hesap motoru birim testleri (9/9 geçmeli)
+npm test            → tüm birim testleri (tests/ altında, alt klasörler dahil)
 npm run typecheck   → TypeScript tip kontrolü
 ```
 
@@ -85,21 +85,31 @@ sartname-cepte/
 │   ├── sartname/                 ← İnce rota dosyaları → modules/mevzuat/screens'e re-export
 │   └── hesaplayicilar/
 │       ├── index.tsx             ← Hesaplayıcı listesi
-│       └── gerilim-dusumu.tsx    ← Gerilim düşümü ekranı
+│       └── gerilim-dusumu.tsx    ← src/calculations/engines/voltageDrop DEMO motoruna bağlı ekran
 ├── modules/
 │   └── mevzuat/                  ← Şartname / Mevzuat modülü (kendi kendine yeten)
 │       ├── screens/              ← Ekran bileşenleri (app/sartname/* buradan re-export eder)
-│       ├── components/           ← DokumanSatiri.tsx vb. modüle özel bileşenler
+│       ├── components/           ← DocumentRow.tsx vb. modüle özel bileşenler
 │       ├── services/             ← arama.ts (saf arama/filtre fonksiyonları)
 │       ├── data/                 ← sartnameler.ts (mock veri)
-│       └── types/                ← Dokuman, Kategori, Kurum tipleri
+│       └── types/                ← Document, Kategori, Institution tipleri
 ├── src/
 │   ├── theme.ts                  ← Renkler ve ölçüler
 │   ├── common/components/UI.tsx  ← Modüller arası ortak bileşenler (StyleSheet)
-│   ├── calculations/              ← Gelecekteki paylaşılan hesap motoru için ayrılmış (henüz boş)
-│   ├── data/elektrik.ts          ← Kesit serisi, iletkenlik, limitler
-│   ├── logic/gerilimDusumu.ts    ← Gerilim düşümü hesap motoru (saf fonksiyonlar)
+│   ├── calculations/              ← Hesaplama motoru altyapısı (UI hesap yapmaz)
+│   │   ├── core/                 ← types.ts, validation.ts, errors.ts, format.ts (ortak)
+│   │   └── engines/
+│   │       ├── voltageDrop/      ← Tek çalışan motor: DEMO gerilim düşümü hesabı
+│   │       ├── ampacityAG/       ← İskelet (types.ts) — motor henüz yok
+│   │       ├── ampacityOG/       ← İskelet (types.ts) — motor henüz yok
+│   │       ├── sag/              ← İskelet (types.ts) — motor henüz yok
+│   │       └── tension/          ← İskelet (types.ts) — motor henüz yok
+│   ├── data/elektrik.ts          ← (legacy) eski gerilim düşümü sabitleri — artık UI'a bağlı değil
+│   ├── logic/gerilimDusumu.ts    ← (legacy) eski gerilim düşümü hesap motoru — artık UI'a bağlı değil
 │   └── lib/                      ← supabase.ts / revenuecat.ts (geçici stub)
-├── tests/                        ← Birim testleri (npm test)
+├── tests/
+│   ├── calculations/voltageDrop.test.ts  ← DEMO motor testleri
+│   ├── arama.test.ts
+│   └── gerilimDusumu.test.ts      ← (legacy) src/logic/gerilimDusumu.ts testleri
 └── app.json / package.json / tsconfig.json
 ```
