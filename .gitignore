@@ -1,0 +1,12 @@
+node_modules/
+.expo/
+dist/
+web-build/
+*.log
+
+# Ortam değişkenleri — gizli anahtarlar asla depoya girmez
+.env
+.env.local
+
+# macOS
+.DS_Store

@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Şartname Cepte",
+    "slug": "sartname-cepte",
+    "version": "0.5.0",
+    "scheme": "sartnamecepte",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#0E2A47",
+    "splash": {
+      "backgroundColor": "#0E2A47",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.arjinkiran.sartnamecepte"
+    },
+    "android": {
+      "package": "com.arjinkiran.sartnamecepte"
+    },
+    "plugins": ["expo-router"]
+  }
+}
