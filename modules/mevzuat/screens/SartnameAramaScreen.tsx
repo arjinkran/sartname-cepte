@@ -1,7 +1,7 @@
 // Şartname / Mevzuat — ARAMA + FİLTRE EKRANI (modülün giriş ekranı).
-// Metin araması (ad, kurum, tür, özet, maddeler) + kurum ve kategori
-// filtreleri birlikte çalışır. Sorgu boşken: favoriler + kategori
-// kısayolu + (filtrelenmiş) tüm dokümanlar.
+// Metin araması (title, summary, keywords, institution, category) + kurum
+// ve kategori filtreleri birlikte çalışır. Sorgu boşken: favoriler +
+// kategori kısayolu + (filtrelenmiş) tüm dokümanlar.
 import React, { useMemo, useState } from 'react';
 import {
   Pressable, ScrollView, StyleSheet, Text, TextInput, View,
@@ -9,10 +9,10 @@ import {
 import { useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
 import { colors, spacing, radius } from '@/theme';
-import { DOKUMANLAR, KATEGORILER, KURUMLAR } from '../data/sartnameler';
+import { DOCUMENTS, KATEGORILER, KURUMLAR } from '../data/sartnameler';
 import { ara, filtrele } from '../services/arama';
-import { DokumanSatiri } from '../components/DokumanSatiri';
-import type { Kurum } from '../types';
+import { DocumentRow } from '../components/DocumentRow';
+import type { Institution } from '../types';
 
 function FiltreYonga({
   etiket,
@@ -38,14 +38,20 @@ function FiltreYonga({
 export default function SartnameAramaScreen() {
   const router = useRouter();
   const [sorgu, setSorgu] = useState('');
-  const [kurumFiltre, setKurumFiltre] = useState<Kurum | null>(null);
-  const [kategoriFiltre, setKategoriFiltre] = useState<string | null>(null);
+  const [kurumFiltre, setKurumFiltre] = useState<Institution | null>(null);
+  const [kategoriIdFiltre, setKategoriIdFiltre] = useState<string | null>(null);
   const { favoriIdler } = useFavoriler();
+
+  // Filtre kategori id'si tutulur (kararlı anahtar), süzme için kategori adına çözülür
+  const kategoriAdFiltre = useMemo(
+    () => (kategoriIdFiltre ? KATEGORILER.find((k) => k.id === kategoriIdFiltre)?.ad ?? null : null),
+    [kategoriIdFiltre]
+  );
 
   // Önce filtreler uygulanır, arama filtrelenmiş küme üzerinde çalışır
   const filtrelenmis = useMemo(
-    () => filtrele(DOKUMANLAR, { kurum: kurumFiltre, kategoriId: kategoriFiltre }),
-    [kurumFiltre, kategoriFiltre]
+    () => filtrele(DOCUMENTS, { institution: kurumFiltre, category: kategoriAdFiltre }),
+    [kurumFiltre, kategoriAdFiltre]
   );
   const sonuclar = useMemo(() => ara(sorgu, filtrelenmis), [sorgu, filtrelenmis]);
   const favoriler = useMemo(
@@ -54,7 +60,7 @@ export default function SartnameAramaScreen() {
   );
 
   const aramaModu = sorgu.trim().length >= 2;
-  const filtreAktif = kurumFiltre !== null || kategoriFiltre !== null;
+  const filtreAktif = kurumFiltre !== null || kategoriIdFiltre !== null;
 
   return (
     <View style={styles.root}>
@@ -101,13 +107,13 @@ export default function SartnameAramaScreen() {
         style={styles.filtreSatiri}
         contentContainerStyle={{ paddingHorizontal: spacing.m }}
       >
-        <FiltreYonga etiket="Tüm Kategoriler" aktif={kategoriFiltre === null} onPress={() => setKategoriFiltre(null)} />
+        <FiltreYonga etiket="Tüm Kategoriler" aktif={kategoriIdFiltre === null} onPress={() => setKategoriIdFiltre(null)} />
         {KATEGORILER.map((k) => (
           <FiltreYonga
             key={k.id}
             etiket={`${k.ikon} ${k.ad}`}
-            aktif={kategoriFiltre === k.id}
-            onPress={() => setKategoriFiltre(kategoriFiltre === k.id ? null : k.id)}
+            aktif={kategoriIdFiltre === k.id}
+            onPress={() => setKategoriIdFiltre(kategoriIdFiltre === k.id ? null : k.id)}
           />
         ))}
       </ScrollView>
@@ -125,7 +131,7 @@ export default function SartnameAramaScreen() {
                 : 'Sonuç bulunamadı — terimi veya filtreleri değiştir'}
             </Text>
             {sonuclar.map((s) => (
-              <DokumanSatiri key={s.dokuman.id} dokuman={s.dokuman} />
+              <DocumentRow key={s.document.id} document={s.document} />
             ))}
           </>
         ) : (
@@ -137,7 +143,7 @@ export default function SartnameAramaScreen() {
               >
                 <Text style={styles.kategoriKisayolText}>📂 Kategorilere Göz At</Text>
                 <Text style={styles.kategoriKisayolAlt}>
-                  {KATEGORILER.length} kategori · {DOKUMANLAR.length} doküman
+                  {KATEGORILER.length} kategori · {DOCUMENTS.length} doküman
                 </Text>
               </Pressable>
             )}
@@ -146,7 +152,7 @@ export default function SartnameAramaScreen() {
               <>
                 <Text style={styles.bolumBaslik}>★ Favorilerim</Text>
                 {favoriler.map((d) => (
-                  <DokumanSatiri key={d.id} dokuman={d} />
+                  <DocumentRow key={d.id} document={d} />
                 ))}
               </>
             )}
@@ -155,7 +161,7 @@ export default function SartnameAramaScreen() {
               {filtreAktif ? `Filtrelenmiş Dokümanlar (${filtrelenmis.length})` : 'Tüm Dokümanlar'}
             </Text>
             {filtrelenmis.map((d) => (
-              <DokumanSatiri key={d.id} dokuman={d} />
+              <DocumentRow key={d.id} document={d} />
             ))}
             {filtrelenmis.length === 0 && (
               <Text style={styles.bosText}>Bu filtrelerle eşleşen doküman yok.</Text>

@@ -3,10 +3,11 @@
 //
 // Türkçe'ye uygun normalizasyon yapar: büyük/küçük harf (İ→i, I→ı)
 // ve aksan katlama (ş→s, ç→c...) ile "SAYAC" araması "sayaç" bulur.
-// Puanlama: başlık eşleşmesi > anahtar kelime > özet/madde metni.
+// Arama alanları: title (5), keywords (3), summary + institution +
+// category (1). Puanlama: başlık eşleşmesi > anahtar kelime > gövde.
 // ─────────────────────────────────────────────────────────────
 
-import type { Dokuman, DokumanDurumu, Kurum } from '../types';
+import type { Document, DocumentStatus, Institution } from '../types';
 
 const AKSAN_TABLOSU: Record<string, string> = {
   ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u',
@@ -22,34 +23,25 @@ export function normallestir(metin: string): string {
 }
 
 export interface AramaSonucu {
-  dokuman: Dokuman;
+  document: Document;
   puan: number;
 }
 
 /**
- * Dokümanlar içinde arama yapar.
- * - Sorgu boşluklarla terimlere ayrılır; en az bir terimi eşleşen doküman listelenir.
- * - Tüm terimleri eşleşen dokümanlar öne gelir (terim başına bonus).
- * - Puan: başlıkta 5, anahtar kelimede 3, özet/maddelerde 1.
+ * Belgeler içinde arama yapar.
+ * - Sorgu boşluklarla terimlere ayrılır; en az bir terimi eşleşen belge listelenir.
+ * - Tüm terimleri eşleşen belgeler öne gelir (terim başına bonus).
+ * - Puan: title'da 5, keywords'te 3, summary/institution/category'de 1.
  */
-export function ara(sorgu: string, dokumanlar: readonly Dokuman[]): AramaSonucu[] {
+export function ara(sorgu: string, documents: readonly Document[]): AramaSonucu[] {
   const terimler = normallestir(sorgu).split(' ').filter((t) => t.length >= 2);
   if (terimler.length === 0) return [];
 
   const sonuclar: AramaSonucu[] = [];
-  for (const d of dokumanlar) {
-    const baslik = normallestir(d.baslik);
-    const anahtarlar = d.anahtarKelimeler.map(normallestir).join(' | ');
-    const govde = normallestir(
-      [
-        d.ozet,
-        d.onemliNoktalar.join(' '),
-        d.ilgiliMaddeler.map((m) => m.no + ' ' + m.aciklama).join(' '),
-        d.kaynakNo,
-        d.kurum,
-        d.dokumanTuru,
-      ].join(' ')
-    );
+  for (const d of documents) {
+    const baslik = normallestir(d.title);
+    const anahtarlar = d.keywords.map(normallestir).join(' | ');
+    const govde = normallestir([d.summary, d.institution, d.category].join(' '));
 
     let puan = 0;
     let eslesenTerim = 0;
@@ -65,29 +57,29 @@ export function ara(sorgu: string, dokumanlar: readonly Dokuman[]): AramaSonucu[
     // Tüm terimleri eşleşenlere güçlü bonus → "kablo eki" araması
     // yalnızca "kablo" geçenlerden önce ek dokümanını getirir.
     if (eslesenTerim === terimler.length) puan += 20 * terimler.length;
-    sonuclar.push({ dokuman: d, puan });
+    sonuclar.push({ document: d, puan });
   }
 
   return sonuclar.sort(
-    (a, b) => b.puan - a.puan || a.dokuman.baslik.localeCompare(b.dokuman.baslik, 'tr')
+    (a, b) => b.puan - a.puan || a.document.title.localeCompare(b.document.title, 'tr')
   );
 }
 
 export interface Filtre {
-  kurum?: Kurum | null;
-  kategoriId?: string | null;
-  durum?: DokumanDurumu | null;
+  institution?: Institution | null;
+  category?: string | null;
+  status?: DocumentStatus | null;
 }
 
 /**
- * Dokümanları kurum / kategori / durum ölçütlerine göre süzer.
+ * Belgeleri institution / category / status ölçütlerine göre süzer.
  * null veya tanımsız ölçüt "hepsi" anlamına gelir.
  */
-export function filtrele(dokumanlar: readonly Dokuman[], f: Filtre): Dokuman[] {
-  return dokumanlar.filter(
+export function filtrele(documents: readonly Document[], f: Filtre): Document[] {
+  return documents.filter(
     (d) =>
-      (!f.kurum || d.kurum === f.kurum) &&
-      (!f.kategoriId || d.kategoriId === f.kategoriId) &&
-      (!f.durum || d.durum === f.durum)
+      (!f.institution || d.institution === f.institution) &&
+      (!f.category || d.category === f.category) &&
+      (!f.status || d.status === f.status)
   );
 }

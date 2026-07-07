@@ -4,63 +4,58 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
 import { colors, spacing, radius } from '@/theme';
-import { DURUM_ETIKETLERI } from '../data/sartnameler';
-import type { Dokuman, Kurum } from '../types';
+import { STATUS_LABELS } from '../data/sartnameler';
+import type { Document, DocumentStatus, Institution } from '../types';
 
-const KURUM_RENKLERI: Record<Kurum, string> = {
+const INSTITUTION_RENKLERI: Record<Institution, string> = {
   'TEDAŞ': '#1D4E7E',
   'EPDK': '#7B3FA0',
   'Resmî Gazete': '#8C6D1F',
 };
 
-export function KurumRozeti({ kurum }: { kurum: Kurum }) {
+export function InstitutionBadge({ institution }: { institution: Institution }) {
   return (
-    <View style={[styles.rozet, { backgroundColor: KURUM_RENKLERI[kurum] }]}>
-      <Text style={styles.rozetText}>{kurum}</Text>
+    <View style={[styles.rozet, { backgroundColor: INSTITUTION_RENKLERI[institution] }]}>
+      <Text style={styles.rozetText}>{institution}</Text>
     </View>
   );
 }
 
-const DURUM_RENKLERI: Record<Dokuman['durum'], { arka: string; yazi: string }> = {
-  guncel: { arka: '#DCEFE1', yazi: '#1E8E3E' },
-  mulga: { arka: '#F8DCDA', yazi: '#C5221F' },
-  taslak: { arka: '#FBE9C9', yazi: '#8C6D1F' },
+const STATUS_RENKLERI: Record<DocumentStatus, { arka: string; yazi: string }> = {
+  active: { arka: '#DCEFE1', yazi: '#1E8E3E' },
+  deprecated: { arka: '#F8DCDA', yazi: '#C5221F' },
+  draft: { arka: '#FBE9C9', yazi: '#8C6D1F' },
 };
 
-export function DurumRozeti({ durum }: { durum: Dokuman['durum'] }) {
-  const r = DURUM_RENKLERI[durum];
+export function StatusBadge({ status }: { status: DocumentStatus }) {
+  const r = STATUS_RENKLERI[status];
   return (
     <View style={[styles.rozet, { backgroundColor: r.arka }]}>
-      <Text style={[styles.rozetText, { color: r.yazi }]}>{DURUM_ETIKETLERI[durum]}</Text>
+      <Text style={[styles.rozetText, { color: r.yazi }]}>{STATUS_LABELS[status]}</Text>
     </View>
   );
 }
 
-export function DokumanSatiri({ dokuman }: { dokuman: Dokuman }) {
+export function DocumentRow({ document }: { document: Document }) {
   const router = useRouter();
   const { favoriMi, favoriDegistir } = useFavoriler();
-  const favori = favoriMi(dokuman.id);
+  const favori = favoriMi(document.id);
 
   return (
     <Pressable
-      onPress={() => router.push(`/sartname/${dokuman.id}`)}
+      onPress={() => router.push(`/sartname/${document.id}`)}
       style={({ pressed }) => [styles.satir, pressed && { opacity: 0.85 }]}
     >
       <View style={{ flex: 1 }}>
         <View style={styles.ustSatir}>
-          <KurumRozeti kurum={dokuman.kurum} />
-          {dokuman.durum !== 'guncel' ? <DurumRozeti durum={dokuman.durum} /> : null}
-          {dokuman.ornek ? (
-            <View style={styles.ornekRozet}>
-              <Text style={styles.ornekRozetText}>örnek içerik</Text>
-            </View>
-          ) : null}
+          <InstitutionBadge institution={document.institution} />
+          {document.status !== 'active' ? <StatusBadge status={document.status} /> : null}
         </View>
-        <Text style={styles.baslik} numberOfLines={2}>{dokuman.baslik}</Text>
-        <Text style={styles.ozet} numberOfLines={2}>{dokuman.ozet}</Text>
+        <Text style={styles.baslik} numberOfLines={2}>{document.title}</Text>
+        <Text style={styles.ozet} numberOfLines={2}>{document.summary}</Text>
       </View>
       <Pressable
-        onPress={() => favoriDegistir(dokuman.id)}
+        onPress={() => favoriDegistir(document.id)}
         hitSlop={10}
         style={styles.yildizAlani}
       >
@@ -89,13 +84,6 @@ const styles = StyleSheet.create({
     marginRight: spacing.s,
   },
   rozetText: { color: '#FFFFFF', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
-  ornekRozet: {
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    backgroundColor: '#FBE9C9',
-  },
-  ornekRozetText: { color: '#8C6D1F', fontSize: 10, fontWeight: '700' },
   baslik: { fontSize: 15, fontWeight: '700', color: colors.text },
   ozet: { fontSize: 13, color: colors.textMuted, marginTop: 2 },
   yildizAlani: { paddingLeft: spacing.m, alignSelf: 'stretch', justifyContent: 'center' },

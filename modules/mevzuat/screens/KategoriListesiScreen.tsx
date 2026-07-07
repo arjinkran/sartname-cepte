@@ -3,13 +3,13 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { colors, spacing } from '@/theme';
-import { DOKUMANLAR, KATEGORILER } from '../data/sartnameler';
-import { DokumanSatiri } from '../components/DokumanSatiri';
+import { DOCUMENTS, KATEGORILER } from '../data/sartnameler';
+import { DocumentRow } from '../components/DocumentRow';
 
 export default function KategoriListesiScreen() {
   const { kid } = useLocalSearchParams<{ kid: string }>();
   const kategori = KATEGORILER.find((k) => k.id === kid);
-  const dokumanlar = DOKUMANLAR.filter((d) => d.kategoriId === kid);
+  const dokumanlar = kategori ? DOCUMENTS.filter((d) => d.category === kategori.ad) : [];
 
   return (
     <>
@@ -21,7 +21,7 @@ export default function KategoriListesiScreen() {
           </Text>
         ) : null}
         {dokumanlar.length > 0 ? (
-          dokumanlar.map((d) => <DokumanSatiri key={d.id} dokuman={d} />)
+          dokumanlar.map((d) => <DocumentRow key={d.id} document={d} />)
         ) : (
           <Text style={styles.bos}>Bu kategoride henüz doküman yok.</Text>
         )}
