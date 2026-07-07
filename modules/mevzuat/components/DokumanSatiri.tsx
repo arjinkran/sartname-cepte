@@ -2,9 +2,10 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { DURUM_ETIKETLERI, type Dokuman, type Kurum } from '../data/sartnameler';
-import { useFavoriler } from '../lib/favoriler';
-import { colors, spacing, radius } from '../theme';
+import { useFavoriler } from '@/lib/favoriler';
+import { colors, spacing, radius } from '@/theme';
+import { DURUM_ETIKETLERI } from '../data/sartnameler';
+import type { Dokuman, Kurum } from '../types';
 
 const KURUM_RENKLERI: Record<Kurum, string> = {
   'TEDAŞ': '#1D4E7E',

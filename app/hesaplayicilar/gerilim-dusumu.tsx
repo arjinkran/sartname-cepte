@@ -6,7 +6,7 @@ import React, { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View,
 } from 'react-native';
-import { Card, NumberField, Secim, YongaSecimi, SonucSatiri, tr } from '../../src/components/UI';
+import { Card, NumberField, Secim, YongaSecimi, SonucSatiri, tr } from '../../src/common/components/UI';
 import {
   hesaplaGerilimDusumu,
   gerekliMinKesit,

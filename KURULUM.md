@@ -79,17 +79,26 @@ npm run typecheck   → TypeScript tip kontrolü
 
 ```
 sartname-cepte/
-├── app/                          ← Ekranlar (Expo Router: dosya = rota)
+├── app/                          ← Rotalar (Expo Router: dosya = rota)
 │   ├── _layout.tsx               ← Kök yerleşim + açılış uyarısı
 │   ├── index.tsx                 ← Ana ekran (6 modül kartı)
+│   ├── sartname/                 ← İnce rota dosyaları → modules/mevzuat/screens'e re-export
 │   └── hesaplayicilar/
 │       ├── index.tsx             ← Hesaplayıcı listesi
 │       └── gerilim-dusumu.tsx    ← Gerilim düşümü ekranı
+├── modules/
+│   └── mevzuat/                  ← Şartname / Mevzuat modülü (kendi kendine yeten)
+│       ├── screens/              ← Ekran bileşenleri (app/sartname/* buradan re-export eder)
+│       ├── components/           ← DokumanSatiri.tsx vb. modüle özel bileşenler
+│       ├── services/             ← arama.ts (saf arama/filtre fonksiyonları)
+│       ├── data/                 ← sartnameler.ts (mock veri)
+│       └── types/                ← Dokuman, Kategori, Kurum tipleri
 ├── src/
 │   ├── theme.ts                  ← Renkler ve ölçüler
-│   ├── components/UI.tsx         ← Ortak bileşenler (StyleSheet)
+│   ├── common/components/UI.tsx  ← Modüller arası ortak bileşenler (StyleSheet)
+│   ├── calculations/              ← Gelecekteki paylaşılan hesap motoru için ayrılmış (henüz boş)
 │   ├── data/elektrik.ts          ← Kesit serisi, iletkenlik, limitler
-│   ├── logic/gerilimDusumu.ts    ← Hesap motoru (saf fonksiyonlar)
+│   ├── logic/gerilimDusumu.ts    ← Gerilim düşümü hesap motoru (saf fonksiyonlar)
 │   └── lib/                      ← supabase.ts / revenuecat.ts (geçici stub)
 ├── tests/                        ← Birim testleri (npm test)
 └── app.json / package.json / tsconfig.json

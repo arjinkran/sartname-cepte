@@ -1,8 +1,8 @@
 // Arama motoru birim testleri.
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { ara, filtrele, normallestir } from '../src/logic/arama.ts';
-import { DOKUMANLAR, KATEGORILER, KURUMLAR } from '../src/data/sartnameler.ts';
+import { ara, filtrele, normallestir } from '../modules/mevzuat/services/arama.ts';
+import { DOKUMANLAR, KATEGORILER, KURUMLAR } from '../modules/mevzuat/data/sartnameler.ts';
 
 test('normallestir Türkçe karakterleri katlar', () => {
   assert.strictEqual(normallestir('SAYAÇ'), 'sayac');

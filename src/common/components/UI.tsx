@@ -4,7 +4,7 @@ import {
   View, Text, TextInput, Pressable, ScrollView, StyleSheet,
   type StyleProp, type ViewStyle,
 } from 'react-native';
-import { colors, spacing, radius } from '../theme';
+import { colors, spacing, radius } from '../../theme';
 
 // Beyaz kart kutusu
 export function Card({

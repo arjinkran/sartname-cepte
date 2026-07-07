@@ -6,7 +6,7 @@
 // Puanlama: başlık eşleşmesi > anahtar kelime > özet/madde metni.
 // ─────────────────────────────────────────────────────────────
 
-import type { Dokuman, DokumanDurumu, Kurum } from '../data/sartnameler.ts';
+import type { Dokuman, DokumanDurumu, Kurum } from '../types';
 
 const AKSAN_TABLOSU: Record<string, string> = {
   ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u',
