@@ -87,3 +87,37 @@ test('limit aşımı warning üretiyor', () => {
   assert.ok(sonuc.warnings.length > 0);
   assert.strictEqual(sonuc.warnings[0]!.code, 'LIMIT_EXCEEDED');
 });
+
+test('metadata Excel entegrasyonu için gerekli alanları içerir', () => {
+  const { metadata } = VoltageDropEngine;
+  assert.strictEqual(metadata.id, 'voltageDrop.demo');
+  assert.ok(metadata.name.length > 0);
+  assert.ok(metadata.description.length > 0);
+  assert.ok(metadata.version.length > 0);
+  assert.ok(metadata.author.length > 0);
+  assert.ok(metadata.createdAt.length > 0);
+  assert.ok(metadata.updatedAt.length > 0);
+});
+
+test('inputs/outputs/constants/limits dizileri dolu', () => {
+  assert.ok(VoltageDropEngine.inputs.length >= 5);
+  assert.ok(VoltageDropEngine.outputs.length >= 3);
+  assert.ok(VoltageDropEngine.constants.length >= 1);
+  assert.ok(VoltageDropEngine.limits.length >= 1);
+  assert.ok(VoltageDropEngine.limits.some((l) => l.key === 'maxVoltageDrop'));
+  assert.ok(VoltageDropEngine.limits.some((l) => l.key === 'recommendedVoltageDrop'));
+  assert.ok(VoltageDropEngine.limits.some((l) => l.key === 'warningVoltageDrop'));
+});
+
+test('örnekler (examples) gerçek motor çıktısıyla senkron', () => {
+  const ornekler = VoltageDropEngine.examples ?? [];
+  assert.ok(ornekler.length > 0);
+  for (const ornek of ornekler) {
+    const sonuc = VoltageDropEngine.calculate(ornek.input);
+    assert.ok(sonuc.output, `${ornek.id}: hesap başarısız oldu`);
+    assert.ok(ornek.output, `${ornek.id}: örnek çıktısı tanımlı değil`);
+    yaklasik(sonuc.output!.voltageDropVolt, ornek.output!.voltageDropVolt, 0.01);
+    yaklasik(sonuc.output!.voltageDropPercent, ornek.output!.voltageDropPercent, 0.01);
+    assert.strictEqual(sonuc.output!.isWithinLimit, ornek.output!.isWithinLimit);
+  }
+});

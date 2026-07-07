@@ -59,7 +59,7 @@ export default function GerilimDusumu() {
       >
         {VoltageDropEngine.isDemo && (
           <View style={styles.demoUyari}>
-            <Text style={styles.demoUyariText}>⚠️ {VoltageDropEngine.description}</Text>
+            <Text style={styles.demoUyariText}>⚠️ {VoltageDropEngine.metadata.description}</Text>
           </View>
         )}
 

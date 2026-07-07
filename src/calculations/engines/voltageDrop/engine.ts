@@ -8,6 +8,7 @@ import type { CalculationEngine, CalculationResult } from '../../core/types.ts';
 import { required, positiveNumber, oneOf, validateFields } from '../../core/validation.ts';
 import { makeWarning } from '../../core/errors.ts';
 import type { PhaseType, VoltageDropInput, VoltageDropOutput } from './types.ts';
+import { VOLTAGE_DROP_EXAMPLES } from './examples.ts';
 
 export const VOLTAGE_DROP_PHASE_TYPES: readonly PhaseType[] = ['mono', 'tri'];
 
@@ -64,22 +65,82 @@ export function hesapla(input: VoltageDropInput): CalculationResult<VoltageDropO
 }
 
 export const VoltageDropEngine: CalculationEngine<VoltageDropInput, VoltageDropOutput> = {
-  id: 'voltageDrop.demo',
-  name: 'Gerilim Düşümü (Demo)',
+  // Sprint 2B: yalnızca ÖRNEK/placeholder metadata — gerçek standard/source
+  // Excel analizinden sonra doldurulacak. Formül (hesapla) değişmedi.
+  metadata: {
+    id: 'voltageDrop.demo',
+    name: 'Gerilim Düşümü (Demo)',
+    description: VOLTAGE_DROP_DEMO_NOTICE,
+    version: '0.1.0-demo',
+    author: 'Şartname Cepte Ekibi',
+    standard: 'Demo — henüz resmi bir standarda bağlanmadı',
+    source: 'Demo — Excel kaynağı henüz tanımlanmadı',
+    createdAt: '2026-07-07',
+    updatedAt: '2026-07-07',
+  },
   category: 'electrical',
-  description: VOLTAGE_DROP_DEMO_NOTICE,
   isDemo: true,
-  inputFields: [
+  inputs: [
     { key: 'voltage', label: 'Şebeke gerilimi', unit: 'V', required: true },
     { key: 'current', label: 'Akım', unit: 'A', required: true },
     { key: 'length', label: 'Hat uzunluğu', unit: 'm', required: true },
     { key: 'resistancePerKm', label: 'İletken direnci', unit: 'Ω/km', required: true },
     { key: 'phaseType', label: 'Faz tipi', unit: 'none', required: true },
   ],
-  outputFields: [
+  outputs: [
     { key: 'voltageDropVolt', label: 'Gerilim düşümü', unit: 'V' },
     { key: 'voltageDropPercent', label: 'Gerilim düşümü yüzdesi', unit: '%' },
     { key: 'isWithinLimit', label: 'Limit içinde mi', unit: 'none' },
+  ],
+  // Formülde ('FAZ_FAKTORU') zaten kullanılan sabitlerin dokümantasyon
+  // amaçlı yansıması — Excel'den gerçek sabitler geldiğinde burası ve
+  // hesapla() birlikte güncellenecek.
+  constants: [
+    {
+      key: 'phaseFactorMono',
+      label: 'Monofaze faz faktörü',
+      value: FAZ_FAKTORU.mono,
+      unit: 'none',
+      description: 'DEMO formülünde monofaze gerilim düşümü çarpanı.',
+    },
+    {
+      key: 'phaseFactorTri',
+      label: 'Trifaze faz faktörü',
+      value: FAZ_FAKTORU.tri,
+      unit: 'none',
+      description: 'DEMO formülünde trifaze gerilim düşümü çarpanı (√3).',
+    },
+  ],
+  limits: [
+    {
+      key: 'maxVoltageDrop',
+      label: 'Azami gerilim düşümü',
+      value: VOLTAGE_DROP_DEFAULT_LIMIT_PERCENT,
+      unit: '%',
+      description:
+        'calculate() bu değeri aşan sonuçlar için LIMIT_EXCEEDED uyarısı üretir (limitPercent verilmezse varsayılan budur).',
+    },
+    {
+      key: 'recommendedVoltageDrop',
+      label: 'Önerilen gerilim düşümü',
+      value: 3,
+      unit: '%',
+      description: 'Saha pratiğinde hedeflenmesi önerilen üst sınır (bilgi amaçlı — calculate() tarafından kullanılmaz).',
+    },
+    {
+      key: 'warningVoltageDrop',
+      label: 'Uyarı eşiği',
+      value: 4,
+      unit: '%',
+      description: 'Azami sınıra yaklaşıldığını göstermek için ayrılmış eşik (bilgi amaçlı — calculate() tarafından kullanılmaz).',
+    },
+  ],
+  examples: VOLTAGE_DROP_EXAMPLES,
+  references: [
+    {
+      label: 'Excel kaynağı',
+      note: 'Demo motor — henüz gerçek bir Excel/standart kaynağına bağlanmadı. Excel analizinden sonra doldurulacak.',
+    },
   ],
   calculate: hesapla,
 };
