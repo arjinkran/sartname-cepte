@@ -37,6 +37,12 @@ export default function RootLayout() {
         <Stack.Screen name="enh-bilgi/iletken/[id]" options={{ title: 'İletken Detayı' }} />
         <Stack.Screen name="enh-bilgi/direk-siniflari" options={{ title: 'Direk Sınıfları' }} />
         <Stack.Screen name="enh-bilgi/direk-sinifi/[id]" options={{ title: 'Direk Sınıfı Detayı' }} />
+        <Stack.Screen name="enh-bilgi/direk-malzemeleri" options={{ title: 'Direk Malzemeleri' }} />
+        <Stack.Screen name="enh-bilgi/direk-malzemesi/[id]" options={{ title: 'Direk Malzemesi Detayı' }} />
+        <Stack.Screen name="enh-bilgi/direk-devre-tipleri" options={{ title: 'Direk Devre Tipleri' }} />
+        <Stack.Screen name="enh-bilgi/devre-tipi/[id]" options={{ title: 'Devre Tipi Detayı' }} />
+        <Stack.Screen name="enh-bilgi/izolatorler" options={{ title: 'İzolatörler' }} />
+        <Stack.Screen name="enh-bilgi/izolator/[id]" options={{ title: 'İzolatör Detayı' }} />
       </Stack>
 
       {/* İlk açılış sorumluluk reddi */}

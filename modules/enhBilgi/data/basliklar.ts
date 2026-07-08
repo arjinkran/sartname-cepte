@@ -1,6 +1,7 @@
 // enhBilgi modülü — ENH Bilgi Bankası ana ekranındaki başlık listesi.
-// Şimdilik yalnızca İletkenler ve Direk Sınıfları aktif; diğerleri
-// "Yakında" olarak görünür (aktif: false, rota: '').
+// İletkenler, Direk Sınıfları, Direk Malzemeleri, Direk Devre Tipleri ve
+// İzolatörler aktif; Traversler ve Tip Proje Notları hâlâ "Yakında"
+// (aktif: false, rota: '').
 import type { EnhBilgiBaslik } from '../types';
 
 export const ENH_BILGI_BASLIKLARI: readonly EnhBilgiBaslik[] = [
@@ -25,24 +26,24 @@ export const ENH_BILGI_BASLIKLARI: readonly EnhBilgiBaslik[] = [
     ad: 'Direk Malzemeleri',
     ikon: '🧱',
     aciklama: 'Beton, demir ve ağaç direk',
-    aktif: false,
-    rota: '',
+    aktif: true,
+    rota: '/enh-bilgi/direk-malzemeleri',
   },
   {
     id: 'direk-devre-tipleri',
     ad: 'Direk Devre Tipleri',
     ikon: '🔀',
-    aciklama: 'Tek devre, çift devre, çok devre',
-    aktif: false,
-    rota: '',
+    aciklama: 'Tek devre, çift devre, çok devre, dört devre',
+    aktif: true,
+    rota: '/enh-bilgi/direk-devre-tipleri',
   },
   {
     id: 'izolatorler',
     ad: 'İzolatörler',
     ikon: '🧿',
     aciklama: 'İzolatör tipleri ve seçim kriterleri',
-    aktif: false,
-    rota: '',
+    aktif: true,
+    rota: '/enh-bilgi/izolatorler',
   },
   {
     id: 'traversler',

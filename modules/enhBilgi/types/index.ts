@@ -50,3 +50,36 @@ export interface EnhBilgiBaslik {
   aktif: boolean;
   rota: string;
 }
+
+export type DirekMalzemesiId = 'beton' | 'demir' | 'agac';
+
+export interface DirekMalzemesiBilgi {
+  id: DirekMalzemesiId;
+  ad: string;
+  tanim: string;
+  kullanimAlani: string;
+  avantaj: string;
+  dikkatNotu: string;
+}
+
+export type DevreTipiId = 'tek-devre' | 'cift-devre' | 'cok-devre' | 'dort-devre';
+
+export interface DevreTipiBilgi {
+  id: DevreTipiId;
+  ad: string;
+  tanim: string;
+  neredeKullanilir: string;
+  direkYukuneEtkisi: string;
+  projeNotu: string;
+}
+
+export type IzolatorId = 'mesnet' | 'zincir' | 'gergi';
+
+export interface IzolatorBilgi {
+  id: IzolatorId;
+  ad: string;
+  tanim: string;
+  kullanimYeri: string;
+  ilgiliDirekTipleri: readonly DirekSinifId[];
+  dikkatNotu: string;
+}

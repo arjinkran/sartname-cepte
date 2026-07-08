@@ -99,8 +99,9 @@ sartname-cepte/
 │       └── types/                ← Document, Kategori, Institution tipleri
 │   └── enhBilgi/                 ← ENH Bilgi Bankası (hesap motoru DEĞİL — statik teknik bilgi)
 │       ├── screens/              ← Ekran bileşenleri (app/enh-bilgi/* buradan re-export eder)
-│       ├── components/           ← IletkenKarti.tsx, DirekSinifKarti.tsx
-│       ├── data/                 ← iletkenler.ts (ampacityOG ile uyumlu), direkSiniflari.ts, basliklar.ts
+│       ├── components/           ← IletkenKarti, DirekSinifKarti, BilgiKarti (ortak liste kartı)
+│       ├── data/                 ← iletkenler.ts (ampacityOG ile uyumlu), direkSiniflari.ts,
+│       │                            direkMalzemeleri.ts, direkDevreTipleri.ts, izolatorler.ts, basliklar.ts
 │       └── types/                ← IletkenBilgi, DirekSinifBilgi tipleri
 ├── src/
 │   ├── theme.ts                  ← Renkler ve ölçüler
