@@ -1,7 +1,8 @@
 // Doküman detay ekranı — /sartname/:id
 // Premium kart tasarımı — iş mantığı DEĞİŞMEDİ: aynı favoriler context'i,
 // aynı PDF Aç stub'ı. "AI ile Açıkla" gerçek /ai ekranına yönlendirir (yeni
-// bir servis çağrısı YOK).
+// bir servis çağrısı YOK). Sprint 4: veri Repository üzerinden okunur
+// (getDocumentById/getRelatedDocuments) — hiçbir JSON'a doğrudan erişim yok.
 // Kartlar: Başlık, Künye, Anahtar Kelimeler, Özet, İlgili Dokümanlar,
 // İlgili Yönetmelikler ve Standartlar, Revizyon Bilgisi, Aksiyonlar.
 import React from 'react';
@@ -10,7 +11,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
 import { AppBar, Button, Card, PressableScale } from '@/components/ui';
 import { colors, radius, spacing, typography } from '@/theme';
-import { DOCUMENTS, STATUS_LABELS } from '../data/sartnameler';
+import { STATUS_LABELS, getDocumentById, getRelatedDocuments } from '@/data/documents';
 import { InstitutionBadge, StatusBadge } from '../components/DocumentRow';
 
 function KunyeSatiri({ etiket, deger }: { etiket: string; deger: string }) {
@@ -38,7 +39,7 @@ const ILGILI_MEVZUAT_ORNEK = [
 export default function DocumentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const document = DOCUMENTS.find((d) => d.id === id);
+  const document = id ? getDocumentById(id) : undefined;
   const { favoriMi, favoriDegistir } = useFavoriler();
 
   if (!document) {
@@ -53,9 +54,7 @@ export default function DocumentDetailScreen() {
   }
 
   const favori = favoriMi(document.id);
-  const ilgiliDokumanlar = document.relatedDocuments
-    .map((relId) => DOCUMENTS.find((d) => d.id === relId))
-    .filter((d): d is (typeof DOCUMENTS)[number] => d != null);
+  const ilgiliDokumanlar = getRelatedDocuments(document.id);
 
   const pdfAc = () => {
     Alert.alert('PDF Görüntüleyici', 'Bu özellik yakında eklenecek.');
@@ -81,6 +80,7 @@ export default function DocumentDetailScreen() {
         <Card style={styles.card}>
           <Text style={styles.bolumBaslik}>Künye</Text>
           <KunyeSatiri etiket="Kurum" deger={document.institution} />
+          <KunyeSatiri etiket="Tür" deger={document.documentType} />
           <KunyeSatiri etiket="Kategori" deger={document.category} />
           <KunyeSatiri etiket="Durum" deger={STATUS_LABELS[document.status]} />
         </Card>

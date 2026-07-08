@@ -1,67 +1,32 @@
 // Veri Kaynakları ekranı — /veri-kaynaklari
 // Elektrik dağıtım mevzuatı ekosistemindeki kurum/standart kaynaklarının
-// kısa, genel açıklamalarını listeler (V3 mevzuat dönüşümü, madde 18).
-// Doküman sayıları modules/mevzuat/data/sartnameler.ts'teki gerçek
-// DOCUMENTS'tan hesaplanır — veri modeline dokunulmadı, yalnızca okunur.
+// kısa, genel açıklamalarını listeler. Sprint 4, madde 11: kartlar artık
+// elle yazılmadı — INSTITUTIONS listesinin tamamı (11 kurum) taranır ve
+// doküman sayısı Repository'nin getByInstitution() fonksiyonuyla otomatik
+// hesaplanır.
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AppBar, Card } from '@/components/ui';
 import { colors, spacing, typography } from '@/theme';
-import { DOCUMENTS } from '../../mevzuat/data/sartnameler';
-import type { Institution } from '../../mevzuat/types';
+import { INSTITUTIONS, getByInstitution, type Institution } from '@/data/documents';
 
-interface Kaynak {
-  ad: string;
-  aciklama: string;
-  institution?: Institution;
-}
-
-const KAYNAKLAR: readonly Kaynak[] = [
-  {
-    ad: 'TEDAŞ',
-    aciklama: 'Türkiye Elektrik Dağıtım A.Ş. — elektrik dağıtım şebekesi için teknik şartnameleri hazırlar.',
-    institution: 'TEDAŞ',
-  },
-  {
-    ad: 'TEİAŞ',
-    aciklama: 'Türkiye Elektrik İletim A.Ş. — yüksek gerilim iletim şebekesi standartlarını belirler.',
-    institution: 'TEİAŞ',
-  },
-  {
-    ad: 'EPDK',
-    aciklama: 'Enerji Piyasası Düzenleme Kurumu — hizmet kalitesi ve tüketici mevzuatını yayınlar.',
-    institution: 'EPDK',
-  },
-  {
-    ad: 'Enerji Bakanlığı',
-    aciklama: 'Enerji ve Tabii Kaynaklar Bakanlığı — sektöre yönelik yönetmelik ve politikaları belirler.',
-  },
-  {
-    ad: 'Resmî Gazete',
-    aciklama: 'Kanun, yönetmelik ve tebliğlerin resmî yayın organı.',
-    institution: 'Resmî Gazete',
-  },
-  {
-    ad: 'TS',
-    aciklama: 'Türk Standardları Enstitüsü (TSE) tarafından yayınlanan ulusal standartlar.',
-    institution: 'TS',
-  },
-  {
-    ad: 'IEC',
-    aciklama: 'International Electrotechnical Commission — uluslararası elektroteknik standartları.',
-    institution: 'IEC',
-  },
-  {
-    ad: 'CENELEC',
-    aciklama: 'European Committee for Electrotechnical Standardization — Avrupa elektroteknik standardizasyon komitesi.',
-  },
-];
-
-function dokumanSayisi(institution?: Institution): number {
-  if (!institution) return 0;
-  return DOCUMENTS.filter((d) => d.institution === institution).length;
-}
+// Kurum açıklamaları — genel/bilinen kurum tanımlarıdır, doküman içeriği
+// değildir. INSTITUTIONS listesindeki 11 kurumun TAMAMI için tanımlı
+// olmalıdır (Record tamlığı derleme zamanında garanti eder).
+const KURUM_ACIKLAMALARI: Record<Institution, string> = {
+  'TEDAŞ': 'Türkiye Elektrik Dağıtım A.Ş. — elektrik dağıtım şebekesi için teknik şartnameleri hazırlar.',
+  'TEİAŞ': 'Türkiye Elektrik İletim A.Ş. — yüksek gerilim iletim şebekesi standartlarını belirler.',
+  'EPDK': 'Enerji Piyasası Düzenleme Kurumu — hizmet kalitesi ve tüketici mevzuatını yayınlar.',
+  'Enerji Bakanlığı': 'Enerji ve Tabii Kaynaklar Bakanlığı — sektöre yönelik yönetmelik ve politikaları belirler.',
+  'Resmî Gazete': 'Kanun, yönetmelik ve tebliğlerin resmî yayın organı.',
+  'TSE': 'Türk Standardları Enstitüsü — ulusal (TS) standartları yayınlar.',
+  'IEC': 'International Electrotechnical Commission — uluslararası elektroteknik standartları.',
+  'CENELEC': 'European Committee for Electrotechnical Standardization — Avrupa elektroteknik standardizasyon komitesi.',
+  'TS EN': 'Avrupa standartlarının (EN) Türkiye\'de uyumlaştırılmış (TS EN) hâli.',
+  'IEEE': 'Institute of Electrical and Electronics Engineers — uluslararası elektrik/elektronik mühendisliği standartları.',
+  'Diğer': 'Yukarıdaki kurumların hiçbirine girmeyen belediye, dağıtım şirketi vb. kaynaklar.',
+};
 
 export default function VeriKaynaklariScreen() {
   const router = useRouter();
@@ -73,12 +38,12 @@ export default function VeriKaynaklariScreen() {
         <Text style={styles.ustAciklama}>
           Şartname Cepte içeriği aşağıdaki kurum ve standart kaynaklarına dayanır.
         </Text>
-        {KAYNAKLAR.map((k) => {
-          const sayi = dokumanSayisi(k.institution);
+        {INSTITUTIONS.map((kurum) => {
+          const sayi = getByInstitution(kurum).length;
           return (
-            <Card key={k.ad} style={styles.card}>
-              <Text style={styles.ad}>{k.ad}</Text>
-              <Text style={styles.aciklama}>{k.aciklama}</Text>
+            <Card key={kurum} style={styles.card}>
+              <Text style={styles.ad}>{kurum}</Text>
+              <Text style={styles.aciklama}>{KURUM_ACIKLAMALARI[kurum]}</Text>
               <Text style={styles.durum}>
                 {sayi > 0 ? `Uygulamada ${sayi} doküman mevcut` : 'Doküman kütüphanesi yakında eklenecek'}
               </Text>

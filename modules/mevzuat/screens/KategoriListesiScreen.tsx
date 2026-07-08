@@ -1,15 +1,16 @@
 // Kategori doküman listesi — /sartname/kategori/:kid
+// Sprint 4: CATEGORIES ve dokümanlar artık Repository'den gelir.
 import React from 'react';
 import { ScrollView, StyleSheet, Text } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { colors, spacing } from '@/theme';
-import { DOCUMENTS, KATEGORILER } from '../data/sartnameler';
+import { CATEGORIES, getByCategory } from '@/data/documents';
 import { DocumentRow } from '../components/DocumentRow';
 
 export default function KategoriListesiScreen() {
   const { kid } = useLocalSearchParams<{ kid: string }>();
-  const kategori = KATEGORILER.find((k) => k.id === kid);
-  const dokumanlar = kategori ? DOCUMENTS.filter((d) => d.category === kategori.ad) : [];
+  const kategori = CATEGORIES.find((k) => k.id === kid);
+  const dokumanlar = kategori ? getByCategory(kategori.ad) : [];
 
   return (
     <>

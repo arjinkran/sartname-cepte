@@ -7,8 +7,9 @@
 // (veya başka hiçbir ekrana) bağlantı verilmiyor. Bkz. KURULUM.md "Ürün
 // Tanımı" ve src/calculations/ (dokunulmadı).
 //
-// "Son Şartnameler" artık gerçek DOCUMENTS verisini kullanır (DocumentRow
-// bileşeni Arama/Favoriler ile paylaşılır — component tekrarı yok).
+// "Son Şartnameler" artık src/data/documents Repository'sinden gelen
+// featured dokümanları gösterir (DocumentRow bileşeni Arama/Favoriler ile
+// paylaşılır — component tekrarı yok).
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -25,11 +26,13 @@ import {
 } from '../src/components/ui/index.ts';
 import { useRootTabBar } from '../src/navigation/tabs.ts';
 import { colors, radius, spacing, shadow, typography } from '../src/theme/index.ts';
-import { DOCUMENTS } from '../modules/mevzuat/data/sartnameler';
+import { getFeaturedDocuments } from '../src/data/documents/index.ts';
 import { DocumentRow } from '../modules/mevzuat/components/DocumentRow';
 
+// featured=true dokümanlar, updatedAt'e göre en yeniden eskiye sıralı
+// gelir (bkz. repository.ts getFeaturedDocuments) — Sprint 4, madde 8-9.
 const SON_SARTNAMELER_LIMIT = 3;
-const sonSartnameler = DOCUMENTS.filter((d) => d.status === 'active').slice(0, SON_SARTNAMELER_LIMIT);
+const sonSartnameler = getFeaturedDocuments().slice(0, SON_SARTNAMELER_LIMIT);
 
 const POPULER_ARAMALAR = [
   'Topraklama', 'XLPE', 'Trafo', 'Parafudr', 'EKAT', 'IEC', 'TS HD', 'Dağıtım', 'AG', 'OG',

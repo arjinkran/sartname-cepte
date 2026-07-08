@@ -1,15 +1,16 @@
 // Kategoriler ekranı — her kategori kartı ilgili doküman listesine götürür.
+// Sprint 4: CATEGORIES ve doküman sayısı artık Repository'den gelir.
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors, spacing, radius } from '@/theme';
-import { KATEGORILER, kategoriDokumanSayisi } from '../data/sartnameler';
+import { CATEGORIES, getByCategory } from '@/data/documents';
 
 export default function KategorilerScreen() {
   const router = useRouter();
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: spacing.m }}>
-      {KATEGORILER.map((k) => (
+      {CATEGORIES.map((k) => (
         <Pressable
           key={k.id}
           onPress={() => router.push(`/sartname/kategori/${k.id}`)}
@@ -21,7 +22,7 @@ export default function KategorilerScreen() {
             <Text style={styles.aciklama}>{k.aciklama}</Text>
           </View>
           <View style={styles.sayiRozet}>
-            <Text style={styles.sayiText}>{kategoriDokumanSayisi(k.id)}</Text>
+            <Text style={styles.sayiText}>{getByCategory(k.ad).length}</Text>
           </View>
         </Pressable>
       ))}

@@ -124,24 +124,33 @@ sartname-cepte/
 │   └── mevzuat/                  ← Şartname / Mevzuat modülü (kendi kendine yeten — ürünün çekirdeği)
 │       ├── screens/              ← Ekran bileşenleri (app/sartname/*, app/favoriler.tsx buradan re-export eder)
 │       │                            SartnameAramaScreen (Arama), DocumentDetailScreen (Detay),
-│       │                            FavorilerScreen — üçü de premium UI kit kullanır
-│       ├── components/           ← DocumentRow.tsx (premium kart: kurum/kategori/revizyon/PDF/favori/ok)
-│       ├── services/             ← arama.ts (saf arama/filtre fonksiyonları) — modules/ai de bunu tüketir
-│       ├── data/                 ← sartnameler.ts (mock veri; KURUMLAR artık TEDAŞ/TEİAŞ/EPDK/Resmî Gazete/TS/IEC)
-│       └── types/                ← Document, Kategori, Institution tipleri
+│       │                            FavorilerScreen — hepsi src/data/documents Repository'sini kullanır
+│       └── components/           ← DocumentRow.tsx (premium kart: kurum/kategori/revizyon/PDF/favori/ok)
+│           (Sprint 4: eski data/sartnameler.ts, services/arama.ts, types/ SİLİNDİ — bkz. src/data/documents/)
 │   └── enhBilgi/                 ← [UI'dan kaldırıldı, V3] ENH Bilgi Bankası — statik teknik bilgi, hesap motoru değil
 │       ├── screens/              ← Ekran bileşenleri (app/enh-bilgi/* buradan re-export eder)
 │       ├── components/           ← IletkenKarti, DirekSinifKarti, BilgiKarti (ortak liste kartı)
 │       ├── data/                 ← iletkenler.ts (src/catalogs/conductors'tan türetilir), direkSiniflari.ts,
 │       │                            direkMalzemeleri.ts, direkDevreTipleri.ts, izolatorler.ts, basliklar.ts
 │       └── types/                ← IletkenBilgi, DirekSinifBilgi tipleri
-│   └── ai/                       ← AI Mevzuat Asistanı — gerçek AI motoru YOK, modules/mevzuat/services/
-│       └── screens/                 arama.ts'i (değiştirmeden) tüketir; yalnızca mevzuat türü doküman önerir
+│   └── ai/                       ← AI Mevzuat Asistanı — gerçek AI motoru YOK, src/data/documents'ın
+│       └── screens/                 search()'ünü (değiştirmeden) tüketir; yalnızca mevzuat türü doküman önerir
 │   └── profil/                   ← Profil — mock profil kartı, gerçek auth YOK
 │       └── screens/
-│   └── platform/                 ← Veri Kaynakları + Offline Kütüphane (V3, YENİ)
-│       └── screens/                 VeriKaynaklariScreen (kurum/standart listesi), OfflineKutuphaneScreen ("yakında")
+│   └── platform/                 ← Veri Kaynakları + Offline Kütüphane
+│       └── screens/                 VeriKaynaklariScreen (kurum/standart listesi, sayılar canlı hesaplanır),
+│                                     OfflineKutuphaneScreen ("yakında")
 ├── src/
+│   ├── data/documents/           ← Doküman Repository (Sprint 4, YENİ) — bkz. docs/DOCUMENT_ARCHITECTURE.md
+│   │   ├── types.ts              ← Document, Institution (11), DocumentType (8), DocumentStatus, Category
+│   │   ├── institutions.ts       ← INSTITUTIONS
+│   │   ├── documentTypes.ts      ← DOCUMENT_TYPES
+│   │   ├── categories.ts         ← CATEGORIES (23, ayrıntılı taksonomi)
+│   │   ├── documents.ts          ← DOCUMENTS (14, ham veri — yalnızca repository.ts import eder)
+│   │   ├── repository.ts         ← getAllDocuments/getFeaturedDocuments/getDocumentById/getByInstitution/
+│   │   │                            getByCategory/getByType/search/getRelatedDocuments/getRecentDocuments
+│   │   └── index.ts              ← barrel (documents.ts BİLEREK dışa aktarılmaz — ekranlar yalnızca
+│   │                                repository fonksiyonlarını kullanır, JSON'a doğrudan erişmez)
 │   ├── theme/                    ← Premium tema (Sprint UI-1A) — colors/spacing/radius/typography/shadow/
 │   │                                animations + index.ts barrel. Eski `src/theme.ts`'in yerine geçti;
 │   │                                `colors` sözlüğü eski alan adlarını da içerir (geriye dönük uyumluluk).
@@ -174,7 +183,7 @@ sartname-cepte/
 │   └── lib/                      ← supabase.ts / revenuecat.ts (geçici stub)
 ├── tests/
 │   ├── calculations/voltageDrop.test.ts  ← DEMO motor testleri
-│   ├── arama.test.ts
+│   ├── documentRepository.test.ts ← src/data/documents/repository.ts testleri (eski arama.test.ts'in yerine geçti)
 │   └── gerilimDusumu.test.ts      ← (legacy) src/logic/gerilimDusumu.ts testleri
 └── app.json / package.json / tsconfig.json
 ```

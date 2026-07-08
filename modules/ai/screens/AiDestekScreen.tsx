@@ -1,10 +1,9 @@
 // AI Mevzuat Asistanı — /ai
 //
-// ⚠️ Gerçek bir LLM/AI motoru YOK ve bu sprintte eklenmedi. "Önerileri
-// Getir", modules/mevzuat/services/arama.ts içindeki MEVCUT `ara()`
-// anahtar-kelime arama fonksiyonunu (değiştirmeden) DOCUMENTS üzerinde
-// çalıştırır — bu servise yalnızca tüketici olarak bağlanılır, servis
-// dosyasına dokunulmadı. "Neden önerildi?" satırı gerçek bir AI
+// ⚠️ Gerçek bir LLM/AI motoru YOK. "Önerileri Getir", Repository'deki
+// MEVCUT `search()` anahtar-kelime arama fonksiyonunu (değiştirmeden)
+// çalıştırır — eşleşmeler artık her dokümanın kendi `keywords` alanından
+// beslenir (Sprint 4, madde 13). "Neden önerildi?" satırı gerçek bir AI
 // gerekçelendirmesi DEĞİLDİR, yalnızca eşleşme skoruna dayanır.
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -12,8 +11,7 @@ import { useRouter } from 'expo-router';
 import { AppBar, BottomNavigation, Button, Card, EmptyState, ListItem } from '@/components/ui';
 import { useRootTabBar } from '@/navigation/tabs';
 import { colors, radius, spacing, typography } from '@/theme';
-import { DOCUMENTS } from '../../mevzuat/data/sartnameler';
-import { ara, type AramaSonucu } from '../../mevzuat/services/arama';
+import { search, type SearchResult } from '@/data/documents';
 
 const ONERI_LIMIT = 10;
 
@@ -35,10 +33,10 @@ export default function AiDestekScreen() {
   const router = useRouter();
   const tabBar = useRootTabBar();
   const [soru, setSoru] = useState('');
-  const [sonuclar, setSonuclar] = useState<AramaSonucu[] | null>(null);
+  const [sonuclar, setSonuclar] = useState<SearchResult[] | null>(null);
 
   const oneriGetir = (metin: string) => {
-    setSonuclar(ara(metin, DOCUMENTS));
+    setSonuclar(search(metin));
   };
 
   const ornekSec = (ornek: string) => {
@@ -115,7 +113,7 @@ export default function AiDestekScreen() {
                     {s.document.institution} · {s.document.category}
                   </Text>
                   <Text style={styles.nedenText}>
-                    Neden önerildi? Yazdığın ifadeyle başlık/anahtar kelime eşleşmesi (skor: {s.puan}).
+                    Neden önerildi? Yazdığın ifadeyle başlık/anahtar kelime eşleşmesi (skor: {s.score}).
                   </Text>
                   <Button
                     label="Detaya Git"

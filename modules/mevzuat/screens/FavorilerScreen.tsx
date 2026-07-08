@@ -1,20 +1,21 @@
 // Favoriler ekranı — /favoriler
-// Mevcut FavorilerProvider (src/lib/favoriler.tsx) ve DOCUMENTS veri
-// modeli üzerinden okuma yapar; yeni bir servis/veri modeli eklenmedi.
+// Mevcut FavorilerProvider (src/lib/favoriler.tsx, React context, kalıcı
+// saklama yok) + Repository'nin getAllDocuments() fonksiyonu üzerinden
+// okuma yapar; yeni bir servis/veri modeli eklenmedi.
 import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
 import { AppBar, Card, EmptyState, PressableScale } from '@/components/ui';
 import { colors, spacing, typography } from '@/theme';
-import { DOCUMENTS } from '../data/sartnameler';
+import { getAllDocuments } from '@/data/documents';
 
 export default function FavorilerScreen() {
   const router = useRouter();
   const { favoriIdler } = useFavoriler();
 
   const favoriler = useMemo(
-    () => DOCUMENTS.filter((d) => favoriIdler.has(d.id)),
+    () => getAllDocuments().filter((d) => favoriIdler.has(d.id)),
     [favoriIdler]
   );
 

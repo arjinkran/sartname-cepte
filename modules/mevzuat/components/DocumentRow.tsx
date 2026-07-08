@@ -1,23 +1,29 @@
 // Doküman liste satırı — arama sonuçları, kategori listesi ve favorilerde ortak.
 // Premium kart görünümü: radius xl, hafif gölge. Kurum, kategori, revizyon,
-// özet, favori ve sağ ok bir arada (V3 mevzuat dönüşümü, madde 11).
+// özet, favori ve sağ ok bir arada. Sprint 4: veri artık birleşik
+// src/data/documents modelinden (Document, STATUS_LABELS, Institution).
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
 import { colors, radius, spacing, shadow, typography } from '@/theme';
-import { STATUS_LABELS } from '../data/sartnameler';
-import type { Document, DocumentStatus, Institution } from '../types';
+import { STATUS_LABELS, type Document, type DocumentStatus, type Institution } from '@/data/documents';
 
-// ⚠️ TEİAŞ/TS/IEC için henüz örnek doküman yoktur (bkz. types/index.ts) ama
-// rozet rengi burada tanımlı olmalı — Record<Institution,...> tamlığı için.
+// Record<Institution,...> tamlığı için 11 kurumun tamamı renklendirilmiş
+// olmalı — bazılarında (Enerji Bakanlığı, CENELEC, TS EN, IEEE, Diğer)
+// henüz örnek doküman olmasa da rozet rengi tanımlı olmak zorunda.
 const INSTITUTION_RENKLERI: Record<Institution, string> = {
   'TEDAŞ': '#1D4E7E',
   'TEİAŞ': '#0F766E',
   'EPDK': '#7B3FA0',
+  'Enerji Bakanlığı': '#9F1239',
   'Resmî Gazete': '#8C6D1F',
-  'TS': '#B45309',
+  'TSE': '#B45309',
   'IEC': '#334155',
+  'CENELEC': '#1E3A8A',
+  'TS EN': '#92400E',
+  'IEEE': '#4C1D95',
+  'Diğer': '#4B5563',
 };
 
 export function InstitutionBadge({ institution }: { institution: Institution }) {
@@ -61,7 +67,7 @@ export function DocumentRow({ document }: { document: Document }) {
         <View style={styles.ustSatir}>
           <InstitutionBadge institution={document.institution} />
           {document.status !== 'active' ? <StatusBadge status={document.status} /> : null}
-          {document.pdfUrl ? (
+          {document.pdfPath ? (
             <View style={styles.pdfRozet}>
               <Text style={styles.pdfRozetText}>PDF</Text>
             </View>
