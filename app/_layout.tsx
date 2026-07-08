@@ -27,10 +27,13 @@ export default function RootLayout() {
             }}
           >
             <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="sartname/index" options={{ title: 'Şartname / Mevzuat' }} />
+            <Stack.Screen name="sartname/index" options={{ headerShown: false }} />
             <Stack.Screen name="sartname/kategoriler" options={{ title: 'Kategoriler' }} />
             <Stack.Screen name="sartname/kategori/[kid]" options={{ title: 'Kategori' }} />
-            <Stack.Screen name="sartname/[id]" options={{ title: 'Bilgi Kartı' }} />
+            <Stack.Screen name="sartname/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="ai" options={{ headerShown: false }} />
+            <Stack.Screen name="profil" options={{ headerShown: false }} />
+            <Stack.Screen name="favoriler" options={{ headerShown: false }} />
             <Stack.Screen name="hesaplayicilar/index" options={{ title: 'Cep Hesaplayıcılar' }} />
             <Stack.Screen name="hesaplayicilar/gerilim-dusumu" options={{ title: 'Gerilim Düşümü' }} />
             <Stack.Screen name="hesaplayicilar/og-akim-tasima" options={{ title: 'OG Akım Taşıma Kapasitesi' }} />

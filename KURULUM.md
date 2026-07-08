@@ -84,6 +84,10 @@ sartname-cepte/
 │   ├── index.tsx                 ← Ana ekran (premium yeniden tasarım, Sprint UI-1A: AppBar/Welcome/
 │   │                                Hızlı işlemler/Son Şartnameler/Popüler Aramalar/AI Destek/Modüller/BottomNav)
 │   ├── sartname/                 ← İnce rota dosyaları → modules/mevzuat/screens'e re-export
+│   │                                (index=Arama, [id]=Detay premium tasarım, Sprint UI-1B)
+│   ├── ai.tsx                    ← İnce rota → modules/ai/screens/AiDestekScreen (Sprint UI-1B, YENİ)
+│   ├── profil.tsx                ← İnce rota → modules/profil/screens/ProfilScreen (Sprint UI-1B, YENİ)
+│   ├── favoriler.tsx             ← İnce rota → modules/mevzuat/screens/FavorilerScreen (Sprint UI-1B, YENİ)
 │   ├── enh-bilgi/                ← İnce rota dosyaları → modules/enhBilgi/screens'e re-export
 │   └── hesaplayicilar/
 │       ├── index.tsx             ← Hesaplayıcı listesi
@@ -96,9 +100,11 @@ sartname-cepte/
 │       └── sehim.tsx             ← src/calculations/engines/enhMechanical/sag (ÖN HESAP) motoruna bağlı ekran
 ├── modules/
 │   └── mevzuat/                  ← Şartname / Mevzuat modülü (kendi kendine yeten)
-│       ├── screens/              ← Ekran bileşenleri (app/sartname/* buradan re-export eder)
-│       ├── components/           ← DocumentRow.tsx vb. modüle özel bileşenler
-│       ├── services/             ← arama.ts (saf arama/filtre fonksiyonları)
+│       ├── screens/              ← Ekran bileşenleri (app/sartname/*, app/favoriler.tsx buradan re-export eder)
+│       │                            SartnameAramaScreen (Arama), DocumentDetailScreen (Detay),
+│       │                            FavorilerScreen (Sprint UI-1B, YENİ) — üçü de premium UI kit kullanır
+│       ├── components/           ← DocumentRow.tsx (premium kart + tema tabanlı durum renkleri, UI-1B)
+│       ├── services/             ← arama.ts (saf arama/filtre fonksiyonları) — modules/ai de bunu tüketir
 │       ├── data/                 ← sartnameler.ts (mock veri)
 │       └── types/                ← Document, Kategori, Institution tipleri
 │   └── enhBilgi/                 ← ENH Bilgi Bankası (hesap motoru DEĞİL — statik teknik bilgi)
@@ -107,15 +113,22 @@ sartname-cepte/
 │       ├── data/                 ← iletkenler.ts (src/catalogs/conductors'tan türetilir), direkSiniflari.ts,
 │       │                            direkMalzemeleri.ts, direkDevreTipleri.ts, izolatorler.ts, basliklar.ts
 │       └── types/                ← IletkenBilgi, DirekSinifBilgi tipleri
+│   └── ai/                       ← AI Mevzuat Asistanı (Sprint UI-1B, YENİ) — gerçek AI motoru YOK,
+│       └── screens/                 modules/mevzuat/services/arama.ts'i (değiştirmeden) tüketir
+│   └── profil/                   ← Profil (Sprint UI-1B, YENİ) — mock profil kartı, gerçek auth YOK
+│       └── screens/
 ├── src/
 │   ├── theme/                    ← Premium tema (Sprint UI-1A) — colors/spacing/radius/typography/shadow/
 │   │                                animations + index.ts barrel. Eski `src/theme.ts`'in yerine geçti;
 │   │                                `colors` sözlüğü eski alan adlarını da içerir (geriye dönük uyumluluk).
 │   ├── components/
-│   │   ├── ui/                   ← Ortak UI kit (Sprint UI-1A): Screen, AppBar, Card, Button, Chip,
-│   │   │                            SectionTitle, IconButton, ListItem, BottomNavigation, PressableScale
+│   │   ├── ui/                   ← Ortak UI kit (Sprint UI-1A, EmptyState UI-1B'de eklendi): Screen, AppBar
+│   │   │                            (opsiyonel geri oku, UI-1B), Card, Button, Chip, SectionTitle, IconButton,
+│   │   │                            ListItem, BottomNavigation, PressableScale, EmptyState
 │   │   └── AppSplash.tsx         ← JS splash ekranı (useAppSplash hook + AppSplash bileşeni) — app.json'daki
 │   │                                native splash'tan AYRI, yalnızca ilk açılışta bir kez gösterilir
+│   ├── navigation/tabs.ts        ← ROOT_TABS + useRootTabBar() — Ana Sayfa/Ara/AI/Profil'in tümünde aynı
+│   │                                BottomNavigation'ı ve doğru aktif sekmeyi verir (Sprint UI-1B, YENİ)
 │   ├── common/components/UI.tsx  ← Modüller arası ortak bileşenler (StyleSheet) — src/theme üzerinden otomatik
 │   │                                yeni paleti kullanır, bu sprintte kod değişikliği yapılmadı
 │   ├── catalogs/conductors/      ← Merkezi ACSR iletken kataloğu — TEK iletken veri kaynağı (bkz. README.md)

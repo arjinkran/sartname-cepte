@@ -1,9 +1,10 @@
 // Doküman liste satırı — arama sonuçları, kategori listesi ve favorilerde ortak.
+// Premium kart görünümü (Sprint UI-1B): radius xl, hafif gölge.
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
-import { colors, spacing, radius } from '@/theme';
+import { colors, radius, spacing, shadow, typography } from '@/theme';
 import { STATUS_LABELS } from '../data/sartnameler';
 import type { Document, DocumentStatus, Institution } from '../types';
 
@@ -21,10 +22,11 @@ export function InstitutionBadge({ institution }: { institution: Institution }) 
   );
 }
 
+// Güncel: yeşil, Taslak: sarı, Mülga: kırmızı — src/theme/colors.ts token'ları.
 const STATUS_RENKLERI: Record<DocumentStatus, { arka: string; yazi: string }> = {
-  active: { arka: '#DCEFE1', yazi: '#1E8E3E' },
-  deprecated: { arka: '#F8DCDA', yazi: '#C5221F' },
-  draft: { arka: '#FBE9C9', yazi: '#8C6D1F' },
+  active: { arka: '#DCFCE7', yazi: colors.success },
+  deprecated: { arka: '#FEE2E2', yazi: colors.danger },
+  draft: { arka: '#FEF3C7', yazi: colors.warning },
 };
 
 export function StatusBadge({ status }: { status: DocumentStatus }) {
@@ -46,6 +48,9 @@ export function DocumentRow({ document }: { document: Document }) {
       onPress={() => router.push(`/sartname/${document.id}`)}
       style={({ pressed }) => [styles.satir, pressed && { opacity: 0.85 }]}
     >
+      <View style={styles.ikonWrap}>
+        <Text style={styles.ikon}>📄</Text>
+      </View>
       <View style={{ flex: 1 }}>
         <View style={styles.ustSatir}>
           <InstitutionBadge institution={document.institution} />
@@ -68,25 +73,38 @@ export function DocumentRow({ document }: { document: Document }) {
 const styles = StyleSheet.create({
   satir: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.card,
-    borderRadius: radius.m,
-    borderWidth: 1,
-    borderColor: colors.border,
+    alignItems: 'flex-start',
+    backgroundColor: colors.background,
+    borderRadius: radius.xl,
     padding: spacing.m,
     marginBottom: spacing.s,
+    ...shadow.sm,
   },
-  ustSatir: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
-  rozet: {
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+  ikonWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: radius.m,
+    backgroundColor: colors.secondaryBackground,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: spacing.s,
   },
+  ikon: { fontSize: 17 },
+  ustSatir: { flexDirection: 'row', alignItems: 'center', marginBottom: 6, flexWrap: 'wrap', gap: 6 },
+  rozet: {
+    borderRadius: radius.s,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
   rozetText: { color: '#FFFFFF', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
-  baslik: { fontSize: 15, fontWeight: '700', color: colors.text },
-  ozet: { fontSize: 13, color: colors.textMuted, marginTop: 2 },
-  yildizAlani: { paddingLeft: spacing.m, alignSelf: 'stretch', justifyContent: 'center' },
-  yildiz: { fontSize: 26, color: colors.disabled },
+  baslik: {
+    fontSize: typography.size.base,
+    fontWeight: typography.weight.bold,
+    fontFamily: typography.fontFamily,
+    color: colors.textPrimary,
+  },
+  ozet: { fontSize: typography.size.sm, color: colors.textSecondary, marginTop: 2 },
+  yildizAlani: { paddingLeft: spacing.s, alignSelf: 'center' },
+  yildiz: { fontSize: 24, color: colors.disabled },
   yildizAktif: { color: colors.accent },
 });

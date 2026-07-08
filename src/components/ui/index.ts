@@ -1,4 +1,4 @@
-// UI kit barrel'ı (Sprint UI-1A).
+// UI kit barrel'ı (Sprint UI-1A, EmptyState Sprint UI-1B'de eklendi).
 export * from './Screen.tsx';
 export * from './AppBar.tsx';
 export * from './Card.tsx';
@@ -9,3 +9,4 @@ export * from './IconButton.tsx';
 export * from './ListItem.tsx';
 export * from './BottomNavigation.tsx';
 export * from './PressableScale.tsx';
+export * from './EmptyState.tsx';

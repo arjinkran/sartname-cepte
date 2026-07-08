@@ -21,8 +21,8 @@ import {
   ListItem,
   PressableScale,
   SectionTitle,
-  type BottomNavTab,
 } from '../src/components/ui/index.ts';
+import { useRootTabBar } from '../src/navigation/tabs.ts';
 import { colors, radius, spacing, shadow, typography } from '../src/theme/index.ts';
 
 const SON_SARTNAMELER = [
@@ -44,13 +44,6 @@ const MODULLER = [
   { id: 'ariza', ikon: '🔍', ad: 'Arıza Teşhis Sihirbazı', aktif: false, rota: '' },
   { id: 'not', ikon: '📷', ad: 'Saha Notu + Fotoğraf', aktif: false, rota: '' },
 ] as const;
-
-const NAV_TABS: readonly BottomNavTab[] = [
-  { id: 'home', label: 'Ana Sayfa', icon: '🏠' },
-  { id: 'search', label: 'Ara', icon: '🔍' },
-  { id: 'ai', label: 'AI', icon: '✨', emphasized: true },
-  { id: 'profile', label: 'Profil', icon: '👤' },
-];
 
 function WelcomeIllustration() {
   return (
@@ -95,11 +88,7 @@ function QuickAction({
 
 export default function Home() {
   const router = useRouter();
-
-  const handleNavTab = (id: string) => {
-    if (id === 'search') router.push('/sartname');
-    // 'ai' ve 'profile': henüz ekranı yok, bu sprintte yalnızca görsel.
-  };
+  const tabBar = useRootTabBar();
 
   return (
     <View style={styles.root}>
@@ -128,8 +117,18 @@ export default function Home() {
             subtitle="Binlerce şartnamede hızlı arama yap"
             onPress={() => router.push('/sartname')}
           />
-          <QuickAction icon="✨" title="AI ile Özetle" subtitle="Şartnameni AI ile hızlıca özetle" />
-          <QuickAction icon="🔖" title="Kaydedilenler" subtitle="Kaydettiğin şartnamelere göz at" />
+          <QuickAction
+            icon="✨"
+            title="AI ile Özetle"
+            subtitle="Şartnameni AI ile hızlıca özetle"
+            onPress={() => router.push('/ai')}
+          />
+          <QuickAction
+            icon="🔖"
+            title="Kaydedilenler"
+            subtitle="Kaydettiğin şartnamelere göz at"
+            onPress={() => router.push('/favoriler')}
+          />
         </View>
 
         <SectionTitle
@@ -179,7 +178,12 @@ export default function Home() {
               </Text>
             </View>
           </View>
-          <Button label="Sorunuzu Sorun" variant="secondary" style={styles.aiButton} />
+          <Button
+            label="Sorunuzu Sorun"
+            variant="secondary"
+            style={styles.aiButton}
+            onPress={() => router.push('/ai')}
+          />
         </View>
 
         <SectionTitle title="Modüller" />
@@ -211,7 +215,7 @@ export default function Home() {
           yönetmelik hükümleri esastır.
         </Text>
       </ScrollView>
-      <BottomNavigation tabs={NAV_TABS} activeId="home" onChange={handleNavTab} />
+      <BottomNavigation tabs={tabBar.tabs} activeId={tabBar.activeId} onChange={tabBar.onChange} />
     </View>
   );
 }

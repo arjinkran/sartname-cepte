@@ -1,0 +1,120 @@
+// Profil ekranı — /profil
+// Şimdilik gerçek auth YOK (src/lib/supabase.ts hâlâ stub) — mock profil
+// kartı gösterilir. Ayarlar satırlarından yalnızca "Favoriler" gerçek bir
+// rotaya (/favoriler) gider; diğerleri mevcut "PDF Aç" stub'ıyla aynı
+// desende (Alert) "yakında" mesajı gösterir — yeni bir servis eklenmedi.
+import React from 'react';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { AppBar, BottomNavigation, Card, ListItem } from '@/components/ui';
+import { useRootTabBar } from '@/navigation/tabs';
+import { colors, radius, spacing, typography } from '@/theme';
+
+const AYARLAR = [
+  { id: 'bildirimler', ikon: '🔔', ad: 'Bildirimler' },
+  { id: 'offline', ikon: '📥', ad: 'Offline Kütüphane' },
+  { id: 'favoriler', ikon: '🔖', ad: 'Favoriler' },
+  { id: 'gizlilik', ikon: '🔒', ad: 'Gizlilik Politikası' },
+  { id: 'kullanim', ikon: '📜', ad: 'Kullanım Şartları' },
+  { id: 'hakkinda', ikon: 'ℹ️', ad: 'Hakkında' },
+] as const;
+
+export default function ProfilScreen() {
+  const router = useRouter();
+  const tabBar = useRootTabBar();
+
+  const satirTikla = (id: (typeof AYARLAR)[number]['id']) => {
+    if (id === 'favoriler') {
+      router.push('/favoriler');
+      return;
+    }
+    Alert.alert('Yakında', 'Bu özellik yakında eklenecek.');
+  };
+
+  return (
+    <View style={styles.root}>
+      <AppBar title="Profil" />
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent}>
+        <Card style={styles.card}>
+          <View style={styles.kullaniciSatir}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>👤</Text>
+            </View>
+            <View>
+              <Text style={styles.kullaniciAd}>Misafir Kullanıcı</Text>
+              <View style={styles.planRozet}>
+                <Text style={styles.planRozetText}>Ücretsiz Plan</Text>
+              </View>
+            </View>
+          </View>
+        </Card>
+
+        <View style={styles.planKart}>
+          <Text style={styles.planBaslik}>Şartname Cepte Pro</Text>
+          <Text style={styles.planAciklama}>
+            AI özetleme, offline kütüphane ve değişiklik bildirimleri yakında.
+          </Text>
+        </View>
+
+        <Card style={styles.listCard} padded={false}>
+          {AYARLAR.map((a, i) => (
+            <View key={a.id}>
+              <ListItem
+                icon={a.ikon}
+                title={a.ad}
+                onPress={() => satirTikla(a.id)}
+                style={styles.listRow}
+                right={<Text style={styles.chevron}>›</Text>}
+              />
+              {i < AYARLAR.length - 1 && <View style={styles.divider} />}
+            </View>
+          ))}
+        </Card>
+      </ScrollView>
+      <BottomNavigation tabs={tabBar.tabs} activeId={tabBar.activeId} onChange={tabBar.onChange} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.secondaryBackground },
+  scrollContent: { padding: spacing.m, paddingBottom: spacing.xl },
+  card: { marginBottom: spacing.m },
+  kullaniciSatir: { flexDirection: 'row', alignItems: 'center', gap: spacing.m },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.secondaryBackground,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: { fontSize: 26 },
+  kullaniciAd: {
+    fontSize: typography.size.lg,
+    fontWeight: typography.weight.extrabold,
+    fontFamily: typography.fontFamily,
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  planRozet: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.secondaryBackground,
+    borderRadius: radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  planRozetText: { fontSize: 12, fontWeight: '700', color: colors.textSecondary },
+  planKart: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.xl,
+    padding: spacing.m,
+    marginBottom: spacing.m,
+  },
+  planBaslik: { fontSize: typography.size.md, fontWeight: '800', color: '#FFFFFF' },
+  planAciklama: { fontSize: typography.size.sm, color: 'rgba(255,255,255,0.75)', marginTop: 4, lineHeight: 18 },
+  listCard: { marginBottom: spacing.m, paddingVertical: spacing.xs },
+  listRow: { paddingHorizontal: spacing.m },
+  divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: spacing.m },
+  chevron: { fontSize: 20, color: colors.textSecondary, marginLeft: 2 },
+});

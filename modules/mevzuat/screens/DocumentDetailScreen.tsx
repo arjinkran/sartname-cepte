@@ -1,13 +1,14 @@
 // Doküman detay ekranı — /sartname/:id
-// Kartlar: Başlık, Kurum, Kategori, Revizyon, Durum, Yayın tarihi,
-// Yürürlük tarihi, Anahtar Kelimeler, Özet, İlgili Dokümanlar,
-// PDF Aç (stub), Favorilere Ekle (local state).
+// Premium kart tasarımı (Sprint UI-1B) — iş mantığı DEĞİŞMEDİ: aynı
+// favoriler context'i, aynı PDF Aç stub'ı. "AI ile Özetle" artık gerçek
+// /ai ekranına yönlendiriyor (yeni bir servis çağrısı YOK).
+// Kartlar: Başlık, Künye, Anahtar Kelimeler, Özet, İlgili Dokümanlar, Aksiyonlar.
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
-import { Card } from '@/common/components/UI';
-import { colors, spacing, radius } from '@/theme';
+import { AppBar, Button, Card, PressableScale } from '@/components/ui';
+import { colors, radius, spacing, typography } from '@/theme';
 import { DOCUMENTS, STATUS_LABELS } from '../data/sartnameler';
 import { InstitutionBadge, StatusBadge } from '../components/DocumentRow';
 
@@ -28,8 +29,11 @@ export default function DocumentDetailScreen() {
 
   if (!document) {
     return (
-      <View style={styles.bosKap}>
-        <Text style={styles.bosText}>Doküman bulunamadı.</Text>
+      <View style={styles.root}>
+        <AppBar title="Doküman Detayı" onBack={router.canGoBack() ? () => router.back() : undefined} />
+        <View style={styles.bosKap}>
+          <Text style={styles.bosText}>Doküman bulunamadı.</Text>
+        </View>
       </View>
     );
   }
@@ -44,33 +48,23 @@ export default function DocumentDetailScreen() {
   };
 
   return (
-    <>
-      <Stack.Screen options={{ title: 'Bilgi Kartı' }} />
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: spacing.m, paddingBottom: 48 }}>
-        {/* Başlık + Kurum + Durum + Favorilere Ekle */}
-        <Card>
+    <View style={styles.root}>
+      <AppBar
+        title={document.title.length > 28 ? `${document.title.slice(0, 28)}…` : document.title}
+        onBack={router.canGoBack() ? () => router.back() : undefined}
+      />
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent}>
+        {/* Başlık kartı */}
+        <Card style={styles.card}>
           <View style={styles.ustSatir}>
             <InstitutionBadge institution={document.institution} />
             <StatusBadge status={document.status} />
           </View>
           <Text style={styles.baslik}>{document.title}</Text>
-
-          <Pressable
-            onPress={() => favoriDegistir(document.id)}
-            style={({ pressed }) => [
-              styles.favoriBtn,
-              favori && styles.favoriBtnAktif,
-              pressed && { opacity: 0.85 },
-            ]}
-          >
-            <Text style={[styles.favoriBtnText, favori && styles.favoriBtnTextAktif]}>
-              {favori ? '★ Favorilerde' : '☆ Favorilere Ekle'}
-            </Text>
-          </Pressable>
         </Card>
 
-        {/* Kurum, Kategori, Revizyon, Durum, Yayın tarihi, Yürürlük tarihi */}
-        <Card>
+        {/* Künye kartı */}
+        <Card style={styles.card}>
           <Text style={styles.bolumBaslik}>Künye</Text>
           <KunyeSatiri etiket="Kurum" deger={document.institution} />
           <KunyeSatiri etiket="Kategori" deger={document.category} />
@@ -81,7 +75,7 @@ export default function DocumentDetailScreen() {
         </Card>
 
         {/* Anahtar Kelimeler */}
-        <Card>
+        <Card style={styles.card}>
           <Text style={styles.bolumBaslik}>Anahtar Kelimeler</Text>
           <View style={styles.etiketSatiri}>
             {document.keywords.map((k) => (
@@ -93,69 +87,79 @@ export default function DocumentDetailScreen() {
         </Card>
 
         {/* Özet */}
-        <Card>
+        <Card style={styles.card}>
           <Text style={styles.bolumBaslik}>Özet</Text>
           <Text style={styles.ozet}>{document.summary}</Text>
         </Card>
 
         {/* İlgili Dokümanlar */}
-        <Card>
-          <Text style={styles.bolumBaslik}>İlgili Dokümanlar</Text>
+        <Card style={styles.card} padded={false}>
+          <Text style={[styles.bolumBaslik, { padding: spacing.m, paddingBottom: 0 }]}>İlgili Dokümanlar</Text>
           {ilgiliDokumanlar.length > 0 ? (
-            ilgiliDokumanlar.map((d) => (
-              <Pressable
-                key={d.id}
-                onPress={() => router.push(`/sartname/${d.id}`)}
-                style={({ pressed }) => [styles.ilgiliSatir, pressed && { opacity: 0.85 }]}
-              >
-                <Text style={styles.ilgiliText} numberOfLines={1}>{d.title}</Text>
-                <Text style={styles.ilgiliOk}>›</Text>
-              </Pressable>
+            ilgiliDokumanlar.map((d, i) => (
+              <View key={d.id}>
+                <PressableScale
+                  onPress={() => router.push(`/sartname/${d.id}`)}
+                  scaleTo={0.98}
+                  style={styles.ilgiliSatir}
+                >
+                  <Text style={styles.ilgiliText} numberOfLines={1}>{d.title}</Text>
+                  <Text style={styles.ilgiliOk}>›</Text>
+                </PressableScale>
+                {i < ilgiliDokumanlar.length - 1 && <View style={styles.divider} />}
+              </View>
             ))
           ) : (
-            <Text style={styles.ilgiliBos}>İlgili doküman bulunmuyor.</Text>
+            <Text style={[styles.ilgiliBos, { padding: spacing.m }]}>İlgili doküman bulunmuyor.</Text>
           )}
         </Card>
 
-        {/* PDF Aç (stub) */}
-        <Card>
-          <Text style={styles.bolumBaslik}>Kaynak</Text>
-          <Pressable
-            onPress={pdfAc}
-            style={({ pressed }) => [styles.kaynakBtn, pressed && { opacity: 0.85 }]}
-          >
-            <Text style={styles.kaynakBtnText}>📄 PDF Aç</Text>
-          </Pressable>
+        {/* Aksiyonlar */}
+        <Card style={styles.card}>
+          <Text style={styles.bolumBaslik}>Aksiyonlar</Text>
+          <View style={styles.aksiyonlar}>
+            <Button label="📄 PDF Aç" variant="primary" onPress={pdfAc} style={{ flex: 1 }} />
+            <Button
+              label={favori ? '★ Favoride' : '☆ Favorilere Ekle'}
+              variant={favori ? 'primary' : 'secondary'}
+              onPress={() => favoriDegistir(document.id)}
+              style={{ flex: 1 }}
+            />
+          </View>
+          <Button
+            label="✨ AI ile Özetle"
+            variant="secondary"
+            onPress={() => router.push('/ai')}
+            style={{ marginTop: spacing.s }}
+          />
           <Text style={styles.kaynakNot}>
             PDF görüntüleme özelliği geliştirme aşamasındadır; bu buton şimdilik stub'tır.
           </Text>
         </Card>
       </ScrollView>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.secondaryBackground },
+  scrollContent: { padding: spacing.m, paddingBottom: 48 },
+  card: { marginBottom: spacing.m },
   bosKap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  bosText: { fontSize: 15, color: colors.textMuted },
-  ustSatir: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.s },
-  baslik: { fontSize: 19, fontWeight: '800', color: colors.text, lineHeight: 26 },
-  favoriBtn: {
-    marginTop: spacing.m,
-    borderWidth: 1.5,
-    borderColor: colors.accent,
-    borderRadius: radius.s,
-    paddingVertical: 10,
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+  bosText: { fontSize: 15, color: colors.textSecondary },
+  ustSatir: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.s },
+  baslik: {
+    fontSize: typography.size.xl,
+    fontWeight: typography.weight.extrabold,
+    fontFamily: typography.fontFamily,
+    color: colors.textPrimary,
+    lineHeight: 27,
   },
-  favoriBtnAktif: { backgroundColor: colors.accent, borderColor: colors.accent },
-  favoriBtnText: { fontSize: 15, fontWeight: '700', color: '#B07A0E' },
-  favoriBtnTextAktif: { color: '#FFFFFF' },
   bolumBaslik: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: colors.textMuted,
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.extrabold,
+    fontFamily: typography.fontFamily,
+    color: colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: spacing.s,
@@ -166,35 +170,29 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
   },
-  kunyeEtiket: { width: 118, fontSize: 13, color: colors.textMuted, fontWeight: '600' },
-  kunyeDeger: { flex: 1, fontSize: 13, color: colors.text, fontWeight: '600' },
+  kunyeEtiket: { width: 118, fontSize: 13, color: colors.textSecondary, fontWeight: '600' },
+  kunyeDeger: { flex: 1, fontSize: 13, color: colors.textPrimary, fontWeight: '600' },
   etiketSatiri: { flexDirection: 'row', flexWrap: 'wrap' },
   etiket: {
-    backgroundColor: '#E8EEF5',
-    borderRadius: 999,
+    backgroundColor: colors.secondaryBackground,
+    borderRadius: radius.pill,
     paddingHorizontal: 12,
     paddingVertical: 6,
     marginRight: spacing.s,
     marginBottom: spacing.s,
   },
   etiketText: { fontSize: 13, fontWeight: '600', color: colors.primaryLight },
-  ozet: { fontSize: 15, color: colors.text, lineHeight: 23 },
+  ozet: { fontSize: 15, color: colors.textPrimary, lineHeight: 23 },
   ilgiliSatir: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
+    paddingVertical: 12,
+    paddingHorizontal: spacing.m,
   },
-  ilgiliText: { flex: 1, fontSize: 14, fontWeight: '600', color: colors.text },
-  ilgiliOk: { fontSize: 20, color: colors.textMuted, paddingLeft: spacing.s },
-  ilgiliBos: { fontSize: 14, color: colors.textMuted },
-  kaynakBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.s,
-    padding: spacing.m,
-    alignItems: 'center',
-  },
-  kaynakBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
-  kaynakNot: { fontSize: 12, color: colors.textMuted, marginTop: spacing.s, lineHeight: 17 },
+  ilgiliText: { flex: 1, fontSize: 14, fontWeight: '600', color: colors.textPrimary },
+  ilgiliOk: { fontSize: 20, color: colors.textSecondary, paddingLeft: spacing.s },
+  ilgiliBos: { fontSize: 14, color: colors.textSecondary },
+  divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: spacing.m },
+  aksiyonlar: { flexDirection: 'row', gap: spacing.s },
+  kaynakNot: { fontSize: 12, color: colors.textSecondary, marginTop: spacing.s, lineHeight: 17 },
 });
