@@ -1,12 +1,13 @@
 // Şartname / Mevzuat — ARAMA + FİLTRE EKRANI (modülün giriş ekranı).
-// Premium tasarım (Sprint UI-1B) — iş mantığı DEĞİŞMEDİ: aynı `ara`/
-// `filtrele` servisleri, aynı favoriler context'i. Metin araması (title,
-// summary, keywords, institution, category) + kurum ve kategori filtreleri
-// birlikte çalışır. Sorgu boşken: favoriler + kategori kısayolu +
-// (filtrelenmiş) tüm dokümanlar.
-import React, { useMemo, useState } from 'react';
+// Premium tasarım — iş mantığı DEĞİŞMEDİ: aynı `ara`/`filtrele` servisleri,
+// aynı favoriler context'i. Metin araması (title, summary, keywords,
+// institution, category) + kurum ve kategori filtreleri birlikte çalışır.
+// Sorgu boşken: favoriler + kategori kısayolu + (filtrelenmiş) tüm
+// dokümanlar. `?q=` route param'ı (Ana Sayfa'daki Popüler Aramalar
+// çiplerinden gelir) arama kutusunu otomatik doldurur.
+import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
 import { AppBar, BottomNavigation, Chip, EmptyState, PressableScale } from '@/components/ui';
 import { useRootTabBar } from '@/navigation/tabs';
@@ -16,19 +17,20 @@ import { ara, filtrele } from '../services/arama';
 import { DocumentRow } from '../components/DocumentRow';
 import type { Institution } from '../types';
 
-// "Tümü"/kurum adları gerçek Institution filtresini kullanır; OG/AG/Kablo/
-// Bağlantı ise gerçek `ara()` arama motorunu tetikleyen hızlı sorgulardır
-// (yeni bir kategori veri modeli icat edilmedi).
-const FILTRE_ETIKETLERI = ['Tümü', 'TEDAŞ', 'EPDK', 'Resmî Gazete', 'OG', 'AG', 'Kablo', 'Bağlantı'] as const;
-const KURUM_ETIKET_SETI = new Set<string>(KURUMLAR);
+const FILTRE_ETIKETLERI = ['Tümü', ...KURUMLAR] as const;
 
 export default function SartnameAramaScreen() {
   const router = useRouter();
   const tabBar = useRootTabBar();
-  const [sorgu, setSorgu] = useState('');
+  const { q } = useLocalSearchParams<{ q?: string }>();
+  const [sorgu, setSorgu] = useState(typeof q === 'string' ? q : '');
   const [kurumFiltre, setKurumFiltre] = useState<Institution | null>(null);
   const [kategoriIdFiltre, setKategoriIdFiltre] = useState<string | null>(null);
   const { favoriIdler } = useFavoriler();
+
+  useEffect(() => {
+    if (typeof q === 'string' && q.length > 0) setSorgu(q);
+  }, [q]);
 
   const kategoriAdFiltre = useMemo(
     () => (kategoriIdFiltre ? KATEGORILER.find((k) => k.id === kategoriIdFiltre)?.ad ?? null : null),
@@ -49,23 +51,12 @@ export default function SartnameAramaScreen() {
   const filtreAktif = kurumFiltre !== null || kategoriIdFiltre !== null;
 
   const etiketSec = (etiket: (typeof FILTRE_ETIKETLERI)[number]) => {
-    if (etiket === 'Tümü') {
-      setKurumFiltre(null);
-      setSorgu('');
-    } else if (KURUM_ETIKET_SETI.has(etiket)) {
-      setKurumFiltre(etiket as Institution);
-      setSorgu('');
-    } else {
-      setKurumFiltre(null);
-      setSorgu(etiket);
-    }
+    setSorgu('');
+    setKurumFiltre(etiket === 'Tümü' ? null : (etiket as Institution));
   };
 
-  const etiketAktifMi = (etiket: (typeof FILTRE_ETIKETLERI)[number]) => {
-    if (etiket === 'Tümü') return kurumFiltre === null && sorgu.trim() === '';
-    if (KURUM_ETIKET_SETI.has(etiket)) return kurumFiltre === etiket;
-    return sorgu.trim().toLocaleLowerCase('tr-TR') === etiket.toLocaleLowerCase('tr-TR');
-  };
+  const etiketAktifMi = (etiket: (typeof FILTRE_ETIKETLERI)[number]) =>
+    etiket === 'Tümü' ? kurumFiltre === null : kurumFiltre === etiket;
 
   return (
     <View style={styles.root}>

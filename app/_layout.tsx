@@ -34,6 +34,16 @@ export default function RootLayout() {
             <Stack.Screen name="ai" options={{ headerShown: false }} />
             <Stack.Screen name="profil" options={{ headerShown: false }} />
             <Stack.Screen name="favoriler" options={{ headerShown: false }} />
+            <Stack.Screen name="veri-kaynaklari" options={{ headerShown: false }} />
+            <Stack.Screen name="offline-kutuphane" options={{ headerShown: false }} />
+            {/*
+              Aşağıdaki hesaplayicilar/* ve enh-bilgi/* rotaları V3 mevzuat
+              dönüşümünde UI'dan (Ana Sayfa dahil hiçbir ekrandan) bağlantı
+              verilmeyecek şekilde kaldırıldı — bkz. app/index.tsx üst yorumu
+              ve KURULUM.md "Ürün Tanımı". Kod SİLİNMEDİ, yalnızca erişilemez
+              hale getirildi; "navigation yapısı korunacak" kuralı gereği bu
+              kayıtlar da kaldırılmadı.
+            */}
             <Stack.Screen name="hesaplayicilar/index" options={{ title: 'Cep Hesaplayıcılar' }} />
             <Stack.Screen name="hesaplayicilar/gerilim-dusumu" options={{ title: 'Gerilim Düşümü' }} />
             <Stack.Screen name="hesaplayicilar/og-akim-tasima" options={{ title: 'OG Akım Taşıma Kapasitesi' }} />
@@ -61,8 +71,9 @@ export default function RootLayout() {
               <View style={styles.modalKutu}>
                 <Text style={styles.modalBaslik}>Önemli Uyarı</Text>
                 <Text style={styles.modalMetin}>
-                  Bu uygulamadaki hesaplar, kontrol listeleri ve İSG içerikleri yalnızca
-                  bilgilendirme ve saha pratiğine destek amaçlıdır.
+                  Bu uygulamadaki şartname, yönetmelik, standart ve AI asistanı önerileri
+                  yalnızca bilgilendirme ve saha pratiğine destek amaçlıdır; resmî hukuki
+                  görüş niteliği taşımaz.
                   {'\n\n'}Kesin tasarım, işletme ve iş güvenliği kararlarında ilgili
                   yönetmelikler, TEDAŞ/dağıtım şirketi şartnameleri ve işvereninizin
                   talimatları esastır. Elektrik tesislerinde çalışma yetkinlik ve

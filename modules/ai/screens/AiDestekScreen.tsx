@@ -9,18 +9,26 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { AppBar, BottomNavigation, Button, Card, Chip, EmptyState } from '@/components/ui';
+import { AppBar, BottomNavigation, Button, Card, EmptyState, ListItem } from '@/components/ui';
 import { useRootTabBar } from '@/navigation/tabs';
 import { colors, radius, spacing, typography } from '@/theme';
 import { DOCUMENTS } from '../../mevzuat/data/sartnameler';
 import { ara, type AramaSonucu } from '../../mevzuat/services/arama';
 
+const ONERI_LIMIT = 10;
+
+// V3 mevzuat dönüşümü, madde 13-14: en az 8 örnek soru, yalnızca mevzuat
+// türü doküman önerir (Şartname/Yönetmelik/Standart/Tebliğ/Resmi Gazete/
+// TEDAŞ/TEİAŞ/EPDK/TS/IEC) — hesap önerisi YOK.
 const ORNEK_SORULAR = [
-  'Branşman ile köye enerji',
-  'OG kablo başlığı',
-  'Hizmet kalitesi',
-  'AG yeraltı kablo arızası',
-  'Bağlantı görüşü',
+  '2 km uzaktaki OG hattan branşman alınacak. Hangi şartnameler okunmalı?',
+  'Yeni trafo tesisi kurulacak. Hangi TEDAŞ şartnameleri gerekir?',
+  'XLPE kablo seçerken hangi standartlar kullanılmalı?',
+  'Parafudr seçimi için hangi dokümanlara bakılır?',
+  'Beton köşk kurulumu için hangi teknik şartnameler geçerlidir?',
+  'Topraklama ölçümü hangi yönetmeliğe göre yapılır?',
+  'OG ring şebekede hangi mevzuatlar uygulanır?',
+  'Yeni dağıtım hattı yapılacak. Hangi yönetmelikler birlikte okunmalıdır?',
 ] as const;
 
 export default function AiDestekScreen() {
@@ -47,7 +55,8 @@ export default function AiDestekScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.altAciklama}>
-          Durumunu yaz, ilgili şartname ve yönetmelikleri birlikte bulalım.
+          Problemini yaz. Yapay zekâ sana ilgili şartname, yönetmelik, standart ve teknik
+          dokümanları önersin.
         </Text>
 
         <View style={styles.uyariKart}>
@@ -77,11 +86,21 @@ export default function AiDestekScreen() {
         </Card>
 
         <Text style={styles.bolumBaslik}>Örnek Sorular</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
-          {ORNEK_SORULAR.map((ornek) => (
-            <Chip key={ornek} label={ornek} onPress={() => ornekSec(ornek)} />
+        <Card style={styles.card} padded={false}>
+          {ORNEK_SORULAR.map((ornek, i) => (
+            <View key={ornek}>
+              <ListItem
+                icon="💬"
+                title={ornek}
+                titleLines={2}
+                onPress={() => ornekSec(ornek)}
+                style={styles.ornekRow}
+                right={<Text style={styles.chevron}>›</Text>}
+              />
+              {i < ORNEK_SORULAR.length - 1 && <View style={styles.divider} />}
+            </View>
           ))}
-        </ScrollView>
+        </Card>
 
         {sonuclar !== null && (
           <>
@@ -89,7 +108,7 @@ export default function AiDestekScreen() {
               {sonuclar.length > 0 ? `${sonuclar.length} öneri` : 'Öneri'}
             </Text>
             {sonuclar.length > 0 ? (
-              sonuclar.slice(0, 10).map((s) => (
+              sonuclar.slice(0, ONERI_LIMIT).map((s) => (
                 <Card key={s.document.id} style={styles.card}>
                   <Text style={styles.sonucBaslik} numberOfLines={2}>{s.document.title}</Text>
                   <Text style={styles.sonucAlt}>
@@ -157,7 +176,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: spacing.s,
   },
-  chipRow: { marginBottom: spacing.m },
+  ornekRow: { paddingHorizontal: spacing.m },
+  divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: spacing.m },
+  chevron: { fontSize: 20, color: colors.textSecondary, marginLeft: 2 },
   sonucBaslik: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.bold,

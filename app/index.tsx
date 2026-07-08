@@ -1,13 +1,14 @@
-// Ana ekran — premium tema yeniden tasarımı (Sprint UI-1A, Görsel 2).
+// Ana ekran — V3 mevzuat dönüşümü.
 //
-// "Son Şartnameler" ve "Popüler Aramalar" içerikleri UI doğrulaması için
-// hazırlanmış STATİK yer tutuculardır; modules/mevzuat veri modeline
-// dokunulmadı — gerçek arama/listeleme sonraki bir sprintte bağlanacak.
+// Ürün artık yalnızca mevzuat platformudur: Cep Hesaplayıcılar ve ENH Bilgi
+// Bankası bu ekrandan (ve dolayısıyla tüm normal gezinme akışından)
+// KALDIRILDI. Hesap motorlarının kodu SİLİNMEDİ — app/hesaplayicilar/* ve
+// app/enh-bilgi/* rotaları hâlâ dosya sisteminde durur, yalnızca buraya
+// (veya başka hiçbir ekrana) bağlantı verilmiyor. Bkz. KURULUM.md "Ürün
+// Tanımı" ve src/calculations/ (dokunulmadı).
 //
-// "Modüller" bölümü Görsel 2'de YOK; Sprint 1'den beri var olan modül
-// listesinin (Şartname/Mevzuat, Cep Hesaplayıcılar, ENH Bilgi Bankası)
-// erişilebilirliğini korumak için eklendi — "mevcut işlevselliği bozma"
-// kuralı gereği (bkz. commit raporu "tasarım farkları").
+// "Son Şartnameler" artık gerçek DOCUMENTS verisini kullanır (DocumentRow
+// bileşeni Arama/Favoriler ile paylaşılır — component tekrarı yok).
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -24,26 +25,40 @@ import {
 } from '../src/components/ui/index.ts';
 import { useRootTabBar } from '../src/navigation/tabs.ts';
 import { colors, radius, spacing, shadow, typography } from '../src/theme/index.ts';
+import { DOCUMENTS } from '../modules/mevzuat/data/sartnameler';
+import { DocumentRow } from '../modules/mevzuat/components/DocumentRow';
 
-const SON_SARTNAMELER = [
-  { id: 'ag-kablo', baslik: 'AG Güç Kabloları Teknik Şartnamesi', tarih: '24.05.2024' },
-  { id: 'og-trafo', baslik: 'OG Trafo Hücreleri Şartnamesi', tarih: '22.05.2024' },
-  { id: 'topraklama', baslik: 'Topraklama Tesisleri Şartnamesi', tarih: '20.05.2024' },
-] as const;
+const SON_SARTNAMELER_LIMIT = 3;
+const sonSartnameler = DOCUMENTS.filter((d) => d.status === 'active').slice(0, SON_SARTNAMELER_LIMIT);
 
 const POPULER_ARAMALAR = [
-  'OG Hat', 'AG Kablo', 'Trafo', 'Direk', 'Topraklama', 'Parafudr', 'Branşman', 'TEDAŞ', 'EPDK',
+  'Topraklama', 'XLPE', 'Trafo', 'Parafudr', 'EKAT', 'IEC', 'TS HD', 'Dağıtım', 'AG', 'OG',
 ] as const;
 
-const MODULLER = [
+interface ModulKarti {
+  id: string;
+  ikon: string;
+  ad: string;
+  aktif: boolean;
+  rota: string;
+}
+
+const AKTIF_MODULLER: readonly ModulKarti[] = [
   { id: 'sartname', ikon: '📚', ad: 'Şartname / Mevzuat', aktif: true, rota: '/sartname' },
-  { id: 'hesap', ikon: '🧮', ad: 'Cep Hesaplayıcılar', aktif: true, rota: '/hesaplayicilar' },
-  { id: 'enh-bilgi', ikon: '📖', ad: 'ENH Bilgi Bankası', aktif: true, rota: '/enh-bilgi' },
+  { id: 'ai', ikon: '✨', ad: 'AI Mevzuat Asistanı', aktif: true, rota: '/ai' },
+  { id: 'favoriler', ikon: '🔖', ad: 'Favoriler', aktif: true, rota: '/favoriler' },
+  { id: 'offline', ikon: '📥', ad: 'Offline Kütüphane', aktif: true, rota: '/offline-kutuphane' },
+  { id: 'son-guncellenenler', ikon: '🕓', ad: 'Son Güncellenenler', aktif: true, rota: '/sartname' },
+  { id: 'veri-kaynaklari', ikon: '🏛️', ad: 'Veri Kaynakları', aktif: true, rota: '/veri-kaynaklari' },
+];
+
+const PASIF_MODULLER: readonly ModulKarti[] = [
+  { id: 'bildirimler', ikon: '🔔', ad: 'Bildirimler', aktif: false, rota: '' },
   { id: 'checklist', ikon: '✅', ad: 'Saha Kontrol Listeleri', aktif: false, rota: '' },
-  { id: 'isg', ikon: '🦺', ad: 'İSG Cep Rehberi', aktif: false, rota: '' },
-  { id: 'ariza', ikon: '🔍', ad: 'Arıza Teşhis Sihirbazı', aktif: false, rota: '' },
-  { id: 'not', ikon: '📷', ad: 'Saha Notu + Fotoğraf', aktif: false, rota: '' },
-] as const;
+  { id: 'isg', ikon: '🦺', ad: 'İSG Rehberi', aktif: false, rota: '' },
+];
+
+const MODULLER: readonly ModulKarti[] = [...AKTIF_MODULLER, ...PASIF_MODULLER];
 
 function WelcomeIllustration() {
   return (
@@ -90,6 +105,10 @@ export default function Home() {
   const router = useRouter();
   const tabBar = useRootTabBar();
 
+  const aramaYap = (sorgu: string) => {
+    router.push({ pathname: '/sartname', params: { q: sorgu } });
+  };
+
   return (
     <View style={styles.root}>
       <AppBar
@@ -100,10 +119,14 @@ export default function Home() {
         <Card style={styles.welcomeCard}>
           <View style={styles.welcomeRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.welcomeGreeting}>Hoş geldiniz,</Text>
+              <Text style={styles.welcomeGreeting}>Hoş Geldiniz</Text>
               <Text style={styles.welcomeTitle}>
-                Şartnamelerini hızlıca bul, analiz et ve{' '}
-                <Text style={{ color: colors.accent }}>AI desteği</Text> al.
+                Elektrik dağıtım sektöründeki şartname, yönetmelik, standart ve teknik
+                dokümanlara tek uygulamadan ulaşın.
+              </Text>
+              <Text style={styles.welcomeAlt}>
+                <Text style={{ color: colors.accent, fontWeight: '800' }}>AI destekli mevzuat asistanı</Text>{' '}
+                ile aradığınız bilgiyi saniyeler içinde bulun.
               </Text>
             </View>
             <WelcomeIllustration />
@@ -119,13 +142,13 @@ export default function Home() {
           />
           <QuickAction
             icon="✨"
-            title="AI ile Özetle"
-            subtitle="Şartnameni AI ile hızlıca özetle"
+            title="AI Asistanı"
+            subtitle="Sorunu yaz, ilgili mevzuatı bul"
             onPress={() => router.push('/ai')}
           />
           <QuickAction
             icon="🔖"
-            title="Kaydedilenler"
+            title="Favoriler"
             subtitle="Kaydettiğin şartnamelere göz at"
             onPress={() => router.push('/favoriler')}
           />
@@ -136,50 +159,32 @@ export default function Home() {
           actionLabel="Tümünü Gör"
           onActionPress={() => router.push('/sartname')}
         />
-        <Card style={styles.listCard} padded={false}>
-          {SON_SARTNAMELER.map((s, i) => (
-            <View key={s.id}>
-              <ListItem
-                icon="📄"
-                title={s.baslik}
-                subtitle={s.tarih}
-                onPress={() => router.push('/sartname')}
-                style={styles.listRow}
-                right={
-                  <View style={styles.listRight}>
-                    <View style={styles.pdfBadge}>
-                      <Text style={styles.pdfBadgeText}>PDF</Text>
-                    </View>
-                    <Text style={styles.chevron}>›</Text>
-                  </View>
-                }
-              />
-              {i < SON_SARTNAMELER.length - 1 && <View style={styles.divider} />}
-            </View>
-          ))}
-        </Card>
+        {sonSartnameler.map((d) => (
+          <DocumentRow key={d.id} document={d} />
+        ))}
 
         <SectionTitle title="Popüler Aramalar" />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
           {POPULER_ARAMALAR.map((etiket) => (
-            <Chip key={etiket} label={etiket} icon="🔍" onPress={() => router.push('/sartname')} />
+            <Chip key={etiket} label={etiket} icon="🔍" onPress={() => aramaYap(etiket)} />
           ))}
         </ScrollView>
 
         <View style={styles.aiCard}>
           <View style={styles.aiTopRow}>
             <View style={styles.aiIconWrap}>
-              <Text style={{ fontSize: 20 }}>✨</Text>
+              <Text style={{ fontSize: 22 }}>✨</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.aiTitle}>AI Destek</Text>
+              <Text style={styles.aiTitle}>AI Mevzuat Asistanı</Text>
               <Text style={styles.aiDesc}>
-                Şartnamelerinle ilgili sorularını sor, AI asistanımız anında yanıtlasın.
+                Şartnamelerinle ilgili sorularını sor, AI asistanımız ilgili şartname,
+                yönetmelik ve standartları anında bulsun.
               </Text>
             </View>
           </View>
           <Button
-            label="Sorunuzu Sorun"
+            label="AI Asistanını Aç"
             variant="secondary"
             style={styles.aiButton}
             onPress={() => router.push('/ai')}
@@ -211,8 +216,8 @@ export default function Home() {
         </Card>
 
         <Text style={styles.dipnot}>
-          Bu uygulamadaki hesaplar ve içerikler bilgilendirme amaçlıdır; resmî şartname ve
-          yönetmelik hükümleri esastır.
+          Bu uygulamadaki içerikler bilgilendirme amaçlıdır; resmî şartname ve yönetmelik
+          hükümleri esastır.
         </Text>
       </ScrollView>
       <BottomNavigation tabs={tabBar.tabs} activeId={tabBar.activeId} onChange={tabBar.onChange} />
@@ -225,22 +230,30 @@ const styles = StyleSheet.create({
   scrollContent: { padding: spacing.m, paddingBottom: spacing.xl },
 
   welcomeCard: { marginBottom: spacing.m },
-  welcomeRow: { flexDirection: 'row', alignItems: 'center' },
+  welcomeRow: { flexDirection: 'row', alignItems: 'flex-start' },
   welcomeGreeting: {
-    fontSize: typography.size.base,
-    fontFamily: typography.fontFamily,
-    color: colors.textSecondary,
-    marginBottom: 4,
-  },
-  welcomeTitle: {
-    fontSize: typography.size.lg,
+    fontSize: typography.size.xl,
     fontWeight: typography.weight.extrabold,
     fontFamily: typography.fontFamily,
     color: colors.textPrimary,
-    lineHeight: 24,
+    marginBottom: spacing.xs,
+  },
+  welcomeTitle: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.medium,
+    fontFamily: typography.fontFamily,
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+  welcomeAlt: {
+    fontSize: typography.size.sm,
+    fontFamily: typography.fontFamily,
+    color: colors.textSecondary,
+    lineHeight: 20,
+    marginTop: spacing.s,
   },
 
-  illuWrap: { width: 80, height: 80, marginLeft: spacing.s },
+  illuWrap: { width: 68, height: 80, marginLeft: spacing.xs },
   illuDocBack: {
     position: 'absolute',
     top: 8,
@@ -322,14 +335,6 @@ const styles = StyleSheet.create({
   listRow: { paddingHorizontal: spacing.m },
   listRowPasif: { opacity: 0.5 },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: spacing.m },
-  listRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  pdfBadge: {
-    backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.s,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  pdfBadgeText: { fontSize: 10, fontWeight: '800', color: colors.textSecondary },
   chevron: { fontSize: 20, color: colors.textSecondary, marginLeft: 2 },
   rozet: {
     backgroundColor: colors.secondaryBackground,
@@ -344,20 +349,20 @@ const styles = StyleSheet.create({
   aiCard: {
     backgroundColor: colors.primary,
     borderRadius: radius.xl,
-    padding: spacing.m,
+    padding: spacing.l,
     marginBottom: spacing.m,
   },
   aiTopRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.s, marginBottom: spacing.m },
   aiIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: 'rgba(255,255,255,0.14)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  aiTitle: { fontSize: typography.size.md, fontWeight: '800', color: '#FFFFFF' },
-  aiDesc: { fontSize: typography.size.sm, color: 'rgba(255,255,255,0.75)', marginTop: 4, lineHeight: 18 },
+  aiTitle: { fontSize: typography.size.lg, fontWeight: '800', color: '#FFFFFF' },
+  aiDesc: { fontSize: typography.size.sm, color: 'rgba(255,255,255,0.75)', marginTop: 4, lineHeight: 19 },
   aiButton: { alignSelf: 'flex-end' },
 
   dipnot: {

@@ -7,6 +7,7 @@ import { colors, radius, spacing, typography } from '../../theme/index.ts';
 export function ListItem({
   icon,
   title,
+  titleLines = 1,
   subtitle,
   right,
   onPress,
@@ -14,6 +15,8 @@ export function ListItem({
 }: {
   icon?: string;
   title: string;
+  /** Başlık kaç satıra kadar sarılabilir (uzun örnek soru/başlıklar için). */
+  titleLines?: number;
   subtitle?: string;
   right?: React.ReactNode;
   onPress?: () => void;
@@ -27,7 +30,7 @@ export function ListItem({
         </View>
       ) : null}
       <View style={{ flex: 1 }}>
-        <Text style={styles.title} numberOfLines={1}>
+        <Text style={styles.title} numberOfLines={titleLines}>
           {title}
         </Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}

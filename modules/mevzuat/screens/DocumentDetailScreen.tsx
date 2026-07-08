@@ -1,8 +1,9 @@
 // Doküman detay ekranı — /sartname/:id
-// Premium kart tasarımı (Sprint UI-1B) — iş mantığı DEĞİŞMEDİ: aynı
-// favoriler context'i, aynı PDF Aç stub'ı. "AI ile Özetle" artık gerçek
-// /ai ekranına yönlendiriyor (yeni bir servis çağrısı YOK).
-// Kartlar: Başlık, Künye, Anahtar Kelimeler, Özet, İlgili Dokümanlar, Aksiyonlar.
+// Premium kart tasarımı — iş mantığı DEĞİŞMEDİ: aynı favoriler context'i,
+// aynı PDF Aç stub'ı. "AI ile Açıkla" gerçek /ai ekranına yönlendirir (yeni
+// bir servis çağrısı YOK).
+// Kartlar: Başlık, Künye, Anahtar Kelimeler, Özet, İlgili Dokümanlar,
+// İlgili Yönetmelikler ve Standartlar, Revizyon Bilgisi, Aksiyonlar.
 import React from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -20,6 +21,19 @@ function KunyeSatiri({ etiket, deger }: { etiket: string; deger: string }) {
     </View>
   );
 }
+
+// ⚠️ TEMSİLİ LİSTE: bu beş kalem şu an her dokümanda aynı gösterilir —
+// doküman bazlı gerçek ilişkilendirme (DOCUMENTS içindeki relatedDocuments
+// gibi doğrulanmış bağlantılar) henüz kurulmadı. Genel elektrik dağıtım
+// mevzuatı pratiğinde sık birlikte anılan yönetmelik/standartlardır;
+// "Kaynak doğrulaması gerekli" — bkz. KURULUM.md.
+const ILGILI_MEVZUAT_ORNEK = [
+  'Elektrik Kuvvetli Akım Yönetmeliği',
+  'Elektrik İç Tesisleri Yönetmeliği',
+  'TEDAŞ AG Teknik Şartnamesi',
+  'TS HD 60364',
+  'IEC 60502',
+] as const;
 
 export default function DocumentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -68,10 +82,7 @@ export default function DocumentDetailScreen() {
           <Text style={styles.bolumBaslik}>Künye</Text>
           <KunyeSatiri etiket="Kurum" deger={document.institution} />
           <KunyeSatiri etiket="Kategori" deger={document.category} />
-          <KunyeSatiri etiket="Revizyon" deger={document.revision} />
           <KunyeSatiri etiket="Durum" deger={STATUS_LABELS[document.status]} />
-          <KunyeSatiri etiket="Yayın tarihi" deger={document.publishDate} />
-          <KunyeSatiri etiket="Yürürlük tarihi" deger={document.effectiveDate} />
         </Card>
 
         {/* Anahtar Kelimeler */}
@@ -114,6 +125,22 @@ export default function DocumentDetailScreen() {
           )}
         </Card>
 
+        {/* İlgili Yönetmelikler ve Standartlar */}
+        <Card style={styles.card}>
+          <Text style={styles.bolumBaslik}>İlgili Yönetmelikler ve Standartlar</Text>
+          {ILGILI_MEVZUAT_ORNEK.map((madde) => (
+            <Text key={madde} style={styles.mevzuatSatir}>↓ {madde}</Text>
+          ))}
+        </Card>
+
+        {/* Revizyon Bilgisi */}
+        <Card style={styles.card}>
+          <Text style={styles.bolumBaslik}>Revizyon Bilgisi</Text>
+          <KunyeSatiri etiket="Revizyon" deger={document.revision} />
+          <KunyeSatiri etiket="Yayın tarihi" deger={document.publishDate} />
+          <KunyeSatiri etiket="Yürürlük tarihi" deger={document.effectiveDate} />
+        </Card>
+
         {/* Aksiyonlar */}
         <Card style={styles.card}>
           <Text style={styles.bolumBaslik}>Aksiyonlar</Text>
@@ -127,7 +154,7 @@ export default function DocumentDetailScreen() {
             />
           </View>
           <Button
-            label="✨ AI ile Özetle"
+            label="✨ AI ile Açıkla"
             variant="secondary"
             onPress={() => router.push('/ai')}
             style={{ marginTop: spacing.s }}
@@ -192,6 +219,14 @@ const styles = StyleSheet.create({
   ilgiliText: { flex: 1, fontSize: 14, fontWeight: '600', color: colors.textPrimary },
   ilgiliOk: { fontSize: 20, color: colors.textSecondary, paddingLeft: spacing.s },
   ilgiliBos: { fontSize: 14, color: colors.textSecondary },
+  mevzuatSatir: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    paddingVertical: 6,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+  },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: spacing.m },
   aksiyonlar: { flexDirection: 'row', gap: spacing.s },
   kaynakNot: { fontSize: 12, color: colors.textSecondary, marginTop: spacing.s, lineHeight: 17 },

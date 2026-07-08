@@ -23,11 +23,7 @@ export default function FavorilerScreen() {
       <AppBar title="Favoriler" onBack={router.canGoBack() ? () => router.back() : undefined} />
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent}>
         {favoriler.length === 0 ? (
-          <EmptyState
-            icon="🔖"
-            title="Henüz kaydedilmiş doküman yok"
-            description="Önemli şartnameleri favorilere ekleyerek buradan hızlıca ulaşabilirsiniz."
-          />
+          <EmptyState icon="🔖" title="Henüz favori doküman eklemediniz." />
         ) : (
           favoriler.map((d) => (
             <PressableScale key={d.id} onPress={() => router.push(`/sartname/${d.id}`)} scaleTo={0.98}>

@@ -7,8 +7,13 @@ export interface Kategori {
   aciklama: string;
 }
 
-/** Belgenin sahibi kurum. */
-export type Institution = 'TEDAŞ' | 'EPDK' | 'Resmî Gazete';
+/**
+ * Belgenin sahibi kurum/standart kaynağı.
+ * ⚠️ 'TEİAŞ' | 'TS' | 'IEC' için DOCUMENTS içinde henüz örnek doküman yok —
+ * Veri Kaynakları ekranında ve arama filtrelerinde görünürler, gerçek içerik
+ * ileride eklenecek (bkz. Veri Kaynakları ekranı, "V3 mevzuat dönüşümü").
+ */
+export type Institution = 'TEDAŞ' | 'TEİAŞ' | 'EPDK' | 'Resmî Gazete' | 'TS' | 'IEC';
 
 /** Belgenin yürürlük durumu. */
 export type DocumentStatus = 'active' | 'deprecated' | 'draft';

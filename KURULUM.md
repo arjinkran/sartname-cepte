@@ -1,6 +1,22 @@
-# Şartname Cepte v0.3 — Kurulum ve Sorun Giderme
+# Şartname Cepte — Kurulum ve Sorun Giderme
 
-Bu sürümün tek hedefi: **Expo Go'da hatasız açılmak.** Bağımlılıklar
+## Ürün Tanımı (V3 — mevzuat odaklı dönüşüm)
+
+**Şartname Cepte**, elektrik dağıtım sektörüne yönelik **Teknik Şartname**,
+**Yönetmelik**, **Standart**, **Resmî Gazete** ve **AI Destekli Mevzuat
+Asistanı**dır.
+
+**Mühendislik hesapları** (ENH mekanik hesapları, OG hesapları, direk
+hesabı, sehim, buz yükü, iletken vb.) bu uygulamanın ürün kapsamından
+çıkarılmıştır ve ayrı geliştirilen **Şartname Cepte Engineering**
+uygulamasında yer alacaktır. Bu hesapların kodu (`src/calculations/`,
+`app/hesaplayicilar/*`, `app/enh-bilgi/*`) **silinmedi** — yalnızca
+kullanıcı arayüzünden (Ana Sayfa dahil hiçbir ekrandan) erişilemez hale
+getirildi. Bkz. "Klasör yapısı" bölümündeki ilgili not.
+
+---
+
+Bu sürümün hedefi: **Expo Go'da hatasız açılmak.** Bağımlılıklar
 Expo'nun resmi router şablonu seviyesine indirildi (aşağıda "Neler
 değişti" bölümüne bak).
 
@@ -81,15 +97,21 @@ npm run typecheck   → TypeScript tip kontrolü
 sartname-cepte/
 ├── app/                          ← Rotalar (Expo Router: dosya = rota)
 │   ├── _layout.tsx               ← Kök yerleşim + JS splash (AppSplash) + açılış uyarısı
-│   ├── index.tsx                 ← Ana ekran (premium yeniden tasarım, Sprint UI-1A: AppBar/Welcome/
-│   │                                Hızlı işlemler/Son Şartnameler/Popüler Aramalar/AI Destek/Modüller/BottomNav)
+│   ├── index.tsx                 ← Ana ekran (V3: yalnızca mevzuat modülleri — Şartname/Mevzuat, AI Mevzuat
+│   │                                Asistanı, Favoriler, Offline Kütüphane, Son Güncellenenler, Veri Kaynakları)
 │   ├── sartname/                 ← İnce rota dosyaları → modules/mevzuat/screens'e re-export
-│   │                                (index=Arama, [id]=Detay premium tasarım, Sprint UI-1B)
-│   ├── ai.tsx                    ← İnce rota → modules/ai/screens/AiDestekScreen (Sprint UI-1B, YENİ)
-│   ├── profil.tsx                ← İnce rota → modules/profil/screens/ProfilScreen (Sprint UI-1B, YENİ)
-│   ├── favoriler.tsx             ← İnce rota → modules/mevzuat/screens/FavorilerScreen (Sprint UI-1B, YENİ)
-│   ├── enh-bilgi/                ← İnce rota dosyaları → modules/enhBilgi/screens'e re-export
-│   └── hesaplayicilar/
+│   │                                (index=Arama, [id]=Detay, ikisi de premium UI kit + gerçek DOCUMENTS)
+│   ├── ai.tsx                    ← İnce rota → modules/ai/screens/AiDestekScreen
+│   ├── profil.tsx                ← İnce rota → modules/profil/screens/ProfilScreen
+│   ├── favoriler.tsx             ← İnce rota → modules/mevzuat/screens/FavorilerScreen
+│   ├── veri-kaynaklari.tsx       ← İnce rota → modules/platform/screens/VeriKaynaklariScreen (V3, YENİ)
+│   ├── offline-kutuphane.tsx     ← İnce rota → modules/platform/screens/OfflineKutuphaneScreen (V3, YENİ — "yakında")
+│   │
+│   │   ⚠️ Aşağıdaki iki rota grubu V3'te UI'dan (Ana Sayfa dahil hiçbir
+│   │   ekrandan) bağlantısı kaldırıldı — dosyalar/kod SİLİNMEDİ, yalnızca
+│   │   erişilemez hale getirildi (bkz. üstteki "Ürün Tanımı").
+│   ├── enh-bilgi/                ← [UI'dan kaldırıldı] modules/enhBilgi/screens'e re-export
+│   └── hesaplayicilar/           ← [UI'dan kaldırıldı]
 │       ├── index.tsx             ← Hesaplayıcı listesi
 │       ├── gerilim-dusumu.tsx    ← src/calculations/engines/voltageDrop DEMO motoruna bağlı ekran
 │       ├── og-akim-tasima.tsx    ← src/calculations/engines/ampacityOG motoruna bağlı ekran
@@ -99,24 +121,26 @@ sartname-cepte/
 │       ├── buz-yuku.tsx          ← src/calculations/engines/enhMechanical/iceLoad (ÖN HESAP) motoruna bağlı ekran
 │       └── sehim.tsx             ← src/calculations/engines/enhMechanical/sag (ÖN HESAP) motoruna bağlı ekran
 ├── modules/
-│   └── mevzuat/                  ← Şartname / Mevzuat modülü (kendi kendine yeten)
+│   └── mevzuat/                  ← Şartname / Mevzuat modülü (kendi kendine yeten — ürünün çekirdeği)
 │       ├── screens/              ← Ekran bileşenleri (app/sartname/*, app/favoriler.tsx buradan re-export eder)
 │       │                            SartnameAramaScreen (Arama), DocumentDetailScreen (Detay),
-│       │                            FavorilerScreen (Sprint UI-1B, YENİ) — üçü de premium UI kit kullanır
-│       ├── components/           ← DocumentRow.tsx (premium kart + tema tabanlı durum renkleri, UI-1B)
+│       │                            FavorilerScreen — üçü de premium UI kit kullanır
+│       ├── components/           ← DocumentRow.tsx (premium kart: kurum/kategori/revizyon/PDF/favori/ok)
 │       ├── services/             ← arama.ts (saf arama/filtre fonksiyonları) — modules/ai de bunu tüketir
-│       ├── data/                 ← sartnameler.ts (mock veri)
+│       ├── data/                 ← sartnameler.ts (mock veri; KURUMLAR artık TEDAŞ/TEİAŞ/EPDK/Resmî Gazete/TS/IEC)
 │       └── types/                ← Document, Kategori, Institution tipleri
-│   └── enhBilgi/                 ← ENH Bilgi Bankası (hesap motoru DEĞİL — statik teknik bilgi)
+│   └── enhBilgi/                 ← [UI'dan kaldırıldı, V3] ENH Bilgi Bankası — statik teknik bilgi, hesap motoru değil
 │       ├── screens/              ← Ekran bileşenleri (app/enh-bilgi/* buradan re-export eder)
 │       ├── components/           ← IletkenKarti, DirekSinifKarti, BilgiKarti (ortak liste kartı)
 │       ├── data/                 ← iletkenler.ts (src/catalogs/conductors'tan türetilir), direkSiniflari.ts,
 │       │                            direkMalzemeleri.ts, direkDevreTipleri.ts, izolatorler.ts, basliklar.ts
 │       └── types/                ← IletkenBilgi, DirekSinifBilgi tipleri
-│   └── ai/                       ← AI Mevzuat Asistanı (Sprint UI-1B, YENİ) — gerçek AI motoru YOK,
-│       └── screens/                 modules/mevzuat/services/arama.ts'i (değiştirmeden) tüketir
-│   └── profil/                   ← Profil (Sprint UI-1B, YENİ) — mock profil kartı, gerçek auth YOK
+│   └── ai/                       ← AI Mevzuat Asistanı — gerçek AI motoru YOK, modules/mevzuat/services/
+│       └── screens/                 arama.ts'i (değiştirmeden) tüketir; yalnızca mevzuat türü doküman önerir
+│   └── profil/                   ← Profil — mock profil kartı, gerçek auth YOK
 │       └── screens/
+│   └── platform/                 ← Veri Kaynakları + Offline Kütüphane (V3, YENİ)
+│       └── screens/                 VeriKaynaklariScreen (kurum/standart listesi), OfflineKutuphaneScreen ("yakında")
 ├── src/
 │   ├── theme/                    ← Premium tema (Sprint UI-1A) — colors/spacing/radius/typography/shadow/
 │   │                                animations + index.ts barrel. Eski `src/theme.ts`'in yerine geçti;

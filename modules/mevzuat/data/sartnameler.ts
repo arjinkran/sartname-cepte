@@ -19,7 +19,8 @@ export const KATEGORILER: readonly Kategori[] = [
   { id: 'isg-mevzuat', ad: 'İSG ve Emniyet Mevzuatı', ikon: '🦺', aciklama: 'Kuvvetli akım, yaklaşma mesafeleri, iş güvenliği' },
 ];
 
-export const KURUMLAR: readonly Institution[] = ['TEDAŞ', 'EPDK', 'Resmî Gazete'];
+// ⚠️ TEİAŞ/TS/IEC için DOCUMENTS içinde henüz örnek doküman yok (bkz. types/index.ts).
+export const KURUMLAR: readonly Institution[] = ['TEDAŞ', 'TEİAŞ', 'EPDK', 'Resmî Gazete', 'TS', 'IEC'];
 
 export const STATUS_LABELS: Record<DocumentStatus, string> = {
   active: 'Güncel',

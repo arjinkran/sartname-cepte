@@ -1,8 +1,8 @@
 // Profil ekranı — /profil
 // Şimdilik gerçek auth YOK (src/lib/supabase.ts hâlâ stub) — mock profil
-// kartı gösterilir. Ayarlar satırlarından yalnızca "Favoriler" gerçek bir
-// rotaya (/favoriler) gider; diğerleri mevcut "PDF Aç" stub'ıyla aynı
-// desende (Alert) "yakında" mesajı gösterir — yeni bir servis eklenmedi.
+// kartı gösterilir. "Favoriler", "Offline Kütüphane" ve "Veri Kaynakları"
+// gerçek rotalara gider; diğerleri mevcut "PDF Aç" stub'ıyla aynı desende
+// (Alert) "yakında" mesajı gösterir — yeni bir servis eklenmedi.
 import React from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -11,21 +11,22 @@ import { useRootTabBar } from '@/navigation/tabs';
 import { colors, radius, spacing, typography } from '@/theme';
 
 const AYARLAR = [
-  { id: 'bildirimler', ikon: '🔔', ad: 'Bildirimler' },
-  { id: 'offline', ikon: '📥', ad: 'Offline Kütüphane' },
-  { id: 'favoriler', ikon: '🔖', ad: 'Favoriler' },
-  { id: 'gizlilik', ikon: '🔒', ad: 'Gizlilik Politikası' },
-  { id: 'kullanim', ikon: '📜', ad: 'Kullanım Şartları' },
-  { id: 'hakkinda', ikon: 'ℹ️', ad: 'Hakkında' },
+  { id: 'bildirimler', ikon: '🔔', ad: 'Bildirimler', rota: '' },
+  { id: 'offline', ikon: '📥', ad: 'Offline Kütüphane', rota: '/offline-kutuphane' },
+  { id: 'favoriler', ikon: '🔖', ad: 'Favoriler', rota: '/favoriler' },
+  { id: 'veri-kaynaklari', ikon: '🏛️', ad: 'Veri Kaynakları', rota: '/veri-kaynaklari' },
+  { id: 'gizlilik', ikon: '🔒', ad: 'Gizlilik Politikası', rota: '' },
+  { id: 'kullanim', ikon: '📜', ad: 'Kullanım Şartları', rota: '' },
+  { id: 'hakkinda', ikon: 'ℹ️', ad: 'Hakkında', rota: '' },
 ] as const;
 
 export default function ProfilScreen() {
   const router = useRouter();
   const tabBar = useRootTabBar();
 
-  const satirTikla = (id: (typeof AYARLAR)[number]['id']) => {
-    if (id === 'favoriler') {
-      router.push('/favoriler');
+  const satirTikla = (rota: string) => {
+    if (rota) {
+      router.push(rota);
       return;
     }
     Alert.alert('Yakında', 'Bu özellik yakında eklenecek.');
@@ -62,7 +63,7 @@ export default function ProfilScreen() {
               <ListItem
                 icon={a.ikon}
                 title={a.ad}
-                onPress={() => satirTikla(a.id)}
+                onPress={() => satirTikla(a.rota)}
                 style={styles.listRow}
                 right={<Text style={styles.chevron}>›</Text>}
               />
