@@ -8,6 +8,7 @@ import { colors, spacing, radius } from '../src/theme';
 const MODULLER = [
   { id: 'sartname', ikon: '📚', ad: 'Şartname / Mevzuat', aciklama: 'Ara: özet bilgi kartları + kaynak', aktif: true, rota: '/sartname' },
   { id: 'hesap', ikon: '🧮', ad: 'Cep Hesaplayıcılar', aciklama: 'Gerilim düşümü, akım, kesit…', aktif: true, rota: '/hesaplayicilar' },
+  { id: 'enh-bilgi', ikon: '📖', ad: 'ENH Bilgi Bankası', aciklama: 'İletkenler, direkler, izolatörler ve tip proje bilgileri', aktif: true, rota: '/enh-bilgi' },
   { id: 'checklist', ikon: '✅', ad: 'Saha Kontrol Listeleri', aciklama: 'Manevra, topraklama, direk…', aktif: false, rota: '' },
   { id: 'isg', ikon: '🦺', ad: 'İSG Cep Rehberi', aciklama: 'LOTO, yaklaşma mesafeleri, KKD', aktif: false, rota: '' },
   { id: 'ariza', ikon: '🔍', ad: 'Arıza Teşhis Sihirbazı', aciklama: 'Belirtiden olası nedene', aktif: false, rota: '' },

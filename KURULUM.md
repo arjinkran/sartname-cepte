@@ -81,8 +81,9 @@ npm run typecheck   → TypeScript tip kontrolü
 sartname-cepte/
 ├── app/                          ← Rotalar (Expo Router: dosya = rota)
 │   ├── _layout.tsx               ← Kök yerleşim + açılış uyarısı
-│   ├── index.tsx                 ← Ana ekran (6 modül kartı)
+│   ├── index.tsx                 ← Ana ekran (7 modül kartı)
 │   ├── sartname/                 ← İnce rota dosyaları → modules/mevzuat/screens'e re-export
+│   ├── enh-bilgi/                ← İnce rota dosyaları → modules/enhBilgi/screens'e re-export
 │   └── hesaplayicilar/
 │       ├── index.tsx             ← Hesaplayıcı listesi
 │       ├── gerilim-dusumu.tsx    ← src/calculations/engines/voltageDrop DEMO motoruna bağlı ekran
@@ -96,6 +97,11 @@ sartname-cepte/
 │       ├── services/             ← arama.ts (saf arama/filtre fonksiyonları)
 │       ├── data/                 ← sartnameler.ts (mock veri)
 │       └── types/                ← Document, Kategori, Institution tipleri
+│   └── enhBilgi/                 ← ENH Bilgi Bankası (hesap motoru DEĞİL — statik teknik bilgi)
+│       ├── screens/              ← Ekran bileşenleri (app/enh-bilgi/* buradan re-export eder)
+│       ├── components/           ← IletkenKarti.tsx, DirekSinifKarti.tsx
+│       ├── data/                 ← iletkenler.ts (ampacityOG ile uyumlu), direkSiniflari.ts, basliklar.ts
+│       └── types/                ← IletkenBilgi, DirekSinifBilgi tipleri
 ├── src/
 │   ├── theme.ts                  ← Renkler ve ölçüler
 │   ├── common/components/UI.tsx  ← Modüller arası ortak bileşenler (StyleSheet)
