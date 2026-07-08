@@ -97,6 +97,14 @@ test('sıfır çekme kuvveti hata verir', () => {
   assert.ok(sonuc.errors.some((e) => e.field === 'tensionKg'));
 });
 
+test('validationStatus her zaman preliminary döner', () => {
+  const sonuc = SagEngine.calculate(TEMEL_GIRDI);
+
+  assert.strictEqual(sonuc.ok, true);
+  assert.ok(sonuc.output);
+  assert.strictEqual(sonuc.output!.validationStatus, 'preliminary');
+});
+
 test('örnekler (examples) gerçek motor çıktısıyla senkron', () => {
   const ornekler = SagEngine.examples ?? [];
   assert.ok(ornekler.length >= 3);

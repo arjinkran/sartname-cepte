@@ -115,6 +115,9 @@ export default function Sehim() {
           </Card>
         ) : output ? (
           <Card>
+            <View style={styles.dogrulamaEtiketi}>
+              <Text style={styles.dogrulamaEtiketiText}>Doğrulanmamış ön hesap</Text>
+            </View>
             <Text style={styles.bolumBaslik}>Sonuçlar</Text>
             <SonucSatiri etiket="Toplam yük" deger={`${tr(output.totalLoadKgPerM, 4)} kg/m`} />
             <SonucSatiri etiket="Çekme kuvveti" deger={`${tr(output.tensionKg, 0)} kg`} />
@@ -155,6 +158,17 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   bilgiNotuText: { fontSize: 13, color: '#8C6D1F', lineHeight: 19, fontWeight: '600' },
+  dogrulamaEtiketi: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.inputBg,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginBottom: spacing.s,
+  },
+  dogrulamaEtiketiText: { fontSize: 11, fontWeight: '700', color: colors.textMuted },
   fieldLabel: { fontSize: 13, fontWeight: '600', color: colors.textMuted, marginBottom: spacing.xs },
   yongaSatiri: { marginBottom: spacing.s },
   yonga: {

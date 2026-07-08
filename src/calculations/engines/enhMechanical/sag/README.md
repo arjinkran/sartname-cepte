@@ -58,6 +58,25 @@ dolaylı olarak [`src/catalogs/conductors`](../../../../catalogs/conductors)'a
 bağlanır (bkz. o klasörün README.md'si). `conductorWeightKgPerM`
 çıktısı, katalogdaki `nominalWeightKgPerM` alanından gelir.
 
+## Doğrulama Durumu (Sprint 5B)
+
+`SagOutput.validationStatus` alanı her zaman `'preliminary'` döner ve
+bu sprintte doğrulama altyapısı dışında **hiçbir hesap değiştirilmedi**.
+Açıkça:
+
+- Mevcut motor **parabolik ön hesaptır** — yukarıdaki "Bu bir ÖN
+  HESAPTIR" bölümünde açıklanan sabit çekme kuvveti varsayımını kullanır.
+- **DHD, sıcaklık ve gerilme etkileri henüz dahil değildir.**
+- Bu motor, **Excel ve kitap örnekleriyle doğrulanmadan nihai
+  mühendislik hesabı değildir.**
+
+Doğrulama planı, karşılaştırılacak Excel/kitap senaryoları ve kabul
+toleransı önerisi için bkz.
+[`docs/ENH_SEHIM_DOGRULAMA_PLANI.md`](../../../../../docs/ENH_SEHIM_DOGRULAMA_PLANI.md).
+Doğrulama tamamlanıp bu alan gerçek bir sonuca (ör. `'verified'`)
+geçirilmeden `isDemo` `false` yapılmamalı ve UI'daki "Doğrulanmamış ön
+hesap" etiketi kaldırılmamalıdır.
+
 ## Gerçek veriye geçiş için gerekenler
 
 1. `IceLoadEngine`'in kendi "Gerçek veriye geçiş için gerekenler"

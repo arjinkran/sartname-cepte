@@ -100,6 +100,7 @@ export function hesapla(input: SagInput): CalculationResult<SagOutput> {
       sagM,
       sagCm,
       sagPercentOfSpan,
+      validationStatus: 'preliminary',
     },
     warnings: [],
     errors: [],
@@ -136,6 +137,7 @@ export const SagEngine: CalculationEngine<SagInput, SagOutput> = {
     { key: 'sagM', label: 'Sehim', unit: 'm' },
     { key: 'sagCm', label: 'Sehim', unit: 'none' },
     { key: 'sagPercentOfSpan', label: 'Açıklığa oran', unit: '%' },
+    { key: 'validationStatus', label: 'Doğrulama durumu', unit: 'none' },
   ],
   constants: [
     {

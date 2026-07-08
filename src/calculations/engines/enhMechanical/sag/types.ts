@@ -16,6 +16,8 @@ export interface SagInput {
   loadCase: LoadCase;
 }
 
+export type SagValidationStatus = 'preliminary';
+
 export interface SagOutput {
   spanLengthM: number;
   conductorWeightKgPerM: number;
@@ -28,4 +30,10 @@ export interface SagOutput {
   sagCm: number;
   /** Sehimin açıklığa oranı (%). */
   sagPercentOfSpan: number;
+  /**
+   * Doğrulama durumu — Sprint 5B itibarıyla her zaman 'preliminary'.
+   * Excel/kitap doğrulaması tamamlanmadan başka bir değer üretilmemelidir
+   * (bkz. docs/ENH_SEHIM_DOGRULAMA_PLANI.md ve README.md "Doğrulama Durumu").
+   */
+  validationStatus: SagValidationStatus;
 }
