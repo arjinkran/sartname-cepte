@@ -48,8 +48,11 @@ function DirekSatiri({ aday, vurgulu }: { aday: BetonDirekAday; vurgulu?: boolea
           {tr(aday.direk.yukseklikM, 0)} m · {tr(aday.direk.nominalMomentKgm, 0)} kgm · maks {tr(aday.direk.maxAcikinlikM, 0)} m açıklık
         </Text>
       </View>
-      <View style={[styles.rozet, { backgroundColor: SINIFLANDIRMA_RENKLERI[aday.siniflandirma] }]}>
-        <Text style={styles.rozetText}>{SINIFLANDIRMA_ETIKETLERI[aday.siniflandirma]}</Text>
+      <View style={{ alignItems: 'flex-end' }}>
+        <View style={[styles.rozet, { backgroundColor: SINIFLANDIRMA_RENKLERI[aday.siniflandirma] }]}>
+          <Text style={styles.rozetText}>{SINIFLANDIRMA_ETIKETLERI[aday.siniflandirma]}</Text>
+        </View>
+        <Text style={styles.demoIbare}>demo</Text>
       </View>
     </View>
   );
@@ -91,7 +94,8 @@ export default function BetonDirek() {
       >
         {BetonDirekEngine.isDemo && (
           <View style={styles.bilgiNotu}>
-            <Text style={styles.bilgiNotuText}>ℹ️ {BetonDirekEngine.metadata.description}</Text>
+            <Text style={styles.bilgiNotuBaslik}>⚠️ MOCK VERİ — ÖN HAZIRLIK AŞAMASI</Text>
+            <Text style={styles.bilgiNotuText}>{BetonDirekEngine.metadata.description}</Text>
           </View>
         )}
 
@@ -151,7 +155,16 @@ export default function BetonDirek() {
           </Card>
         ) : output ? (
           <>
+            <View style={styles.sonucUyarisi}>
+              <Text style={styles.sonucUyarisiText}>
+                ⚠️ Bu sonuç gerçek proje hesabı değildir. Direk kataloğu ve moment hesabı resmi kaynak / Excel analizi ile doğrulanmadan mühendislik kararı için kullanılmamalıdır.
+              </Text>
+            </View>
+
             <Card>
+              <View style={styles.onHazirlikRozet}>
+                <Text style={styles.onHazirlikRozetText}>ÖN HAZIRLIK SONUCU</Text>
+              </View>
               <Text style={styles.bolumBaslik}>Önerilen Direk</Text>
               {output.onerilenDirek ? (
                 <DirekSatiri aday={output.onerilenDirek} vurgulu />
@@ -213,10 +226,38 @@ const styles = StyleSheet.create({
   bilgiNotu: {
     backgroundColor: '#FBE9C9',
     borderRadius: 10,
+    borderWidth: 2,
+    borderColor: colors.danger,
     padding: spacing.m,
     marginBottom: spacing.m,
   },
+  bilgiNotuBaslik: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: colors.danger,
+    letterSpacing: 0.3,
+    marginBottom: spacing.xs,
+  },
   bilgiNotuText: { fontSize: 13, color: '#8C6D1F', lineHeight: 19, fontWeight: '600' },
+  sonucUyarisi: {
+    backgroundColor: '#F8DCDA',
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: colors.danger,
+    padding: spacing.m,
+    marginBottom: spacing.m,
+  },
+  sonucUyarisiText: { fontSize: 13, color: colors.danger, lineHeight: 19, fontWeight: '700' },
+  onHazirlikRozet: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.danger,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    marginBottom: spacing.s,
+  },
+  onHazirlikRozetText: { fontSize: 10, fontWeight: '800', color: '#FFFFFF', letterSpacing: 0.5 },
+  demoIbare: { fontSize: 10, color: colors.disabled, fontWeight: '700', marginTop: 2 },
   fieldLabel: { fontSize: 13, fontWeight: '600', color: colors.textMuted, marginBottom: spacing.xs },
   yongaSatiri: { marginBottom: spacing.s },
   yonga: {

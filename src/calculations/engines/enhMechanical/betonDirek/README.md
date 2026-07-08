@@ -58,3 +58,47 @@ ekranı bu motoru kullanır. `enh-mekanik.tsx` ekranındaki "Beton Direk
 Seçimi" kartı artık bu ekrana yönlendirir; diğer 5 alt hesap kartı hâlâ
 [`../engine.ts`](../engine.ts)'teki genel `notImplemented` davranışını
 kullanır (pasif kalmaya devam eder).
+
+Ekran, verinin mock/ön-hazırlık niteliğini üç yerde açıkça gösterir:
+kırmızı çerçeveli "MOCK VERİ — ÖN HAZIRLIK AŞAMASI" bilgi kutusu, sonuç
+kartlarının üstünde "Bu sonuç gerçek proje hesabı değildir…" uyarısı ve
+her direk satırındaki sınıflandırma rozetinin yanında küçük "demo" ibaresi.
+
+## Gerçek veriye geçiş için gerekenler
+
+Bu motorun "ön hazırlık" durumundan çıkıp gerçek mühendislik sonucu
+üretebilmesi için aşağıdakilerin sağlanması/doğrulanması gerekir:
+
+1. **Gerçek beton direk katalog tablosu** — `BETON_DIREK_KATALOG`
+   (`data.ts`) içindeki 8 mock kaydın yerine, TEDAŞ/Enerji Nakil Hatları
+   Cilt 1'deki (veya kullanıcının sağlayacağı Excel'deki) gerçek direk
+   listesi: her direk için doğrulanmış `yukseklikM`, `nominalMomentKgm`,
+   `tepeKuvvetiKg`, `agirlikKg`, `gomulmeDerinligiM`, `maxAcikinlikM`,
+   `kategori` değerleri.
+2. **İzin verilen gerilim seviyeleri** — her direk modeli için gerçek
+   `suitableVoltageLevels` listesi (şu an tahminidir); ayrıca 34,5 kV ve
+   154 kV dışında desteklenmesi gereken başka seviyeler olup olmadığının
+   doğrulanması.
+3. **Moment hesabı formülü** — iletken üzerindeki rüzgar/buz yükünden
+   doğan gerçek eğilme momentinin nasıl hesaplandığı (Enerji Nakil
+   Hatları Cilt 1'deki formül), `windZone`/`iceRegion`/`conductorType`
+   girdilerinin bu formüle nasıl gireceği ve sonucun `nominalMomentKgm`
+   ile nasıl karşılaştırılacağı.
+4. **Rüzgar/buz yükü katsayıları** — her rüzgar bölgesi (1-4) ve buz
+   bölgesi (1-5) için kullanılacak gerçek yük katsayıları/tabloları
+   (şu an bu bölgeler yalnızca doğrulanıp geri döndürülüyor, hesaba
+   girmiyor).
+5. **Emniyet katsayısı yöntemi** — `safetyFactor`'ın gerçek moment
+   hesabına nasıl uygulanacağı (şu an yalnızca açıklığı çarpan basit bir
+   oran olarak kullanılıyor: `guvenlikOrani = maxAcikinlikM / (spanLengthM
+   × safetyFactor)`) ve `BETON_DIREK_UYGUN_ESIK_ORANI` (1.15) eşiğinin
+   gerçek/standart bir değerle değiştirilip değiştirilmeyeceği.
+6. **Test örnekleri** — Excel'in veya resmî kaynağın kendi hesapladığı
+   en az 5-10 gerçek girdi/çıktı satırının `examples.ts`'e taşınması ve
+   `tests/calculations/betonDirek.test.ts` içinde bu satırların motorun
+   gerçek çıktısıyla karşılaştırılması (bkz.
+   [`modules/calculations/README.md`](../../../../../modules/calculations/README.md)
+   "Test yazma kuralları").
+
+Bu altı madde tamamlanmadan `isDemo` alanı `false` yapılmamalı ve UI'daki
+mock veri uyarıları kaldırılmamalıdır.
