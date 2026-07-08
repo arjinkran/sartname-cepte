@@ -6,9 +6,9 @@
     "scheme": "sartnamecepte",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#0E2A47",
+    "backgroundColor": "#0B1F3A",
     "splash": {
-      "backgroundColor": "#0E2A47",
+      "backgroundColor": "#0B1F3A",
       "resizeMode": "contain"
     },
     "ios": {

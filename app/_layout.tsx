@@ -1,77 +1,87 @@
-// Kök yerleşim: Expo Router yığını + ilk açılış sorumluluk reddi.
+// Kök yerleşim: Expo Router yığını + splash + ilk açılış sorumluluk reddi.
 // Not: React Query, Supabase ve RevenueCat, Expo Go'da hatasız açılış
 // hedefi için geçici olarak devre dışı (bkz. src/lib/*.ts stub'ları).
 import React, { useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { FavorilerProvider } from '../src/lib/favoriler';
-import { colors, spacing } from '../src/theme';
+import { AppSplash, useAppSplash } from '../src/components/AppSplash.tsx';
+import { colors, spacing } from '../src/theme/index.ts';
 
 export default function RootLayout() {
   const [onayVerildi, setOnayVerildi] = useState(false);
+  const { splashVisible, splashOpacity, contentOpacity } = useAppSplash();
 
   return (
     <FavorilerProvider>
       <StatusBar style="light" />
-      <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: colors.primary },
-          headerTintColor: '#FFFFFF',
-          headerTitleStyle: { fontWeight: '800' },
-          contentStyle: { backgroundColor: colors.background },
-        }}
-      >
-        <Stack.Screen name="index" options={{ title: 'Şartname Cepte' }} />
-        <Stack.Screen name="sartname/index" options={{ title: 'Şartname / Mevzuat' }} />
-        <Stack.Screen name="sartname/kategoriler" options={{ title: 'Kategoriler' }} />
-        <Stack.Screen name="sartname/kategori/[kid]" options={{ title: 'Kategori' }} />
-        <Stack.Screen name="sartname/[id]" options={{ title: 'Bilgi Kartı' }} />
-        <Stack.Screen name="hesaplayicilar/index" options={{ title: 'Cep Hesaplayıcılar' }} />
-        <Stack.Screen name="hesaplayicilar/gerilim-dusumu" options={{ title: 'Gerilim Düşümü' }} />
-        <Stack.Screen name="hesaplayicilar/og-akim-tasima" options={{ title: 'OG Akım Taşıma Kapasitesi' }} />
-        <Stack.Screen name="hesaplayicilar/enh-mekanik" options={{ title: 'ENH Mekanik Hesapları' }} />
-        <Stack.Screen name="hesaplayicilar/beton-direk" options={{ title: 'Beton Direk Seçimi' }} />
-        <Stack.Screen name="hesaplayicilar/direk-kuvvet" options={{ title: 'Direk Kuvvet Hesabı' }} />
-        <Stack.Screen name="hesaplayicilar/buz-yuku" options={{ title: 'Buz Yükü Hesabı' }} />
-        <Stack.Screen name="hesaplayicilar/sehim" options={{ title: 'Sehim Hesabı' }} />
-        <Stack.Screen name="enh-bilgi/index" options={{ title: 'ENH Bilgi Bankası' }} />
-        <Stack.Screen name="enh-bilgi/iletkenler" options={{ title: 'İletkenler' }} />
-        <Stack.Screen name="enh-bilgi/iletken/[id]" options={{ title: 'İletken Detayı' }} />
-        <Stack.Screen name="enh-bilgi/direk-siniflari" options={{ title: 'Direk Sınıfları' }} />
-        <Stack.Screen name="enh-bilgi/direk-sinifi/[id]" options={{ title: 'Direk Sınıfı Detayı' }} />
-        <Stack.Screen name="enh-bilgi/direk-malzemeleri" options={{ title: 'Direk Malzemeleri' }} />
-        <Stack.Screen name="enh-bilgi/direk-malzemesi/[id]" options={{ title: 'Direk Malzemesi Detayı' }} />
-        <Stack.Screen name="enh-bilgi/direk-devre-tipleri" options={{ title: 'Direk Devre Tipleri' }} />
-        <Stack.Screen name="enh-bilgi/devre-tipi/[id]" options={{ title: 'Devre Tipi Detayı' }} />
-        <Stack.Screen name="enh-bilgi/izolatorler" options={{ title: 'İzolatörler' }} />
-        <Stack.Screen name="enh-bilgi/izolator/[id]" options={{ title: 'İzolatör Detayı' }} />
-      </Stack>
+      <View style={styles.root}>
+        <Animated.View style={[styles.content, { opacity: contentOpacity }]}>
+          <Stack
+            screenOptions={{
+              headerStyle: { backgroundColor: colors.primary },
+              headerTintColor: '#FFFFFF',
+              headerTitleStyle: { fontWeight: '800' },
+              contentStyle: { backgroundColor: colors.background },
+            }}
+          >
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="sartname/index" options={{ title: 'Şartname / Mevzuat' }} />
+            <Stack.Screen name="sartname/kategoriler" options={{ title: 'Kategoriler' }} />
+            <Stack.Screen name="sartname/kategori/[kid]" options={{ title: 'Kategori' }} />
+            <Stack.Screen name="sartname/[id]" options={{ title: 'Bilgi Kartı' }} />
+            <Stack.Screen name="hesaplayicilar/index" options={{ title: 'Cep Hesaplayıcılar' }} />
+            <Stack.Screen name="hesaplayicilar/gerilim-dusumu" options={{ title: 'Gerilim Düşümü' }} />
+            <Stack.Screen name="hesaplayicilar/og-akim-tasima" options={{ title: 'OG Akım Taşıma Kapasitesi' }} />
+            <Stack.Screen name="hesaplayicilar/enh-mekanik" options={{ title: 'ENH Mekanik Hesapları' }} />
+            <Stack.Screen name="hesaplayicilar/beton-direk" options={{ title: 'Beton Direk Seçimi' }} />
+            <Stack.Screen name="hesaplayicilar/direk-kuvvet" options={{ title: 'Direk Kuvvet Hesabı' }} />
+            <Stack.Screen name="hesaplayicilar/buz-yuku" options={{ title: 'Buz Yükü Hesabı' }} />
+            <Stack.Screen name="hesaplayicilar/sehim" options={{ title: 'Sehim Hesabı' }} />
+            <Stack.Screen name="enh-bilgi/index" options={{ title: 'ENH Bilgi Bankası' }} />
+            <Stack.Screen name="enh-bilgi/iletkenler" options={{ title: 'İletkenler' }} />
+            <Stack.Screen name="enh-bilgi/iletken/[id]" options={{ title: 'İletken Detayı' }} />
+            <Stack.Screen name="enh-bilgi/direk-siniflari" options={{ title: 'Direk Sınıfları' }} />
+            <Stack.Screen name="enh-bilgi/direk-sinifi/[id]" options={{ title: 'Direk Sınıfı Detayı' }} />
+            <Stack.Screen name="enh-bilgi/direk-malzemeleri" options={{ title: 'Direk Malzemeleri' }} />
+            <Stack.Screen name="enh-bilgi/direk-malzemesi/[id]" options={{ title: 'Direk Malzemesi Detayı' }} />
+            <Stack.Screen name="enh-bilgi/direk-devre-tipleri" options={{ title: 'Direk Devre Tipleri' }} />
+            <Stack.Screen name="enh-bilgi/devre-tipi/[id]" options={{ title: 'Devre Tipi Detayı' }} />
+            <Stack.Screen name="enh-bilgi/izolatorler" options={{ title: 'İzolatörler' }} />
+            <Stack.Screen name="enh-bilgi/izolator/[id]" options={{ title: 'İzolatör Detayı' }} />
+          </Stack>
 
-      {/* İlk açılış sorumluluk reddi */}
-      <Modal visible={!onayVerildi} transparent animationType="fade">
-        <View style={styles.modalArka}>
-          <View style={styles.modalKutu}>
-            <Text style={styles.modalBaslik}>Önemli Uyarı</Text>
-            <Text style={styles.modalMetin}>
-              Bu uygulamadaki hesaplar, kontrol listeleri ve İSG içerikleri yalnızca
-              bilgilendirme ve saha pratiğine destek amaçlıdır.
-              {'\n\n'}Kesin tasarım, işletme ve iş güvenliği kararlarında ilgili
-              yönetmelikler, TEDAŞ/dağıtım şirketi şartnameleri ve işvereninizin
-              talimatları esastır. Elektrik tesislerinde çalışma yetkinlik ve
-              yetkilendirme gerektirir.
-            </Text>
-            <Pressable style={styles.modalBtn} onPress={() => setOnayVerildi(true)}>
-              <Text style={styles.modalBtnText}>Okudum, anladım</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+          {/* İlk açılış sorumluluk reddi — splash bitmeden gösterilmez. */}
+          <Modal visible={!onayVerildi && !splashVisible} transparent animationType="fade">
+            <View style={styles.modalArka}>
+              <View style={styles.modalKutu}>
+                <Text style={styles.modalBaslik}>Önemli Uyarı</Text>
+                <Text style={styles.modalMetin}>
+                  Bu uygulamadaki hesaplar, kontrol listeleri ve İSG içerikleri yalnızca
+                  bilgilendirme ve saha pratiğine destek amaçlıdır.
+                  {'\n\n'}Kesin tasarım, işletme ve iş güvenliği kararlarında ilgili
+                  yönetmelikler, TEDAŞ/dağıtım şirketi şartnameleri ve işvereninizin
+                  talimatları esastır. Elektrik tesislerinde çalışma yetkinlik ve
+                  yetkilendirme gerektirir.
+                </Text>
+                <Pressable style={styles.modalBtn} onPress={() => setOnayVerildi(true)}>
+                  <Text style={styles.modalBtnText}>Okudum, anladım</Text>
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
+        </Animated.View>
+
+        {splashVisible && <AppSplash opacity={splashOpacity} />}
+      </View>
     </FavorilerProvider>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.primary },
+  content: { flex: 1 },
   modalArka: {
     flex: 1,
     backgroundColor: 'rgba(10, 20, 35, 0.75)',

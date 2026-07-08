@@ -80,8 +80,9 @@ npm run typecheck   → TypeScript tip kontrolü
 ```
 sartname-cepte/
 ├── app/                          ← Rotalar (Expo Router: dosya = rota)
-│   ├── _layout.tsx               ← Kök yerleşim + açılış uyarısı
-│   ├── index.tsx                 ← Ana ekran (7 modül kartı)
+│   ├── _layout.tsx               ← Kök yerleşim + JS splash (AppSplash) + açılış uyarısı
+│   ├── index.tsx                 ← Ana ekran (premium yeniden tasarım, Sprint UI-1A: AppBar/Welcome/
+│   │                                Hızlı işlemler/Son Şartnameler/Popüler Aramalar/AI Destek/Modüller/BottomNav)
 │   ├── sartname/                 ← İnce rota dosyaları → modules/mevzuat/screens'e re-export
 │   ├── enh-bilgi/                ← İnce rota dosyaları → modules/enhBilgi/screens'e re-export
 │   └── hesaplayicilar/
@@ -107,8 +108,16 @@ sartname-cepte/
 │       │                            direkMalzemeleri.ts, direkDevreTipleri.ts, izolatorler.ts, basliklar.ts
 │       └── types/                ← IletkenBilgi, DirekSinifBilgi tipleri
 ├── src/
-│   ├── theme.ts                  ← Renkler ve ölçüler
-│   ├── common/components/UI.tsx  ← Modüller arası ortak bileşenler (StyleSheet)
+│   ├── theme/                    ← Premium tema (Sprint UI-1A) — colors/spacing/radius/typography/shadow/
+│   │                                animations + index.ts barrel. Eski `src/theme.ts`'in yerine geçti;
+│   │                                `colors` sözlüğü eski alan adlarını da içerir (geriye dönük uyumluluk).
+│   ├── components/
+│   │   ├── ui/                   ← Ortak UI kit (Sprint UI-1A): Screen, AppBar, Card, Button, Chip,
+│   │   │                            SectionTitle, IconButton, ListItem, BottomNavigation, PressableScale
+│   │   └── AppSplash.tsx         ← JS splash ekranı (useAppSplash hook + AppSplash bileşeni) — app.json'daki
+│   │                                native splash'tan AYRI, yalnızca ilk açılışta bir kez gösterilir
+│   ├── common/components/UI.tsx  ← Modüller arası ortak bileşenler (StyleSheet) — src/theme üzerinden otomatik
+│   │                                yeni paleti kullanır, bu sprintte kod değişikliği yapılmadı
 │   ├── catalogs/conductors/      ← Merkezi ACSR iletken kataloğu — TEK iletken veri kaynağı (bkz. README.md)
 │   ├── calculations/              ← Hesaplama motoru altyapısı (UI hesap yapmaz)
 │   │   ├── core/                 ← types.ts, validation.ts, errors.ts, format.ts (ortak)
