@@ -15,6 +15,7 @@ import { EnhMechanicalEngine } from './engines/enhMechanical/index.ts';
 import { BetonDirekEngine } from './engines/enhMechanical/betonDirek/index.ts';
 import { PoleForceEngine } from './engines/enhMechanical/poleForce/index.ts';
 import { IceLoadEngine } from './engines/enhMechanical/iceLoad/index.ts';
+import { SagEngine } from './engines/enhMechanical/sag/index.ts';
 
 export {
   VoltageDropEngine,
@@ -23,6 +24,7 @@ export {
   BetonDirekEngine,
   PoleForceEngine,
   IceLoadEngine,
+  SagEngine,
 };
 export type {
   VoltageDropInput,
@@ -52,6 +54,7 @@ export type {
 } from './engines/enhMechanical/betonDirek/index.ts';
 export type { PoleForceInput, PoleForceOutput } from './engines/enhMechanical/poleForce/index.ts';
 export type { IceLoadInput, IceLoadOutput } from './engines/enhMechanical/iceLoad/index.ts';
+export type { SagInput, SagOutput, LoadCase as SagLoadCase } from './engines/enhMechanical/sag/index.ts';
 
 /** Şu an aktif (gerçek veya demo/iskelet) hesap motorlarının kayıt listesi. */
 export const CALCULATION_ENGINES = [
@@ -61,4 +64,5 @@ export const CALCULATION_ENGINES = [
   BetonDirekEngine,
   PoleForceEngine,
   IceLoadEngine,
+  SagEngine,
 ] as const;

@@ -1,9 +1,9 @@
 // ENH Mekanik Hesapları — alt hesap kartları listesi.
 // "Beton Direk Seçimi" (Sprint 3A), "Direk Kuvvet Hesabı" (Sprint 4A,
-// ön hesap) ve "Buz Yükü Hesabı" (Sprint 4C, ön hesap) gerçek ekranlara
-// yönlendirir; diğer kartlara basınca hâlâ aynı sayfada "henüz aktif
-// değil" bilgi kartı gösterilir — bkz.
-// src/calculations/engines/enhMechanical/README.md.
+// ön hesap), "Buz Yükü Hesabı" (Sprint 4C, ön hesap) ve "Sehim Hesabı"
+// (Sprint 5A, ön hesap) gerçek ekranlara yönlendirir; diğer kartlara
+// basınca hâlâ aynı sayfada "henüz aktif değil" bilgi kartı gösterilir —
+// bkz. src/calculations/engines/enhMechanical/README.md.
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -32,6 +32,12 @@ const EK_KARTLAR: readonly HesapKarti[] = [
     description: 'İletken üzerindeki buz yükünün ön hesabı (IceLoadEngine).',
     relatedExcelTabs: [],
   },
+  {
+    id: 'sehimHesabi',
+    label: 'Sehim Hesabı',
+    description: 'Klasik parabolik yaklaşımla iletken sehiminin ön hesabı (SagEngine).',
+    relatedExcelTabs: [],
+  },
 ];
 
 const TUM_KARTLAR: readonly HesapKarti[] = [...ENH_MECHANICAL_SUB_CALCULATIONS, ...EK_KARTLAR];
@@ -40,6 +46,7 @@ const AKTIF_HESAPLAR: Record<string, string> = {
   betonDirekSecimi: '/hesaplayicilar/beton-direk',
   direkKuvvetHesabi: '/hesaplayicilar/direk-kuvvet',
   buzYukuHesabi: '/hesaplayicilar/buz-yuku',
+  sehimHesabi: '/hesaplayicilar/sehim',
 };
 
 export default function EnhMekanik() {
@@ -51,7 +58,7 @@ export default function EnhMekanik() {
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: spacing.m }}>
       <View style={styles.bilgiNotu}>
         <Text style={styles.bilgiNotuText}>
-          ℹ️ Beton Direk Seçimi, Direk Kuvvet Hesabı ve Buz Yükü Hesabı (ön hesaplar) aktif; diğer alt hesaplar iskelet aşamasındadır. Gerçek formüller Excel analizinden sonra eklenecektir.
+          ℹ️ Beton Direk Seçimi, Direk Kuvvet Hesabı, Buz Yükü Hesabı ve Sehim Hesabı (ön hesaplar) aktif; diğer alt hesaplar iskelet aşamasındadır. Gerçek formüller Excel analizinden sonra eklenecektir.
         </Text>
       </View>
 

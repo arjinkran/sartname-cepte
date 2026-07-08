@@ -34,6 +34,7 @@ export default function RootLayout() {
         <Stack.Screen name="hesaplayicilar/beton-direk" options={{ title: 'Beton Direk Seçimi' }} />
         <Stack.Screen name="hesaplayicilar/direk-kuvvet" options={{ title: 'Direk Kuvvet Hesabı' }} />
         <Stack.Screen name="hesaplayicilar/buz-yuku" options={{ title: 'Buz Yükü Hesabı' }} />
+        <Stack.Screen name="hesaplayicilar/sehim" options={{ title: 'Sehim Hesabı' }} />
         <Stack.Screen name="enh-bilgi/index" options={{ title: 'ENH Bilgi Bankası' }} />
         <Stack.Screen name="enh-bilgi/iletkenler" options={{ title: 'İletkenler' }} />
         <Stack.Screen name="enh-bilgi/iletken/[id]" options={{ title: 'İletken Detayı' }} />
