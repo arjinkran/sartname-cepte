@@ -30,6 +30,7 @@ export default function RootLayout() {
         <Stack.Screen name="hesaplayicilar/index" options={{ title: 'Cep Hesaplayıcılar' }} />
         <Stack.Screen name="hesaplayicilar/gerilim-dusumu" options={{ title: 'Gerilim Düşümü' }} />
         <Stack.Screen name="hesaplayicilar/og-akim-tasima" options={{ title: 'OG Akım Taşıma Kapasitesi' }} />
+        <Stack.Screen name="hesaplayicilar/enh-mekanik" options={{ title: 'ENH Mekanik Hesapları' }} />
       </Stack>
 
       {/* İlk açılış sorumluluk reddi */}

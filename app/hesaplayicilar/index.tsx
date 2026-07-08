@@ -1,5 +1,5 @@
-// Hesaplayıcı listesi. Gerilim Düşümü ve OG Akım Taşıma Kapasitesi aktif;
-// diğer hesaplayıcılar sırayla eklenecek.
+// Hesaplayıcı listesi. Gerilim Düşümü, OG Akım Taşıma Kapasitesi ve
+// ENH Mekanik Hesapları (iskelet) aktif; diğer hesaplayıcılar sırayla eklenecek.
 import React from 'react';
 import { ScrollView, Text, View, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -8,6 +8,7 @@ import { colors, spacing, radius } from '../../src/theme';
 const HESAPLAYICILAR = [
   { id: 'gerilim-dusumu', ad: 'Gerilim Düşümü', aciklama: 'Mono/trifaze %e ve minimum kesit', aktif: true, rota: '/hesaplayicilar/gerilim-dusumu' },
   { id: 'og-akim-tasima', ad: 'OG Akım Taşıma Kapasitesi', aciklama: 'YG/OG hava hattı iletkenleri için akım kapasitesi ve iletken özellikleri', aktif: true, rota: '/hesaplayicilar/og-akim-tasima' },
+  { id: 'enh-mekanik', ad: 'ENH Mekanik Hesapları', aciklama: 'Direk açıklığı, sehim, Df/Ds ve değişik haller hesapları', aktif: true, rota: '/hesaplayicilar/enh-mekanik' },
   { id: 'akim-guc', ad: 'Akım / Güç', aciklama: 'I, P, cosφ dönüşümleri', aktif: false, rota: '' },
   { id: 'kablo-kesiti', ad: 'Kablo Kesiti Seçimi', aciklama: 'Akım taşıma + düşüm birlikte', aktif: false, rota: '' },
   { id: 'kisa-devre', ad: 'Kısa Devre (Yaklaşık)', aciklama: 'Trafo empedansından Ik', aktif: false, rota: '' },

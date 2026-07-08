@@ -25,8 +25,10 @@ export type CalculationUnit =
   | 'km'
   | 'kg'
   | 'kg/m'
+  | 'kg/mm2'
   | 'N'
   | 'daN'
+  | '°C'
   | '%'
   | 'none';
 

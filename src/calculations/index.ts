@@ -11,8 +11,9 @@ export * from './core/format.ts';
 
 import { VoltageDropEngine } from './engines/voltageDrop/index.ts';
 import { AmpacityOGEngine } from './engines/ampacityOG/index.ts';
+import { EnhMechanicalEngine } from './engines/enhMechanical/index.ts';
 
-export { VoltageDropEngine, AmpacityOGEngine };
+export { VoltageDropEngine, AmpacityOGEngine, EnhMechanicalEngine };
 export type {
   VoltageDropInput,
   VoltageDropOutput,
@@ -25,6 +26,12 @@ export type {
   AmpacityCondition,
   VoltageLevel as AmpacityVoltageLevel,
 } from './engines/ampacityOG/index.ts';
+export type {
+  EnhMechanicalCalcType,
+  EnhMechanicalInput,
+  EnhMechanicalOutput,
+  EnhMechanicalSubCalculation,
+} from './engines/enhMechanical/index.ts';
 
-/** Şu an aktif (gerçek veya demo) hesap motorlarının kayıt listesi. */
-export const CALCULATION_ENGINES = [VoltageDropEngine, AmpacityOGEngine] as const;
+/** Şu an aktif (gerçek veya demo/iskelet) hesap motorlarının kayıt listesi. */
+export const CALCULATION_ENGINES = [VoltageDropEngine, AmpacityOGEngine, EnhMechanicalEngine] as const;

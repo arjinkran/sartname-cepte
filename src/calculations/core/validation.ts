@@ -28,12 +28,15 @@ export function numberRange(value: unknown, field: string, min: number, max: num
   return null;
 }
 
-export function oneOf<T extends string>(
+export function oneOf<T extends string | number>(
   value: unknown,
   field: string,
   options: readonly T[]
 ): CalculationError | null {
-  if (typeof value !== 'string' || !(options as readonly string[]).includes(value)) {
+  const gecerli =
+    (typeof value === 'string' || typeof value === 'number') &&
+    (options as readonly (string | number)[]).includes(value);
+  if (!gecerli) {
     return makeError(
       'FIELD_INVALID',
       `${field}, şu değerlerden biri olmalıdır: ${options.join(', ')}.`,
