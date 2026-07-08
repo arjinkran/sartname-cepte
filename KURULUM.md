@@ -87,7 +87,8 @@ sartname-cepte/
 │       ├── index.tsx             ← Hesaplayıcı listesi
 │       ├── gerilim-dusumu.tsx    ← src/calculations/engines/voltageDrop DEMO motoruna bağlı ekran
 │       ├── og-akim-tasima.tsx    ← src/calculations/engines/ampacityOG motoruna bağlı ekran
-│       └── enh-mekanik.tsx       ← src/calculations/engines/enhMechanical İSKELET motoruna bağlı ekran
+│       ├── enh-mekanik.tsx       ← ENH alt hesap kartları (yalnızca Beton Direk Seçimi aktif)
+│       └── beton-direk.tsx       ← src/calculations/engines/enhMechanical/betonDirek motoruna bağlı ekran
 ├── modules/
 │   └── mevzuat/                  ← Şartname / Mevzuat modülü (kendi kendine yeten)
 │       ├── screens/              ← Ekran bileşenleri (app/sartname/* buradan re-export eder)
@@ -103,7 +104,8 @@ sartname-cepte/
 │   │   └── engines/
 │   │       ├── voltageDrop/      ← DEMO motor: basitleştirilmiş gerilim düşümü formülü
 │   │       ├── ampacityOG/       ← OG iletken veri tabanı + akım taşıma kapasitesi (lookup motoru)
-│   │       ├── enhMechanical/    ← İSKELET: 6 alt hesap türü, hepsi notImplemented döner (bkz. README.md)
+│   │       ├── enhMechanical/    ← 6 alt hesap türü; yalnızca betonDirek/ gerçek (bkz. README.md)
+│   │       │   └── betonDirek/   ← GERÇEK: katalog filtresi + emniyet katsayısı sınıflandırması
 │   │       ├── ampacityAG/       ← İskelet (types.ts) — motor henüz yok
 │   │       ├── sag/              ← İskelet (types.ts) — motor henüz yok
 │   │       └── tension/          ← İskelet (types.ts) — motor henüz yok

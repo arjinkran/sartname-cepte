@@ -12,8 +12,9 @@ export * from './core/format.ts';
 import { VoltageDropEngine } from './engines/voltageDrop/index.ts';
 import { AmpacityOGEngine } from './engines/ampacityOG/index.ts';
 import { EnhMechanicalEngine } from './engines/enhMechanical/index.ts';
+import { BetonDirekEngine } from './engines/enhMechanical/betonDirek/index.ts';
 
-export { VoltageDropEngine, AmpacityOGEngine, EnhMechanicalEngine };
+export { VoltageDropEngine, AmpacityOGEngine, EnhMechanicalEngine, BetonDirekEngine };
 export type {
   VoltageDropInput,
   VoltageDropOutput,
@@ -32,6 +33,19 @@ export type {
   EnhMechanicalOutput,
   EnhMechanicalSubCalculation,
 } from './engines/enhMechanical/index.ts';
+export type {
+  BetonDirek,
+  BetonDirekInput,
+  BetonDirekOutput,
+  BetonDirekAday,
+  BetonDirekSiniflandirma,
+  WindZone as BetonDirekWindZone,
+} from './engines/enhMechanical/betonDirek/index.ts';
 
 /** Şu an aktif (gerçek veya demo/iskelet) hesap motorlarının kayıt listesi. */
-export const CALCULATION_ENGINES = [VoltageDropEngine, AmpacityOGEngine, EnhMechanicalEngine] as const;
+export const CALCULATION_ENGINES = [
+  VoltageDropEngine,
+  AmpacityOGEngine,
+  EnhMechanicalEngine,
+  BetonDirekEngine,
+] as const;

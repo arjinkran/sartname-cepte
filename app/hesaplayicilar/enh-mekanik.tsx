@@ -1,13 +1,19 @@
-// ENH Mekanik Hesapları — Sprint 2C İSKELET ekranı. Alt hesap kartlarına
-// basınca aynı sayfada "henüz aktif değil" bilgi kartı gösterilir.
-// Gerçek hesaplar Excel analizinden sonra eklenecektir — bkz.
-// src/calculations/engines/enhMechanical/README.md.
+// ENH Mekanik Hesapları — alt hesap kartları listesi.
+// "Beton Direk Seçimi" artık gerçek bir ekrana yönlendirir (Sprint 3A);
+// diğer kartlara basınca hâlâ aynı sayfada "henüz aktif değil" bilgi
+// kartı gösterilir — bkz. src/calculations/engines/enhMechanical/README.md.
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { ENH_MECHANICAL_SUB_CALCULATIONS } from '../../src/calculations/engines/enhMechanical/engine';
 import { colors, spacing, radius } from '../../src/theme';
 
+const AKTIF_HESAPLAR: Record<string, string> = {
+  betonDirekSecimi: '/hesaplayicilar/beton-direk',
+};
+
 export default function EnhMekanik() {
+  const router = useRouter();
   const [seciliId, setSeciliId] = useState<string | null>(null);
   const secili = ENH_MECHANICAL_SUB_CALCULATIONS.find((s) => s.id === seciliId);
 
@@ -15,16 +21,17 @@ export default function EnhMekanik() {
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: spacing.m }}>
       <View style={styles.bilgiNotu}>
         <Text style={styles.bilgiNotuText}>
-          ℹ️ Bu bölümdeki hesaplar iskelet aşamasındadır; gerçek formüller Excel analizinden sonra eklenecektir.
+          ℹ️ Beton Direk Seçimi aktif; diğer alt hesaplar iskelet aşamasındadır. Gerçek formüller Excel analizinden sonra eklenecektir.
         </Text>
       </View>
 
       {ENH_MECHANICAL_SUB_CALCULATIONS.map((s) => {
         const seciliMi = seciliId === s.id;
+        const rota = AKTIF_HESAPLAR[s.id];
         return (
           <Pressable
             key={s.id}
-            onPress={() => setSeciliId(seciliMi ? null : s.id)}
+            onPress={() => (rota ? router.push(rota) : setSeciliId(seciliMi ? null : s.id))}
             style={({ pressed }) => [
               styles.kart,
               seciliMi && styles.kartAktif,
@@ -35,7 +42,7 @@ export default function EnhMekanik() {
               <Text style={styles.kartAd}>{s.label}</Text>
               <Text style={styles.kartAciklama}>{s.description}</Text>
             </View>
-            <Text style={styles.ok}>{seciliMi ? '︿' : '›'}</Text>
+            <Text style={styles.ok}>{rota ? '›' : seciliMi ? '︿' : '›'}</Text>
           </Pressable>
         );
       })}
