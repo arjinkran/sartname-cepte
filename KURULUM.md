@@ -88,9 +88,10 @@ sartname-cepte/
 │       ├── index.tsx             ← Hesaplayıcı listesi
 │       ├── gerilim-dusumu.tsx    ← src/calculations/engines/voltageDrop DEMO motoruna bağlı ekran
 │       ├── og-akim-tasima.tsx    ← src/calculations/engines/ampacityOG motoruna bağlı ekran
-│       ├── enh-mekanik.tsx       ← ENH alt hesap kartları (Beton Direk Seçimi + Direk Kuvvet Hesabı aktif)
+│       ├── enh-mekanik.tsx       ← ENH alt hesap kartları (Beton Direk, Direk Kuvvet, Buz Yükü aktif)
 │       ├── beton-direk.tsx       ← src/calculations/engines/enhMechanical/betonDirek motoruna bağlı ekran
-│       └── direk-kuvvet.tsx      ← src/calculations/engines/enhMechanical/poleForce (ÖN HESAP) motoruna bağlı ekran
+│       ├── direk-kuvvet.tsx      ← src/calculations/engines/enhMechanical/poleForce (ÖN HESAP) motoruna bağlı ekran
+│       └── buz-yuku.tsx          ← src/calculations/engines/enhMechanical/iceLoad (ÖN HESAP) motoruna bağlı ekran
 ├── modules/
 │   └── mevzuat/                  ← Şartname / Mevzuat modülü (kendi kendine yeten)
 │       ├── screens/              ← Ekran bileşenleri (app/sartname/* buradan re-export eder)
@@ -113,9 +114,10 @@ sartname-cepte/
 │   │   └── engines/
 │   │       ├── voltageDrop/      ← DEMO motor: basitleştirilmiş gerilim düşümü formülü
 │   │       ├── ampacityOG/       ← OG akım taşıma kapasitesi (lookup motoru; iletken verisi src/catalogs/conductors'tan)
-│   │       ├── enhMechanical/    ← 6 alt hesap türü; betonDirek/ ve poleForce/ bağımsız gerçek motorlar (bkz. README.md)
+│   │       ├── enhMechanical/    ← 6 alt hesap türü; betonDirek/, poleForce/, iceLoad/ bağımsız gerçek motorlar (bkz. README.md)
 │   │       │   ├── betonDirek/   ← GERÇEK: katalog filtresi + emniyet katsayısı sınıflandırması
-│   │       │   └── poleForce/    ← ÖN HESAP: düşey/yatay kuvvet tahmini (moment hesabı henüz yok)
+│   │       │   ├── poleForce/    ← ÖN HESAP: düşey/yatay kuvvet tahmini (moment hesabı henüz yok)
+│   │       │   └── iceLoad/      ← ÖN HESAP: pb=k√d buz yükü (k katsayıları kaynak doğrulaması gerekli)
 │   │       ├── ampacityAG/       ← İskelet (types.ts) — motor henüz yok
 │   │       ├── sag/              ← İskelet (types.ts) — motor henüz yok
 │   │       └── tension/          ← İskelet (types.ts) — motor henüz yok

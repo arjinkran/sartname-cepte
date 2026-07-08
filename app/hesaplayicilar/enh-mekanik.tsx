@@ -1,7 +1,8 @@
 // ENH Mekanik Hesapları — alt hesap kartları listesi.
-// "Beton Direk Seçimi" (Sprint 3A) ve "Direk Kuvvet Hesabı" (Sprint 4A,
-// ön hesap) gerçek ekranlara yönlendirir; diğer kartlara basınca hâlâ
-// aynı sayfada "henüz aktif değil" bilgi kartı gösterilir — bkz.
+// "Beton Direk Seçimi" (Sprint 3A), "Direk Kuvvet Hesabı" (Sprint 4A,
+// ön hesap) ve "Buz Yükü Hesabı" (Sprint 4C, ön hesap) gerçek ekranlara
+// yönlendirir; diğer kartlara basınca hâlâ aynı sayfada "henüz aktif
+// değil" bilgi kartı gösterilir — bkz.
 // src/calculations/engines/enhMechanical/README.md.
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -25,6 +26,12 @@ const EK_KARTLAR: readonly HesapKarti[] = [
     description: 'Direğe gelen düşey ve yatay kuvvetlerin ön hesabı (PoleForceEngine).',
     relatedExcelTabs: [],
   },
+  {
+    id: 'buzYukuHesabi',
+    label: 'Buz Yükü Hesabı',
+    description: 'İletken üzerindeki buz yükünün ön hesabı (IceLoadEngine).',
+    relatedExcelTabs: [],
+  },
 ];
 
 const TUM_KARTLAR: readonly HesapKarti[] = [...ENH_MECHANICAL_SUB_CALCULATIONS, ...EK_KARTLAR];
@@ -32,6 +39,7 @@ const TUM_KARTLAR: readonly HesapKarti[] = [...ENH_MECHANICAL_SUB_CALCULATIONS, 
 const AKTIF_HESAPLAR: Record<string, string> = {
   betonDirekSecimi: '/hesaplayicilar/beton-direk',
   direkKuvvetHesabi: '/hesaplayicilar/direk-kuvvet',
+  buzYukuHesabi: '/hesaplayicilar/buz-yuku',
 };
 
 export default function EnhMekanik() {
@@ -43,7 +51,7 @@ export default function EnhMekanik() {
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: spacing.m }}>
       <View style={styles.bilgiNotu}>
         <Text style={styles.bilgiNotuText}>
-          ℹ️ Beton Direk Seçimi ve Direk Kuvvet Hesabı (ön hesap) aktif; diğer alt hesaplar iskelet aşamasındadır. Gerçek formüller Excel analizinden sonra eklenecektir.
+          ℹ️ Beton Direk Seçimi, Direk Kuvvet Hesabı ve Buz Yükü Hesabı (ön hesaplar) aktif; diğer alt hesaplar iskelet aşamasındadır. Gerçek formüller Excel analizinden sonra eklenecektir.
         </Text>
       </View>
 
