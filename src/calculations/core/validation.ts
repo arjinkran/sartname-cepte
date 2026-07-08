@@ -18,6 +18,13 @@ export function positiveNumber(value: unknown, field: string): CalculationError 
   return null;
 }
 
+export function nonNegativeNumber(value: unknown, field: string): CalculationError | null {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+    return makeError('FIELD_INVALID', `${field} negatif olmayan bir sayı olmalıdır.`, field);
+  }
+  return null;
+}
+
 export function numberRange(value: unknown, field: string, min: number, max: number): CalculationError | null {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
     return makeError('FIELD_INVALID', `${field} sayısal olmalıdır.`, field);

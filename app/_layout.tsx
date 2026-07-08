@@ -32,6 +32,7 @@ export default function RootLayout() {
         <Stack.Screen name="hesaplayicilar/og-akim-tasima" options={{ title: 'OG Akım Taşıma Kapasitesi' }} />
         <Stack.Screen name="hesaplayicilar/enh-mekanik" options={{ title: 'ENH Mekanik Hesapları' }} />
         <Stack.Screen name="hesaplayicilar/beton-direk" options={{ title: 'Beton Direk Seçimi' }} />
+        <Stack.Screen name="hesaplayicilar/direk-kuvvet" options={{ title: 'Direk Kuvvet Hesabı' }} />
         <Stack.Screen name="enh-bilgi/index" options={{ title: 'ENH Bilgi Bankası' }} />
         <Stack.Screen name="enh-bilgi/iletkenler" options={{ title: 'İletkenler' }} />
         <Stack.Screen name="enh-bilgi/iletken/[id]" options={{ title: 'İletken Detayı' }} />

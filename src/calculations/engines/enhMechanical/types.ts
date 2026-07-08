@@ -32,6 +32,20 @@ export type PoleType =
 export type CircuitType = 'single' | 'double' | 'quad';
 
 /**
+ * Direk görevi (fonksiyonel sınıf) — docs/ENH_DIREK_SECIMI_ANALIZ.md
+ * bölüm 1 ve modules/enhBilgi/types'taki DirekSinifId ile aynı değer
+ * kümesini kullanır (kasıtlı olarak; iki katman birbirinden bağımsız
+ * güncellenmemelidir).
+ */
+export type PoleFunction =
+  | 'tasiyici'
+  | 'kose-tasiyici'
+  | 'durdurucu'
+  | 'kose-durdurucu'
+  | 'nihayet'
+  | 'bransman';
+
+/**
  * Tüm alt hesapların ortak girdi havuzu. Her alan opsiyoneldir; hangi alt
  * hesabın hangi alanı zorunlu kılacağı gerçek formüller eklendiğinde
  * netleşecektir (o zaman `EnhMechanicalInput` muhtemelen calcType bazlı

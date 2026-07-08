@@ -1,31 +1,53 @@
 // ENH Mekanik Hesapları — alt hesap kartları listesi.
-// "Beton Direk Seçimi" artık gerçek bir ekrana yönlendirir (Sprint 3A);
-// diğer kartlara basınca hâlâ aynı sayfada "henüz aktif değil" bilgi
-// kartı gösterilir — bkz. src/calculations/engines/enhMechanical/README.md.
+// "Beton Direk Seçimi" (Sprint 3A) ve "Direk Kuvvet Hesabı" (Sprint 4A,
+// ön hesap) gerçek ekranlara yönlendirir; diğer kartlara basınca hâlâ
+// aynı sayfada "henüz aktif değil" bilgi kartı gösterilir — bkz.
+// src/calculations/engines/enhMechanical/README.md.
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ENH_MECHANICAL_SUB_CALCULATIONS } from '../../src/calculations/engines/enhMechanical/engine';
 import { colors, spacing, radius } from '../../src/theme';
 
+interface HesapKarti {
+  id: string;
+  label: string;
+  description: string;
+  relatedExcelTabs: readonly string[];
+}
+
+// Sprint 2C'nin genel (notImplemented dönen) alt hesap listesine ek olarak
+// kendi bağımsız motoru olan hesaplar — bkz. poleForce/README.md.
+const EK_KARTLAR: readonly HesapKarti[] = [
+  {
+    id: 'direkKuvvetHesabi',
+    label: 'Direk Kuvvet Hesabı',
+    description: 'Direğe gelen düşey ve yatay kuvvetlerin ön hesabı (PoleForceEngine).',
+    relatedExcelTabs: [],
+  },
+];
+
+const TUM_KARTLAR: readonly HesapKarti[] = [...ENH_MECHANICAL_SUB_CALCULATIONS, ...EK_KARTLAR];
+
 const AKTIF_HESAPLAR: Record<string, string> = {
   betonDirekSecimi: '/hesaplayicilar/beton-direk',
+  direkKuvvetHesabi: '/hesaplayicilar/direk-kuvvet',
 };
 
 export default function EnhMekanik() {
   const router = useRouter();
   const [seciliId, setSeciliId] = useState<string | null>(null);
-  const secili = ENH_MECHANICAL_SUB_CALCULATIONS.find((s) => s.id === seciliId);
+  const secili = TUM_KARTLAR.find((s) => s.id === seciliId);
 
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: spacing.m }}>
       <View style={styles.bilgiNotu}>
         <Text style={styles.bilgiNotuText}>
-          ℹ️ Beton Direk Seçimi aktif; diğer alt hesaplar iskelet aşamasındadır. Gerçek formüller Excel analizinden sonra eklenecektir.
+          ℹ️ Beton Direk Seçimi ve Direk Kuvvet Hesabı (ön hesap) aktif; diğer alt hesaplar iskelet aşamasındadır. Gerçek formüller Excel analizinden sonra eklenecektir.
         </Text>
       </View>
 
-      {ENH_MECHANICAL_SUB_CALCULATIONS.map((s) => {
+      {TUM_KARTLAR.map((s) => {
         const seciliMi = seciliId === s.id;
         const rota = AKTIF_HESAPLAR[s.id];
         return (
