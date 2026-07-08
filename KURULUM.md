@@ -101,17 +101,18 @@ sartname-cepte/
 │   └── enhBilgi/                 ← ENH Bilgi Bankası (hesap motoru DEĞİL — statik teknik bilgi)
 │       ├── screens/              ← Ekran bileşenleri (app/enh-bilgi/* buradan re-export eder)
 │       ├── components/           ← IletkenKarti, DirekSinifKarti, BilgiKarti (ortak liste kartı)
-│       ├── data/                 ← iletkenler.ts (ampacityOG ile uyumlu), direkSiniflari.ts,
+│       ├── data/                 ← iletkenler.ts (src/catalogs/conductors'tan türetilir), direkSiniflari.ts,
 │       │                            direkMalzemeleri.ts, direkDevreTipleri.ts, izolatorler.ts, basliklar.ts
 │       └── types/                ← IletkenBilgi, DirekSinifBilgi tipleri
 ├── src/
 │   ├── theme.ts                  ← Renkler ve ölçüler
 │   ├── common/components/UI.tsx  ← Modüller arası ortak bileşenler (StyleSheet)
+│   ├── catalogs/conductors/      ← Merkezi ACSR iletken kataloğu — TEK iletken veri kaynağı (bkz. README.md)
 │   ├── calculations/              ← Hesaplama motoru altyapısı (UI hesap yapmaz)
 │   │   ├── core/                 ← types.ts, validation.ts, errors.ts, format.ts (ortak)
 │   │   └── engines/
 │   │       ├── voltageDrop/      ← DEMO motor: basitleştirilmiş gerilim düşümü formülü
-│   │       ├── ampacityOG/       ← OG iletken veri tabanı + akım taşıma kapasitesi (lookup motoru)
+│   │       ├── ampacityOG/       ← OG akım taşıma kapasitesi (lookup motoru; iletken verisi src/catalogs/conductors'tan)
 │   │       ├── enhMechanical/    ← 6 alt hesap türü; betonDirek/ ve poleForce/ bağımsız gerçek motorlar (bkz. README.md)
 │   │       │   ├── betonDirek/   ← GERÇEK: katalog filtresi + emniyet katsayısı sınıflandırması
 │   │       │   └── poleForce/    ← ÖN HESAP: düşey/yatay kuvvet tahmini (moment hesabı henüz yok)

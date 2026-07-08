@@ -5,36 +5,17 @@
 // bir çalışma koşulu ve bir gerilim seviyesi seçer; motor Excel'den
 // aktarılmış veri tablosundan (bkz. data.ts) ilgili akım taşıma
 // kapasitesini ve iletken özelliklerini döndürür (arama/lookup motoru).
+//
+// ⚠️ Sprint 4B: iletken tipi artık BURADA TANIMLI DEĞİL — merkezi
+// katalogdan (src/catalogs/conductors) alınır. Bkz.
+// src/catalogs/conductors/README.md "Bu katalog uygulamanın tek iletken
+// veri kaynağıdır."
 
 /** Uygulama gerilim seviyesi — reaktans değeri buna göre seçilir. */
 export type VoltageLevel = '10kV' | '35kV';
 
-/** Excel'den aktarılan tek bir iletkenin tüm teknik verisi. */
-export interface AmpacityConductor {
-  id: string;
-  code: string;
-  name: string;
-  /** Alüminyum/çelik tel sayısı gösterimi (ör. "6/1", "26/7") */
-  strandingAlSteel: string;
-  aluminumAreaMm2: number;
-  steelAreaMm2: number;
-  totalAreaMm2: number;
-  nominalDiameterMm: number;
-  nominalAreaMm2: number;
-  nominalWeightKgPerM: number;
-  breakingLoadKg: number;
-  elasticityInitialKgPerMm2: number;
-  elasticityFinalKgPerMm2: number;
-  /** Doğrusal genleşme katsayısı (1/°C) */
-  linearExpansionCoefficient: number;
-  resistance20OhmPerKm: number;
-  reactance10kVOhmPerKm: number;
-  reactance35kVOhmPerKm: number;
-  equivalentCuMm2: number;
-  ampacityCondition1A: number;
-  ampacityCondition2A: number;
-  ampacityCondition3A: number;
-}
+/** Merkezi ACSR kataloğu tipinin bu motordaki adı (geriye dönük uyumluluk için). */
+export type { ACSRConductor as AmpacityConductor } from '../../../catalogs/conductors/index.ts';
 
 /** Akım taşıma kapasitesinin hesaplandığı varsayılan çevresel çalışma koşulu. */
 export interface AmpacityCondition {

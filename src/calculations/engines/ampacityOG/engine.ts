@@ -93,7 +93,9 @@ export function hesapla(input: AmpacityOGInput): CalculationResult<AmpacityOGOut
       reactanceOhmPerKm,
       equivalentCuMm2: conductor.equivalentCuMm2,
       nominalDiameterMm: conductor.nominalDiameterMm,
-      nominalAreaMm2: conductor.nominalAreaMm2,
+      // ACSRConductor'da ayrı bir nominalAreaMm2 alanı yok; bu değer her
+      // zaman aluminumAreaMm2 ile aynıydı (bkz. src/catalogs/conductors).
+      nominalAreaMm2: conductor.aluminumAreaMm2,
       nominalWeightKgPerM: conductor.nominalWeightKgPerM,
       breakingLoadKg: conductor.breakingLoadKg,
     },

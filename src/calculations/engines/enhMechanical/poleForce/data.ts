@@ -1,12 +1,16 @@
-// poleForce alt motoru — sabitler ve mevcut iletken verisine bağlantı.
+// poleForce alt motoru — sabitler ve merkezi iletken kataloğuna bağlantı.
 //
 // ⚠️ Bu dosyadaki POLE_FORCE_TENSION_RATIO ve WIND_REGION_COEFFICIENTS
 // değerleri GERÇEK mühendislik katsayıları DEĞİLDİR — yalnızca ilk teknik
 // altyapıyı çalışır göstermek için seçilmiş ÖN HESAP tahminleridir.
 // Gerçek değerler Enerji Nakil Hatları Cilt 1/2 veya kullanıcı Excel
 // tablosundan alınmalıdır (netleştirilecek — bkz. README.md).
-import { AMPACITY_CONDUCTORS } from '../../ampacityOG/data.ts';
-import type { AmpacityConductor } from '../../ampacityOG/types.ts';
+//
+// İletken verisi (ağırlık, çap, kopma dayanımı) BURADA TUTULMUYOR — bkz.
+// src/catalogs/conductors/README.md "Bu katalog uygulamanın tek iletken
+// veri kaynağıdır."
+import { ACSR_CONDUCTORS } from '../../../../catalogs/conductors/index.ts';
+import type { ACSRConductor } from '../../../../catalogs/conductors/index.ts';
 import type { ConductorType, IceRegion, PoleFunction } from '../types.ts';
 import type { WindZone } from '../betonDirek/types.ts';
 
@@ -33,9 +37,9 @@ export const POLE_FORCE_POLE_FUNCTIONS: readonly PoleFunction[] = [
 
 /**
  * ConductorType (bu motor/betonDirek ailesinde kullanılan AWG/MCM kimliği)
- * → ampacityOG kataloğundaki kuş adı kimliği eşlemesi. Bu iki adlandırma
- * şeması projede farklı modüllerde bağımsız olarak ortaya çıkmıştır;
- * burada tek bir yerde köprüleniyor.
+ * → merkezi katalogdaki (src/catalogs/conductors) kuş adı kimliği eşlemesi.
+ * Bu iki adlandırma şeması projede farklı modüllerde bağımsız olarak
+ * ortaya çıkmıştır; burada tek bir yerde köprüleniyor.
  */
 const CONDUCTOR_TYPE_TO_AMPACITY_ID: Record<ConductorType, string> = {
   '3-awg': 'swallow',
@@ -45,10 +49,10 @@ const CONDUCTOR_TYPE_TO_AMPACITY_ID: Record<ConductorType, string> = {
   '477-mcm-hawk': 'hawk',
 };
 
-/** Verilen conductorType için ampacityOG kataloğundaki gerçek iletken kaydını döner. */
-export function iletkenVerisiGetir(conductorType: ConductorType): AmpacityConductor | undefined {
+/** Verilen conductorType için merkezi katalogdaki gerçek iletken kaydını döner. */
+export function iletkenVerisiGetir(conductorType: ConductorType): ACSRConductor | undefined {
   const ampacityId = CONDUCTOR_TYPE_TO_AMPACITY_ID[conductorType];
-  return AMPACITY_CONDUCTORS.find((c) => c.id === ampacityId);
+  return ACSR_CONDUCTORS.find((c) => c.id === ampacityId);
 }
 
 /**
