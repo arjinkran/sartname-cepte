@@ -7,7 +7,7 @@
 // (veya başka hiçbir ekrana) bağlantı verilmiyor. Bkz. KURULUM.md "Ürün
 // Tanımı" ve src/calculations/ (dokunulmadı).
 //
-// "Son Şartnameler" artık src/data/documents Repository'sinden gelen
+// "Son Şartnameler" artık src/data/library Repository'sinden gelen
 // featured dokümanları gösterir (DocumentRow bileşeni Arama/Favoriler ile
 // paylaşılır — component tekrarı yok).
 import React from 'react';
@@ -26,7 +26,7 @@ import {
 } from '../src/components/ui/index.ts';
 import { useRootTabBar } from '../src/navigation/tabs.ts';
 import { colors, radius, spacing, shadow, typography } from '../src/theme/index.ts';
-import { getFeaturedDocuments } from '../src/data/documents/index.ts';
+import { getFeaturedDocuments } from '../src/data/library/index.ts';
 import { DocumentRow } from '../modules/mevzuat/components/DocumentRow';
 
 // featured=true dokümanlar, updatedAt'e göre en yeniden eskiye sıralı

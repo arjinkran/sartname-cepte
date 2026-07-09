@@ -1,0 +1,273 @@
+// ─────────────────────────────────────────────────────────────
+// ULUSAL ELEKTRİK MEVZUAT KÜTÜPHANESİ — REPOSITORY (Sprint 5)
+//
+// Tüm ekranlar mevzuat verisine YALNIZCA bu dosya üzerinden erişir; hiçbir
+// ekran kurum klasörlerindeki documents.ts dosyalarına doğrudan erişmez.
+//
+// Sprint 5, madde 6: bu dosya 10 kurum klasörünü (tedas, teias, epdk,
+// enerjiBakanligi, resmiGazete, tse, iec, cenelec, ieee, other) otomatik
+// birleştirir → tek `Document[]`. Kurum/kategori/doküman tipi listeleri
+// ELLE YAZILMAZ (madde 7-9): kurum listesi her klasörün kendi
+// `metadata.ts`'inden, kategori/tip listeleri gerçek belgelerin
+// taranmasından otomatik türetilir.
+// ─────────────────────────────────────────────────────────────
+import { DOCUMENTS as TEDAS_DOCS, METADATA as TEDAS_META } from './tedas/index.ts';
+import { DOCUMENTS as TEIAS_DOCS, METADATA as TEIAS_META } from './teias/index.ts';
+import { DOCUMENTS as EPDK_DOCS, METADATA as EPDK_META } from './epdk/index.ts';
+import { DOCUMENTS as ENERJI_BAKANLIGI_DOCS, METADATA as ENERJI_BAKANLIGI_META } from './enerjiBakanligi/index.ts';
+import { DOCUMENTS as RESMI_GAZETE_DOCS, METADATA as RESMI_GAZETE_META } from './resmiGazete/index.ts';
+import { DOCUMENTS as TSE_DOCS, METADATA as TSE_META } from './tse/index.ts';
+import { DOCUMENTS as IEC_DOCS, METADATA as IEC_META } from './iec/index.ts';
+import { DOCUMENTS as CENELEC_DOCS, METADATA as CENELEC_META } from './cenelec/index.ts';
+import { DOCUMENTS as IEEE_DOCS, METADATA as IEEE_META } from './ieee/index.ts';
+import { DOCUMENTS as OTHER_DOCS, METADATA as OTHER_META } from './other/index.ts';
+import { kategoriGorunumu } from './categoryPresentation.ts';
+import type { Document, DocumentType, Institution, InstitutionMeta } from './types.ts';
+
+interface InstitutionModule {
+  docs: readonly Document[];
+  meta: InstitutionMeta;
+}
+
+// Yeni bir kurum klasörü eklerken tek yapılması gereken: yukarıya bir
+// import satırı + buraya bir satır eklemek (bkz. docs/LIBRARY_ARCHITECTURE.md
+// "Yeni kurum ekleme"). Başka hiçbir dosya değiştirilmez.
+const INSTITUTION_MODULES: readonly InstitutionModule[] = [
+  { docs: TEDAS_DOCS, meta: TEDAS_META },
+  { docs: TEIAS_DOCS, meta: TEIAS_META },
+  { docs: EPDK_DOCS, meta: EPDK_META },
+  { docs: ENERJI_BAKANLIGI_DOCS, meta: ENERJI_BAKANLIGI_META },
+  { docs: RESMI_GAZETE_DOCS, meta: RESMI_GAZETE_META },
+  { docs: TSE_DOCS, meta: TSE_META },
+  { docs: IEC_DOCS, meta: IEC_META },
+  { docs: CENELEC_DOCS, meta: CENELEC_META },
+  { docs: IEEE_DOCS, meta: IEEE_META },
+  { docs: OTHER_DOCS, meta: OTHER_META },
+];
+
+/** TEDAŞ + TEİAŞ + EPDK + ... → tek Document[] (Sprint 5, madde 6). */
+const DOCUMENTS: readonly Document[] = INSTITUTION_MODULES.flatMap((m) => m.docs);
+
+const AKSAN_TABLOSU: Record<string, string> = {
+  ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u',
+};
+
+/** Türkçe metni arama için normalleştir: küçült + aksanları katla */
+export function normallestir(metin: string): string {
+  return metin
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[çğıöşü]/g, (h) => AKSAN_TABLOSU[h] ?? h)
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export interface SearchResult {
+  document: Document;
+  score: number;
+}
+
+// ── Temel erişim ───────────────────────────────────────────────────────
+
+/** Tüm dokümanları döner (kütüphanenin tamamı, 10 kurum birleşik). */
+export function getAllDocuments(): readonly Document[] {
+  return DOCUMENTS;
+}
+
+/**
+ * `featured: true` olan dokümanları `updatedAt`'e göre (en yeni önce)
+ * sıralanmış döner — Ana Sayfa "Son Şartnameler" bunu kullanır.
+ */
+export function getFeaturedDocuments(): readonly Document[] {
+  return DOCUMENTS.filter((d) => d.featured).slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+/** `updatedAt`'e göre en yeni `limit` dokümanı döner (featured filtresi YOK). */
+export function getRecentDocuments(limit = 10): readonly Document[] {
+  return DOCUMENTS.slice()
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .slice(0, limit);
+}
+
+export function getDocumentById(id: string): Document | undefined {
+  return DOCUMENTS.find((d) => d.id === id);
+}
+
+export function getDocumentsByInstitution(institution: Institution): readonly Document[] {
+  return DOCUMENTS.filter((d) => d.institution === institution);
+}
+
+/** `category`, gerçek belgelerdeki `category` alanıyla birebir eşleşmelidir. */
+export function getDocumentsByCategory(category: string): readonly Document[] {
+  return DOCUMENTS.filter((d) => d.category === category);
+}
+
+export function getDocumentsByType(documentType: DocumentType): readonly Document[] {
+  return DOCUMENTS.filter((d) => d.documentType === documentType);
+}
+
+// ── Arama ───────────────────────────────────────────────────────────────
+
+/**
+ * Genel amaçlı arama (title/aliases/keywords/tags/summary/institution/
+ * category). Arama ekranının serbest metin kutusu bunu kullanır.
+ * - Sorgu boşluklarla terimlere ayrılır; en az bir terimi eşleşen belge listelenir.
+ * - Tüm terimleri eşleşen belgeler öne gelir (terim başına bonus).
+ * - Puan: title/aliases'te 5, keywords'te 3, tags'te 2, gövdede 1;
+ *   sonuç `document.searchWeight` ile çarpılır.
+ * `within` verilmezse tüm kütüphanede arar.
+ */
+export function search(query: string, within: readonly Document[] = DOCUMENTS): SearchResult[] {
+  const terimler = normallestir(query).split(' ').filter((t) => t.length >= 2);
+  if (terimler.length === 0) return [];
+
+  const sonuclar: SearchResult[] = [];
+  for (const d of within) {
+    const baslik = normallestir(d.title);
+    const takmaAdlar = d.aliases.map(normallestir).join(' | ');
+    const anahtarlar = d.keywords.map(normallestir).join(' | ');
+    const etiketler = d.tags.map(normallestir).join(' | ');
+    const govde = normallestir([d.summary, d.institution, d.category].join(' '));
+
+    let puan = 0;
+    let eslesenTerim = 0;
+    for (const t of terimler) {
+      let teriminPuani = 0;
+      if (baslik.includes(t)) teriminPuani += 5;
+      if (takmaAdlar.includes(t)) teriminPuani += 5;
+      if (anahtarlar.includes(t)) teriminPuani += 3;
+      if (etiketler.includes(t)) teriminPuani += 2;
+      if (govde.includes(t)) teriminPuani += 1;
+      if (teriminPuani > 0) eslesenTerim += 1;
+      puan += teriminPuani;
+    }
+    if (eslesenTerim === 0) continue;
+    // Tüm terimleri eşleşenlere güçlü bonus → "kablo eki" araması yalnızca
+    // "kablo" geçenlerden önce ek dokümanını getirir.
+    if (eslesenTerim === terimler.length) puan += 20 * terimler.length;
+    sonuclar.push({ document: d, score: puan * d.searchWeight });
+  }
+
+  return sonuclar.sort(
+    (a, b) => b.score - a.score || a.document.title.localeCompare(b.document.title, 'tr')
+  );
+}
+
+/**
+ * Yalnızca `keywords`/`tags`/`aliases` alanlarında arar (title/summary
+ * hariç) — AI Asistanı'nın "kelime eşleşmesi" öneri motoru bunu kullanır
+ * (bkz. Document.searchWeight "AI önerilerinde kullanılacak").
+ */
+export function searchKeywords(query: string, within: readonly Document[] = DOCUMENTS): SearchResult[] {
+  const terimler = normallestir(query).split(' ').filter((t) => t.length >= 2);
+  if (terimler.length === 0) return [];
+
+  const sonuclar: SearchResult[] = [];
+  for (const d of within) {
+    const takmaAdlar = d.aliases.map(normallestir).join(' | ');
+    const anahtarlar = d.keywords.map(normallestir).join(' | ');
+    const etiketler = d.tags.map(normallestir).join(' | ');
+
+    let puan = 0;
+    let eslesenTerim = 0;
+    for (const t of terimler) {
+      let teriminPuani = 0;
+      if (takmaAdlar.includes(t)) teriminPuani += 5;
+      if (anahtarlar.includes(t)) teriminPuani += 3;
+      if (etiketler.includes(t)) teriminPuani += 2;
+      if (teriminPuani > 0) eslesenTerim += 1;
+      puan += teriminPuani;
+    }
+    if (eslesenTerim === 0) continue;
+    if (eslesenTerim === terimler.length) puan += 20 * terimler.length;
+    sonuclar.push({ document: d, score: puan * d.searchWeight });
+  }
+
+  return sonuclar.sort(
+    (a, b) => b.score - a.score || a.document.title.localeCompare(b.document.title, 'tr')
+  );
+}
+
+/** Bir dokümanın `relatedDocuments` id listesini gerçek Document nesnelerine çözer. */
+export function getRelatedDocuments(id: string): readonly Document[] {
+  const doc = getDocumentById(id);
+  if (!doc) return [];
+  return doc.relatedDocuments
+    .map((relId) => getDocumentById(relId))
+    .filter((d): d is Document => d != null);
+}
+
+// ── Otomatik türetilen listeler (madde 7-9) ─────────────────────────────
+
+export interface CategoryStat {
+  ad: string;
+  ikon: string;
+  aciklama: string;
+  count: number;
+}
+
+/**
+ * Kategori listesi ELLE YAZILMAZ — gerçek belgeler taranarak, kaç belgesi
+ * olduğu bilgisiyle birlikte otomatik oluşturulur (madde 7). İkon/açıklama
+ * yalnızca sunum amaçlı bir zenginleştirmedir (bkz. categoryPresentation.ts);
+ * tanımsız bir kategori çıkarsa genel 📁 ikonuyla yine listeye girer.
+ */
+export function getCategories(): readonly CategoryStat[] {
+  const sayac = new Map<string, number>();
+  for (const d of DOCUMENTS) sayac.set(d.category, (sayac.get(d.category) ?? 0) + 1);
+  return Array.from(sayac.entries())
+    .map(([ad, count]) => ({ ad, count, ...kategoriGorunumu(ad) }))
+    .sort((a, b) => b.count - a.count || a.ad.localeCompare(b.ad, 'tr'));
+}
+
+export interface InstitutionStat extends InstitutionMeta {
+  count: number;
+}
+
+/**
+ * Kurum listesi ELLE YAZILMAZ — her kurum klasörünün kendi `metadata.ts`'i
+ * otomatik toplanır (madde 8). Belgesi olmayan kurumlar da (count: 0)
+ * listede kalır — Veri Kaynakları ekranı bunları "yakında" gösterir.
+ */
+export function getInstitutions(): readonly InstitutionStat[] {
+  return INSTITUTION_MODULES.map((m) => ({ ...m.meta, count: m.docs.length }));
+}
+
+export interface DocumentTypeStat {
+  documentType: DocumentType;
+  count: number;
+}
+
+/** Doküman tipi listesi ELLE YAZILMAZ — gerçek belgeler taranarak otomatik oluşturulur (madde 9). */
+export function getDocumentTypes(): readonly DocumentTypeStat[] {
+  const sayac = new Map<DocumentType, number>();
+  for (const d of DOCUMENTS) sayac.set(d.documentType, (sayac.get(d.documentType) ?? 0) + 1);
+  return Array.from(sayac.entries())
+    .map(([documentType, count]) => ({ documentType, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
+export interface LibraryStatistics {
+  totalDocuments: number;
+  featuredCount: number;
+  deprecatedCount: number;
+  byInstitution: readonly InstitutionStat[];
+  byCategory: readonly CategoryStat[];
+  byType: readonly DocumentTypeStat[];
+}
+
+/**
+ * Kütüphanenin tam istatistik özeti — Veri Kaynakları ekranı artık sabit
+ * sayılar yerine bunu kullanır (madde 10: "TEDAŞ 42 belge" gibi örnekler
+ * yalnızca FORMAT örneğidir, gerçek sayılar mevcut 14 belgeye göre çok
+ * daha küçüktür — mock belge üretilmedi).
+ */
+export function getStatistics(): LibraryStatistics {
+  return {
+    totalDocuments: DOCUMENTS.length,
+    featuredCount: DOCUMENTS.filter((d) => d.featured).length,
+    deprecatedCount: DOCUMENTS.filter((d) => d.deprecated).length,
+    byInstitution: getInstitutions(),
+    byCategory: getCategories(),
+    byType: getDocumentTypes(),
+  };
+}

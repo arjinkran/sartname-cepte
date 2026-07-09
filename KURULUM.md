@@ -127,31 +127,33 @@ sartname-cepte/
 │       │                            SartnameAramaScreen (Arama), DocumentDetailScreen (Detay),
 │       │                            FavorilerScreen — hepsi src/data/documents Repository'sini kullanır
 │       └── components/           ← DocumentRow.tsx (premium kart: kurum/kategori/revizyon/PDF/favori/ok)
-│           (Sprint 4: eski data/sartnameler.ts, services/arama.ts, types/ SİLİNDİ — bkz. src/data/documents/)
+│           (Sprint 5: kurum-bazlı klasör yapısına taşındı — bkz. src/data/library/)
 │   └── enhBilgi/                 ← [UI'dan kaldırıldı, V3] ENH Bilgi Bankası — statik teknik bilgi, hesap motoru değil
 │       ├── screens/              ← Ekran bileşenleri (app/enh-bilgi/* buradan re-export eder)
 │       ├── components/           ← IletkenKarti, DirekSinifKarti, BilgiKarti (ortak liste kartı)
 │       ├── data/                 ← iletkenler.ts (src/catalogs/conductors'tan türetilir), direkSiniflari.ts,
 │       │                            direkMalzemeleri.ts, direkDevreTipleri.ts, izolatorler.ts, basliklar.ts
 │       └── types/                ← IletkenBilgi, DirekSinifBilgi tipleri
-│   └── ai/                       ← AI Mevzuat Asistanı — gerçek AI motoru YOK, src/data/documents'ın
-│       └── screens/                 search()'ünü (değiştirmeden) tüketir; yalnızca mevzuat türü doküman önerir
+│   └── ai/                       ← AI Mevzuat Asistanı — gerçek AI motoru YOK, src/data/library'nin
+│       └── screens/                 searchKeywords()'ünü (değiştirmeden) tüketir; yalnızca mevzuat türü doküman önerir
 │   └── profil/                   ← Profil — mock profil kartı, gerçek auth YOK
-│       └── screens/
+│       └── screens/                 (Hakkında ekranı da burada, Sprint 4.1)
 │   └── platform/                 ← Veri Kaynakları + Offline Kütüphane
-│       └── screens/                 VeriKaynaklariScreen (kurum/standart listesi, sayılar canlı hesaplanır),
+│       └── screens/                 VeriKaynaklariScreen (getStatistics() ile tamamen dinamik),
 │                                     OfflineKutuphaneScreen ("yakında")
 ├── src/
-│   ├── data/documents/           ← Doküman Repository (Sprint 4, YENİ) — bkz. docs/DOCUMENT_ARCHITECTURE.md
-│   │   ├── types.ts              ← Document, Institution (11), DocumentType (8), DocumentStatus, Category
-│   │   ├── institutions.ts       ← INSTITUTIONS
-│   │   ├── documentTypes.ts      ← DOCUMENT_TYPES
-│   │   ├── categories.ts         ← CATEGORIES (23, ayrıntılı taksonomi)
-│   │   ├── documents.ts          ← DOCUMENTS (14, ham veri — yalnızca repository.ts import eder)
-│   │   ├── repository.ts         ← getAllDocuments/getFeaturedDocuments/getDocumentById/getByInstitution/
-│   │   │                            getByCategory/getByType/search/getRelatedDocuments/getRecentDocuments
-│   │   └── index.ts              ← barrel (documents.ts BİLEREK dışa aktarılmaz — ekranlar yalnızca
-│   │                                repository fonksiyonlarını kullanır, JSON'a doğrudan erişmez)
+│   ├── data/library/             ← Ulusal Elektrik Mevzuat Kütüphanesi (Sprint 5, YENİ) —
+│   │   │                            bkz. docs/LIBRARY_ARCHITECTURE.md
+│   │   ├── types.ts              ← Document (32 alan), Institution (11), DocumentType (8), InstitutionMeta, STATUS_LABELS
+│   │   ├── categoryPresentation.ts ← kategori ikon/açıklama (yalnızca SUNUM — kategori listesinin kaynağı değil)
+│   │   ├── tedas/ teias/ epdk/ enerjiBakanligi/ resmiGazete/ tse/ iec/ cenelec/ ieee/ other/
+│   │   │                          ← 10 kurum klasörü, her biri documents.ts + metadata.ts + index.ts + README.md
+│   │   │                            (gerçek belge: tedas 7, epdk 3, resmiGazete 4 — diğer 7 klasör boş, mock yok)
+│   │   ├── repository.ts         ← getAllDocuments/getFeaturedDocuments/getRecentDocuments/getDocumentById/
+│   │   │                            getDocumentsByInstitution/getDocumentsByCategory/getDocumentsByType/search/
+│   │   │                            searchKeywords/getRelatedDocuments/getCategories/getInstitutions/
+│   │   │                            getDocumentTypes/getStatistics — 10 klasörü otomatik birleştirir
+│   │   └── index.ts              ← barrel (kurum klasörlerindeki ham documents.ts'ler dışa aktarılmaz)
 │   ├── theme/                    ← Premium tema (Sprint UI-1A) — colors/spacing/radius/typography/shadow/
 │   │                                animations + index.ts barrel. Eski `src/theme.ts`'in yerine geçti;
 │   │                                `colors` sözlüğü eski alan adlarını da içerir (geriye dönük uyumluluk).
@@ -184,7 +186,7 @@ sartname-cepte/
 │   └── lib/                      ← supabase.ts / revenuecat.ts (geçici stub)
 ├── tests/
 │   ├── calculations/voltageDrop.test.ts  ← DEMO motor testleri
-│   ├── documentRepository.test.ts ← src/data/documents/repository.ts testleri (eski arama.test.ts'in yerine geçti)
+│   ├── libraryRepository.test.ts  ← src/data/library/repository.ts testleri (eski documentRepository.test.ts'in yerine geçti)
 │   └── gerilimDusumu.test.ts      ← (legacy) src/logic/gerilimDusumu.ts testleri
 ├── assets/
 │   ├── icon.png                  ← App Icon (1024×1024, Sprint 4.1)
@@ -195,7 +197,8 @@ sartname-cepte/
 │       ├── logo@2x.png              (128px)
 │       └── logo@3x.png              (192px)
 ├── docs/
-│   ├── DOCUMENT_ARCHITECTURE.md  ← Doküman veri modeli, kategori/kurum yapısı, Repository mantığı
+│   ├── LIBRARY_ARCHITECTURE.md   ← Kütüphane mimarisi: klasör yapısı, Repository, kurum/kategori sistemi,
+│   │                                AI entegrasyonu, yeni belge ekleme, doğrulama süreci, sürümleme (Sprint 5)
 │   └── BRANDING.md               ← Resmi logo kullanım kuralları (Sprint 4.1)
 └── app.json / package.json / tsconfig.json
 ```

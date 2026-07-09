@@ -1,16 +1,18 @@
 // Kategori doküman listesi — /sartname/kategori/:kid
-// Sprint 4: CATEGORIES ve dokümanlar artık Repository'den gelir.
+// Sprint 5: `kid`, artık bir kategori id'si değil — kategori ADI'nın kendisi
+// (URL-encoded, expo-router otomatik çözer). Kategori listesi ve
+// dokümanlar Repository'den gelir (getCategories/getDocumentsByCategory).
 import React from 'react';
 import { ScrollView, StyleSheet, Text } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { colors, spacing } from '@/theme';
-import { CATEGORIES, getByCategory } from '@/data/documents';
+import { getCategories, getDocumentsByCategory } from '@/data/library';
 import { DocumentRow } from '../components/DocumentRow';
 
 export default function KategoriListesiScreen() {
   const { kid } = useLocalSearchParams<{ kid: string }>();
-  const kategori = CATEGORIES.find((k) => k.id === kid);
-  const dokumanlar = kategori ? getByCategory(kategori.ad) : [];
+  const kategori = getCategories().find((k) => k.ad === kid);
+  const dokumanlar = kid ? getDocumentsByCategory(kid) : [];
 
   return (
     <>

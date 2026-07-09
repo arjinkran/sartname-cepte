@@ -1,17 +1,18 @@
 // AI Mevzuat Asistanı — /ai
 //
 // ⚠️ Gerçek bir LLM/AI motoru YOK. "Önerileri Getir", Repository'deki
-// MEVCUT `search()` anahtar-kelime arama fonksiyonunu (değiştirmeden)
-// çalıştırır — eşleşmeler artık her dokümanın kendi `keywords` alanından
-// beslenir (Sprint 4, madde 13). "Neden önerildi?" satırı gerçek bir AI
-// gerekçelendirmesi DEĞİLDİR, yalnızca eşleşme skoruna dayanır.
+// `searchKeywords()` fonksiyonunu çağırır — yalnızca her dokümanın
+// `keywords`/`tags`/`aliases` alanlarında eşleşme arar (title/summary
+// hariç), skor `searchWeight` ile çarpılır (Sprint 5, madde 12/24).
+// "Neden önerildi?" satırı gerçek bir AI gerekçelendirmesi DEĞİLDİR,
+// yalnızca eşleşme skoruna dayanır.
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AppBar, BottomNavigation, Button, Card, EmptyState, ListItem } from '@/components/ui';
 import { useRootTabBar } from '@/navigation/tabs';
 import { colors, radius, spacing, typography } from '@/theme';
-import { search, type SearchResult } from '@/data/documents';
+import { searchKeywords, type SearchResult } from '@/data/library';
 
 const ONERI_LIMIT = 10;
 
@@ -36,7 +37,7 @@ export default function AiDestekScreen() {
   const [sonuclar, setSonuclar] = useState<SearchResult[] | null>(null);
 
   const oneriGetir = (metin: string) => {
-    setSonuclar(search(metin));
+    setSonuclar(searchKeywords(metin));
   };
 
   const ornekSec = (ornek: string) => {
@@ -113,7 +114,7 @@ export default function AiDestekScreen() {
                     {s.document.institution} · {s.document.category}
                   </Text>
                   <Text style={styles.nedenText}>
-                    Neden önerildi? Yazdığın ifadeyle başlık/anahtar kelime eşleşmesi (skor: {s.score}).
+                    Neden önerildi? Yazdığın ifadeyle anahtar kelime/etiket eşleşmesi (skor: {s.score}).
                   </Text>
                   <Button
                     label="Detaya Git"

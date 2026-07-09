@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
 import { AppBar, Card, EmptyState, PressableScale } from '@/components/ui';
 import { colors, spacing, typography } from '@/theme';
-import { getAllDocuments } from '@/data/documents';
+import { getAllDocuments } from '@/data/library';
 
 export default function FavorilerScreen() {
   const router = useRouter();

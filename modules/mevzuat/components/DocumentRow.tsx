@@ -1,13 +1,13 @@
 // Doküman liste satırı — arama sonuçları, kategori listesi ve favorilerde ortak.
 // Premium kart görünümü: radius xl, hafif gölge. Kurum, kategori, revizyon,
-// özet, favori ve sağ ok bir arada. Sprint 4: veri artık birleşik
-// src/data/documents modelinden (Document, STATUS_LABELS, Institution).
+// özet, favori ve sağ ok bir arada. Sprint 5: veri artık ulusal mevzuat
+// kütüphanesi modelinden (src/data/library — Document, STATUS_LABELS, Institution).
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
 import { colors, radius, spacing, shadow, typography } from '@/theme';
-import { STATUS_LABELS, type Document, type DocumentStatus, type Institution } from '@/data/documents';
+import { STATUS_LABELS, type Document, type DocumentStatus, type Institution } from '@/data/library';
 
 // Record<Institution,...> tamlığı için 11 kurumun tamamı renklendirilmiş
 // olmalı — bazılarında (Enerji Bakanlığı, CENELEC, TS EN, IEEE, Diğer)

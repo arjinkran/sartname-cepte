@@ -1,32 +1,18 @@
 // Veri Kaynakları ekranı — /veri-kaynaklari
 // Elektrik dağıtım mevzuatı ekosistemindeki kurum/standart kaynaklarının
-// kısa, genel açıklamalarını listeler. Sprint 4, madde 11: kartlar artık
-// elle yazılmadı — INSTITUTIONS listesinin tamamı (11 kurum) taranır ve
-// doküman sayısı Repository'nin getByInstitution() fonksiyonuyla otomatik
-// hesaplanır.
+// kısa, genel açıklamalarını listeler. Sprint 5, madde 10: artık sabit
+// sayılar veya elle yazılmış açıklamalar YOK — hem kurum listesi hem
+// açıklamaları hem doküman sayısı tek bir `repository.getStatistics()`
+// çağrısından gelir (her kurumun kendi `metadata.ts`'i + gerçek belge
+// sayımı, bkz. src/data/library/repository.ts).
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AppBar, Card } from '@/components/ui';
 import { colors, spacing, typography } from '@/theme';
-import { INSTITUTIONS, getByInstitution, type Institution } from '@/data/documents';
+import { getStatistics } from '@/data/library';
 
-// Kurum açıklamaları — genel/bilinen kurum tanımlarıdır, doküman içeriği
-// değildir. INSTITUTIONS listesindeki 11 kurumun TAMAMI için tanımlı
-// olmalıdır (Record tamlığı derleme zamanında garanti eder).
-const KURUM_ACIKLAMALARI: Record<Institution, string> = {
-  'TEDAŞ': 'Türkiye Elektrik Dağıtım A.Ş. — elektrik dağıtım şebekesi için teknik şartnameleri hazırlar.',
-  'TEİAŞ': 'Türkiye Elektrik İletim A.Ş. — yüksek gerilim iletim şebekesi standartlarını belirler.',
-  'EPDK': 'Enerji Piyasası Düzenleme Kurumu — hizmet kalitesi ve tüketici mevzuatını yayınlar.',
-  'Enerji Bakanlığı': 'Enerji ve Tabii Kaynaklar Bakanlığı — sektöre yönelik yönetmelik ve politikaları belirler.',
-  'Resmî Gazete': 'Kanun, yönetmelik ve tebliğlerin resmî yayın organı.',
-  'TSE': 'Türk Standardları Enstitüsü — ulusal (TS) standartları yayınlar.',
-  'IEC': 'International Electrotechnical Commission — uluslararası elektroteknik standartları.',
-  'CENELEC': 'European Committee for Electrotechnical Standardization — Avrupa elektroteknik standardizasyon komitesi.',
-  'TS EN': 'Avrupa standartlarının (EN) Türkiye\'de uyumlaştırılmış (TS EN) hâli.',
-  'IEEE': 'Institute of Electrical and Electronics Engineers — uluslararası elektrik/elektronik mühendisliği standartları.',
-  'Diğer': 'Yukarıdaki kurumların hiçbirine girmeyen belediye, dağıtım şirketi vb. kaynaklar.',
-};
+const ISTATISTIK = getStatistics();
 
 export default function VeriKaynaklariScreen() {
   const router = useRouter();
@@ -36,20 +22,18 @@ export default function VeriKaynaklariScreen() {
       <AppBar title="Veri Kaynakları" logo onBack={router.canGoBack() ? () => router.back() : undefined} />
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent}>
         <Text style={styles.ustAciklama}>
-          Şartname Cepte içeriği aşağıdaki kurum ve standart kaynaklarına dayanır.
+          Şartname Cepte içeriği aşağıdaki kurum ve standart kaynaklarına dayanır. Kütüphanede
+          şu an toplam {ISTATISTIK.totalDocuments} doküman bulunuyor.
         </Text>
-        {INSTITUTIONS.map((kurum) => {
-          const sayi = getByInstitution(kurum).length;
-          return (
-            <Card key={kurum} style={styles.card}>
-              <Text style={styles.ad}>{kurum}</Text>
-              <Text style={styles.aciklama}>{KURUM_ACIKLAMALARI[kurum]}</Text>
-              <Text style={styles.durum}>
-                {sayi > 0 ? `Uygulamada ${sayi} doküman mevcut` : 'Doküman kütüphanesi yakında eklenecek'}
-              </Text>
-            </Card>
-          );
-        })}
+        {ISTATISTIK.byInstitution.map((kurum) => (
+          <Card key={kurum.institution} style={styles.card}>
+            <Text style={styles.ad}>{kurum.ad}</Text>
+            <Text style={styles.aciklama}>{kurum.aciklama}</Text>
+            <Text style={styles.durum}>
+              {kurum.count > 0 ? `Uygulamada ${kurum.count} doküman mevcut` : 'Doküman kütüphanesi yakında eklenecek'}
+            </Text>
+          </Card>
+        ))}
       </ScrollView>
     </View>
   );

@@ -1,11 +1,14 @@
 // Şartname / Mevzuat — ARAMA + FİLTRE EKRANI (modülün giriş ekranı).
-// Premium tasarım — görünüm KORUNDU. Sprint 4: veri artık Repository
-// üzerinden (getAllDocuments/search) okunur; filtreler Kurum, Kategori,
-// Doküman Tipi olmak üzere üç boyuta genişledi (madde 12). Metin araması
-// (title, summary, keywords, institution, category) + üç filtre birlikte
-// çalışır. Sorgu boşken: favoriler + kategori kısayolu + (filtrelenmiş)
-// tüm dokümanlar. `?q=` route param'ı (Ana Sayfa'daki Popüler Aramalar
-// çiplerinden gelir) arama kutusunu otomatik doldurur.
+// Premium tasarım — görünüm KORUNDU. Sprint 5: veri ulusal mevzuat
+// kütüphanesi Repository'sinden (getAllDocuments/search) okunur; Kurum
+// çipleri getInstitutions() (10 kurumun tamamı, boş olanlar da), Kategori/
+// Doküman Tipi çipleri getCategories()/getDocumentTypes() (yalnızca en az
+// bir dokümanı olanlar — bu iki fonksiyon zaten sadece gerçekte kullanılan
+// değerleri döner) ile OTOMATİK türetilir; elle yazılmış bir liste yok.
+// Metin araması + üç filtre birlikte çalışır. Sorgu boşken: favoriler +
+// kategori kısayolu + (filtrelenmiş) tüm dokümanlar. `?q=` route param'ı
+// (Ana Sayfa'daki Popüler Aramalar çiplerinden gelir) arama kutusunu
+// otomatik doldurur.
 import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -14,23 +17,23 @@ import { AppBar, BottomNavigation, Chip, EmptyState, PressableScale } from '@/co
 import { useRootTabBar } from '@/navigation/tabs';
 import { colors, radius, spacing, shadow, typography } from '@/theme';
 import {
-  CATEGORIES,
-  DOCUMENT_TYPES,
-  INSTITUTIONS,
   getAllDocuments,
-  getByCategory,
-  getByType,
+  getCategories,
+  getDocumentTypes,
+  getInstitutions,
   search,
   type DocumentType,
   type Institution,
-} from '@/data/documents';
+} from '@/data/library';
 import { DocumentRow } from '../components/DocumentRow';
 
-const KURUM_ETIKETLERI = ['Tümü', ...INSTITUTIONS] as const;
-// Yalnızca en az bir dokümanı olan kategori/tip çipleri gösterilir — 23
-// kategorinin çoğu şu an boş, boş çipler yerine kullanışlı bir liste sunar.
-const KATEGORI_ETIKETLERI = ['Tümü', ...CATEGORIES.filter((c) => getByCategory(c.ad).length > 0).map((c) => c.ad)];
-const TIP_ETIKETLERI = ['Tümü', ...DOCUMENT_TYPES.filter((t) => getByType(t).length > 0)];
+const TUM_KATEGORILER = getCategories();
+const TUM_TIPLER = getDocumentTypes();
+const TUM_KURUMLAR = getInstitutions();
+
+const KURUM_ETIKETLERI = ['Tümü', ...TUM_KURUMLAR.map((k) => k.ad)];
+const KATEGORI_ETIKETLERI = ['Tümü', ...TUM_KATEGORILER.map((c) => c.ad)];
+const TIP_ETIKETLERI = ['Tümü', ...TUM_TIPLER.map((t) => t.documentType)];
 
 export default function SartnameAramaScreen() {
   const router = useRouter();
@@ -156,7 +159,7 @@ export default function SartnameAramaScreen() {
               >
                 <Text style={styles.kategoriKisayolText}>📂 Kategorilere Göz At</Text>
                 <Text style={styles.kategoriKisayolAlt}>
-                  {CATEGORIES.length} kategori · {tumDokumanlar.length} doküman
+                  {TUM_KATEGORILER.length} kategori · {tumDokumanlar.length} doküman
                 </Text>
               </PressableScale>
             )}

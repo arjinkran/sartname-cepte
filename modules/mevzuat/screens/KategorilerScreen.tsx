@@ -1,19 +1,23 @@
 // Kategoriler ekranı — her kategori kartı ilgili doküman listesine götürür.
-// Sprint 4: CATEGORIES ve doküman sayısı artık Repository'den gelir.
+// Sprint 5: kategori listesi ELLE YAZILMAZ — getCategories() gerçek
+// belgeleri tarayarak (ikon/açıklama zenginleştirmesiyle birlikte) otomatik
+// oluşturur. Kategorinin artık ayrı bir `id` alanı yok — rota parametresi
+// olarak kategori adının kendisi (URL-encoded) kullanılır.
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors, spacing, radius } from '@/theme';
-import { CATEGORIES, getByCategory } from '@/data/documents';
+import { getCategories } from '@/data/library';
 
 export default function KategorilerScreen() {
   const router = useRouter();
+  const kategoriler = getCategories();
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: spacing.m }}>
-      {CATEGORIES.map((k) => (
+      {kategoriler.map((k) => (
         <Pressable
-          key={k.id}
-          onPress={() => router.push(`/sartname/kategori/${k.id}`)}
+          key={k.ad}
+          onPress={() => router.push(`/sartname/kategori/${encodeURIComponent(k.ad)}`)}
           style={({ pressed }) => [styles.kart, pressed && { opacity: 0.85 }]}
         >
           <Text style={styles.ikon}>{k.ikon}</Text>
@@ -22,7 +26,7 @@ export default function KategorilerScreen() {
             <Text style={styles.aciklama}>{k.aciklama}</Text>
           </View>
           <View style={styles.sayiRozet}>
-            <Text style={styles.sayiText}>{getByCategory(k.ad).length}</Text>
+            <Text style={styles.sayiText}>{k.count}</Text>
           </View>
         </Pressable>
       ))}

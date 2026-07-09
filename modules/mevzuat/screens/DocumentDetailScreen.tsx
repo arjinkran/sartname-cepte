@@ -1,8 +1,11 @@
 // Doküman detay ekranı — /sartname/:id
 // Premium kart tasarımı — iş mantığı DEĞİŞMEDİ: aynı favoriler context'i,
 // aynı PDF Aç stub'ı. "AI ile Açıkla" gerçek /ai ekranına yönlendirir (yeni
-// bir servis çağrısı YOK). Sprint 4: veri Repository üzerinden okunur
-// (getDocumentById/getRelatedDocuments) — hiçbir JSON'a doğrudan erişim yok.
+// bir servis çağrısı YOK). Sprint 5: veri ulusal mevzuat kütüphanesi
+// Repository'sinden okunur (getDocumentById/getRelatedDocuments) — hiçbir
+// JSON'a doğrudan erişim yok. "İlgili Yönetmelikler ve Standartlar" artık
+// dokümana özel `crossReferences` alanından gelir (önceki sürümde tüm
+// dokümanlarda aynı gösterilen TEMSİLİ statik liste kaldırıldı).
 // Kartlar: Başlık, Künye, Anahtar Kelimeler, Özet, İlgili Dokümanlar,
 // İlgili Yönetmelikler ve Standartlar, Revizyon Bilgisi, Aksiyonlar.
 import React from 'react';
@@ -11,7 +14,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
 import { AppBar, Button, Card, PressableScale } from '@/components/ui';
 import { colors, radius, spacing, typography } from '@/theme';
-import { STATUS_LABELS, getDocumentById, getRelatedDocuments } from '@/data/documents';
+import { STATUS_LABELS, getDocumentById, getRelatedDocuments } from '@/data/library';
 import { InstitutionBadge, StatusBadge } from '../components/DocumentRow';
 
 function KunyeSatiri({ etiket, deger }: { etiket: string; deger: string }) {
@@ -22,19 +25,6 @@ function KunyeSatiri({ etiket, deger }: { etiket: string; deger: string }) {
     </View>
   );
 }
-
-// ⚠️ TEMSİLİ LİSTE: bu beş kalem şu an her dokümanda aynı gösterilir —
-// doküman bazlı gerçek ilişkilendirme (DOCUMENTS içindeki relatedDocuments
-// gibi doğrulanmış bağlantılar) henüz kurulmadı. Genel elektrik dağıtım
-// mevzuatı pratiğinde sık birlikte anılan yönetmelik/standartlardır;
-// "Kaynak doğrulaması gerekli" — bkz. KURULUM.md.
-const ILGILI_MEVZUAT_ORNEK = [
-  'Elektrik Kuvvetli Akım Yönetmeliği',
-  'Elektrik İç Tesisleri Yönetmeliği',
-  'TEDAŞ AG Teknik Şartnamesi',
-  'TS HD 60364',
-  'IEC 60502',
-] as const;
 
 export default function DocumentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -129,9 +119,13 @@ export default function DocumentDetailScreen() {
         {/* İlgili Yönetmelikler ve Standartlar */}
         <Card style={styles.card}>
           <Text style={styles.bolumBaslik}>İlgili Yönetmelikler ve Standartlar</Text>
-          {ILGILI_MEVZUAT_ORNEK.map((madde) => (
-            <Text key={madde} style={styles.mevzuatSatir}>↓ {madde}</Text>
-          ))}
+          {document.crossReferences.length > 0 ? (
+            document.crossReferences.map((madde) => (
+              <Text key={madde} style={styles.mevzuatSatir}>↓ {madde}</Text>
+            ))
+          ) : (
+            <Text style={styles.ilgiliBos}>Bu doküman için henüz ilişkili yönetmelik/standart girilmedi.</Text>
+          )}
         </Card>
 
         {/* Revizyon Bilgisi */}
