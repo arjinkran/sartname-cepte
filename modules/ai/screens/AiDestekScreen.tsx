@@ -17,6 +17,7 @@ import { colors, radius, spacing, typography } from '@/theme';
 import { recommendDocuments } from '@/ai/engine';
 import type { DocumentRecommendation } from '@/ai/types';
 import { EXAMPLE_QUESTIONS } from '@/ai/examples';
+import { hasPdf } from '@/data/library';
 
 const ONERI_LIMIT = 10;
 const ORNEK_SORU_SAYISI = 8;
@@ -121,9 +122,16 @@ export default function AiDestekScreen() {
                       <Text style={styles.guvenYuzde}>{s.confidence}%</Text>
                     </View>
                   </View>
-                  <Text style={styles.sonucAlt}>
-                    {s.document.institution} · {s.document.category}
-                  </Text>
+                  <View style={styles.sonucAltSatir}>
+                    <Text style={styles.sonucAlt}>
+                      {s.document.institution} · {s.document.category}
+                    </Text>
+                    {hasPdf(s.document) ? (
+                      <View style={styles.pdfEtiket}>
+                        <Text style={styles.pdfEtiketText}>PDF</Text>
+                      </View>
+                    ) : null}
+                  </View>
                   <Text style={styles.nedenText}>
                     {s.reasons.length > 0 ? `Neden önerildi? ${s.reasons.join(' ')}` : 'Neden önerildi? Genel eşleşme.'}
                   </Text>
@@ -201,6 +209,16 @@ const styles = StyleSheet.create({
   guvenRozeti: { alignItems: 'flex-end' },
   guvenYildiz: { fontSize: 12, color: colors.accent, letterSpacing: 1 },
   guvenYuzde: { fontSize: 11, fontWeight: '700', color: colors.textSecondary, marginTop: 1 },
-  sonucAlt: { fontSize: typography.size.sm, color: colors.textSecondary, marginTop: 3 },
+  sonucAltSatir: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: 3 },
+  sonucAlt: { fontSize: typography.size.sm, color: colors.textSecondary },
+  pdfEtiket: {
+    backgroundColor: colors.secondaryBackground,
+    borderRadius: radius.s,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  pdfEtiketText: { color: colors.textSecondary, fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
   nedenText: { fontSize: typography.size.xs, color: colors.textSecondary, marginTop: spacing.s, lineHeight: 16 },
 });

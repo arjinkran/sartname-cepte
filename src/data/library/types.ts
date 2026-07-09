@@ -139,4 +139,38 @@ export interface Document {
    * mevcut olduğu doğrulanır. Kaynak doğrulaması gerekli — bkz.
    * LIBRARY_ARCHITECTURE.md. */
   crossReferences: readonly string[];
+
+  // ── Sprint 8'de eklenen PDF alanları ─────────────────────────────────
+  // Hepsi OPSİYONEL: kütüphanedeki 121 belgenin HİÇBİRİNDE şu an gerçek bir
+  // PDF yok (bkz. docs/PDF_ARCHITECTURE.md) — bu yüzden mevcut hiçbir
+  // belge kaydı bu alanları elle doldurmak ZORUNDA değil. `pdfAvailable`
+  // alanı tanımsız (undefined) olan bir belge, `hasPdf()` tarafından
+  // `false` ile aynı muamele görür (bkz. repository.ts) — "belirtilmemiş
+  // PDF" ile "PDF yok" arasında UI açısından fark yoktur, ikisi de aynı
+  // "PDF Yakında" durumunu üretir.
+  /** `src/assets/pdfs/<kurum>/` altındaki hedef/görünen dosya adı (ör.
+   * "ag-xlpe-kablo.pdf") — organizasyonel; gerçek bir bundle referansı
+   * DEĞİLDİR (Metro `require()` dinamik yol kabul etmez, bkz. `localAsset`). */
+  pdfFile?: string;
+  /** Gerçek, doğrulanmış uzak PDF bağlantısı. Bilinmiyorsa TANIMSIZ
+   * bırakılır — asla uydurma bir URL yazılmaz (bkz. Sprint 8 kuralları). */
+  pdfUrl?: string;
+  /** Bu belgenin ŞU AN gerçekten açılıp görüntülenebilir bir PDF'i olup
+   * olmadığının TEK doğruluk kaynağı — `localAsset` veya `pdfUrl`'den
+   * biri gerçekten mevcut olduğunda `true` yapılır. UI'daki tüm PDF
+   * rozeti/buton mantığı bu alana (repository.hasPdf() üzerinden) bakar,
+   * eski `pdfPath` alanına ASLA bakmaz (pdfPath her belgede dolu bir
+   * kurum ana sayfası yer tutucusudur, gerçek PDF varlığını göstermez). */
+  pdfAvailable?: boolean;
+  /** `src/assets/pdfs/<kurum>/` içinde GERÇEKTEN bulunan, Metro'nun
+   * bundle'layabileceği bir dosyaya göreli yol (ör. "tedas/ag-xlpe-kablo.pdf").
+   * Gerçek dosya eklenmeden bu alan doldurulmaz. */
+  localAsset?: string;
+  /** Uzak PDF'in hangi revizyonuna karşılık geldiğini işaretleyen sürüm/
+   * hash bilgisi — ileride indirme yöneticisinin "kaynak değişti, yeniden
+   * indir" kararını vermesi için (bkz. src/offline/). Şimdilik kullanılmaz. */
+  remoteVersion?: string;
+  /** İndirilen dosyanın bütünlük doğrulaması için hash (ör. SHA-256).
+   * Gerçek dosya indirilmeden hesaplanamayacağından şimdilik tanımsızdır. */
+  checksum?: string;
 }

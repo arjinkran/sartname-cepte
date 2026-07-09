@@ -271,3 +271,99 @@ export function getStatistics(): LibraryStatistics {
     byType: getDocumentTypes(),
   };
 }
+
+// ── PDF (Sprint 8) ───────────────────────────────────────────────────────
+//
+// `document.pdfPath` (Sprint 4'ten kalan alan) HER belgede doludur (kurum
+// ana sayfası yer tutucusu) — bu yüzden gerçek bir PDF'in var olup
+// olmadığının TEK doğruluk kaynağı `pdfAvailable`dır. Bu bölümdeki
+// fonksiyonlar `document.pdfPath`e ASLA bakmaz.
+
+/**
+ * Bir belgenin ŞU AN gerçekten açılabilir bir PDF'i olup olmadığını döner.
+ * `pdfAvailable` alanı tanımsız (undefined) olan belgeler de `false` kabul
+ * edilir — "belirtilmemiş" ile "yok" arasında UI açısından fark yoktur.
+ */
+export function hasPdf(document: Document): boolean {
+  return document.pdfAvailable === true;
+}
+
+/** Gerçek PDF'i olan belgeleri döner (madde 3). */
+export function getAvailablePdfDocuments(): readonly Document[] {
+  return DOCUMENTS.filter(hasPdf);
+}
+
+/** Henüz PDF'i olmayan belgeleri döner (madde 3) — "PDF Yakında" listelemesi için. */
+export function getMissingPdfDocuments(): readonly Document[] {
+  return DOCUMENTS.filter((d) => !hasPdf(d));
+}
+
+/**
+ * Bir belgenin görüntülenebilir PDF kaynağını döner — yerel bundle
+ * (`localAsset`) varsa o öncelenir, yoksa uzak `pdfUrl`. PDF yoksa (veya
+ * belge bulunamazsa) `undefined` döner; hiçbir zaman `pdfPath`e (kurum ana
+ * sayfası yer tutucusu) düşmez.
+ */
+export function getPdfPath(id: string): string | undefined {
+  const doc = getDocumentById(id);
+  if (!doc || !hasPdf(doc)) return undefined;
+  return doc.localAsset ?? doc.pdfUrl ?? undefined;
+}
+
+export interface PdfInstitutionStat {
+  institution: Institution;
+  total: number;
+  withPdf: number;
+}
+
+export interface PdfCategoryStat {
+  category: string;
+  total: number;
+  withPdf: number;
+}
+
+export interface PdfStatistics {
+  totalDocuments: number;
+  withPdf: number;
+  withoutPdf: number;
+  byInstitution: readonly PdfInstitutionStat[];
+  byCategory: readonly PdfCategoryStat[];
+  /** `pageCount` alanı bilinen belgelerin toplamı — bilinmeyenler sayılmaz (uydurulmaz). */
+  totalKnownPageCount: number;
+}
+
+/**
+ * PDF kapsamının tam istatistik özeti (madde 16). Veri Kaynakları ekranının
+ * "Toplam PDF" sayıları BUNDAN gelir — elle yazılan bir sayı YOKTUR.
+ */
+export function getPdfStatistics(): PdfStatistics {
+  const withPdfDocs = getAvailablePdfDocuments();
+
+  const institutionTotals = new Map<Institution, { total: number; withPdf: number }>();
+  const categoryTotals = new Map<string, { total: number; withPdf: number }>();
+
+  for (const d of DOCUMENTS) {
+    const inst = institutionTotals.get(d.institution) ?? { total: 0, withPdf: 0 };
+    inst.total += 1;
+    if (hasPdf(d)) inst.withPdf += 1;
+    institutionTotals.set(d.institution, inst);
+
+    const cat = categoryTotals.get(d.category) ?? { total: 0, withPdf: 0 };
+    cat.total += 1;
+    if (hasPdf(d)) cat.withPdf += 1;
+    categoryTotals.set(d.category, cat);
+  }
+
+  return {
+    totalDocuments: DOCUMENTS.length,
+    withPdf: withPdfDocs.length,
+    withoutPdf: DOCUMENTS.length - withPdfDocs.length,
+    byInstitution: Array.from(institutionTotals.entries())
+      .map(([institution, v]) => ({ institution, ...v }))
+      .sort((a, b) => b.withPdf - a.withPdf || a.institution.localeCompare(b.institution, 'tr')),
+    byCategory: Array.from(categoryTotals.entries())
+      .map(([category, v]) => ({ category, ...v }))
+      .sort((a, b) => b.withPdf - a.withPdf || a.category.localeCompare(b.category, 'tr')),
+    totalKnownPageCount: DOCUMENTS.reduce((sum, d) => sum + (d.pageCount ?? 0), 0),
+  };
+}

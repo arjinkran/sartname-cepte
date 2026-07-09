@@ -10,9 +10,11 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AppBar, Card } from '@/components/ui';
 import { colors, spacing, typography } from '@/theme';
-import { getStatistics } from '@/data/library';
+import { getStatistics, getPdfStatistics } from '@/data/library';
 
 const ISTATISTIK = getStatistics();
+const PDF_ISTATISTIK = getPdfStatistics();
+const PDF_KURUM_SAYISI = new Map(PDF_ISTATISTIK.byInstitution.map((k) => [k.institution, k.withPdf]));
 
 export default function VeriKaynaklariScreen() {
   const router = useRouter();
@@ -23,17 +25,25 @@ export default function VeriKaynaklariScreen() {
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent}>
         <Text style={styles.ustAciklama}>
           Şartname Cepte içeriği aşağıdaki kurum ve standart kaynaklarına dayanır. Kütüphanede
-          şu an toplam {ISTATISTIK.totalDocuments} doküman bulunuyor.
+          şu an toplam {ISTATISTIK.totalDocuments} doküman bulunuyor ({PDF_ISTATISTIK.withPdf} PDF).
         </Text>
-        {ISTATISTIK.byInstitution.map((kurum) => (
-          <Card key={kurum.institution} style={styles.card}>
-            <Text style={styles.ad}>{kurum.ad}</Text>
-            <Text style={styles.aciklama}>{kurum.aciklama}</Text>
-            <Text style={styles.durum}>
-              {kurum.count > 0 ? `Uygulamada ${kurum.count} doküman mevcut` : 'Doküman kütüphanesi yakında eklenecek'}
-            </Text>
-          </Card>
-        ))}
+        {ISTATISTIK.byInstitution.map((kurum) => {
+          const pdfSayisi = PDF_KURUM_SAYISI.get(kurum.institution) ?? 0;
+          return (
+            <Card key={kurum.institution} style={styles.card}>
+              <Text style={styles.ad}>{kurum.ad}</Text>
+              <Text style={styles.aciklama}>{kurum.aciklama}</Text>
+              <View style={styles.durumSatiri}>
+                <Text style={styles.durum}>
+                  {kurum.count > 0 ? `Uygulamada ${kurum.count} doküman mevcut` : 'Doküman kütüphanesi yakında eklenecek'}
+                </Text>
+                {kurum.count > 0 && (
+                  <Text style={styles.pdfSayisi}>Toplam PDF: {pdfSayisi}</Text>
+                )}
+              </View>
+            </Card>
+          );
+        })}
       </ScrollView>
     </View>
   );
@@ -57,5 +67,12 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   aciklama: { fontSize: typography.size.sm, color: colors.textSecondary, marginTop: 4, lineHeight: 19 },
-  durum: { fontSize: typography.size.xs, color: colors.accent, marginTop: spacing.s, fontWeight: '700' },
+  durumSatiri: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.s,
+  },
+  durum: { fontSize: typography.size.xs, color: colors.accent, fontWeight: '700' },
+  pdfSayisi: { fontSize: typography.size.xs, color: colors.textSecondary, fontWeight: '700' },
 });

@@ -14,7 +14,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
 import { AppBar, Button, Card, Logo, PressableScale } from '@/components/ui';
 import { colors, radius, spacing, typography } from '@/theme';
-import { STATUS_LABELS, getDocumentById, getRelatedDocuments } from '@/data/library';
+import { STATUS_LABELS, getDocumentById, getRelatedDocuments, hasPdf } from '@/data/library';
 import { recommendRelated } from '@/ai/engine';
 import { InstitutionBadge, StatusBadge } from '../components/DocumentRow';
 
@@ -51,9 +51,14 @@ export default function DocumentDetailScreen() {
   // motoru, belgenin kendi başlık/kategori/anahtar kelimelerinden
   // türettiği bir sorguyla ek ilişkili belgeler de önerir.
   const aiOnerileri = recommendRelated(document.id, 5).documents;
+  const pdfVar = hasPdf(document);
 
   const pdfAc = () => {
-    Alert.alert('PDF Görüntüleyici', 'Bu özellik yakında eklenecek.');
+    if (pdfVar) {
+      router.push(`/pdf/${document.id}`);
+      return;
+    }
+    Alert.alert('PDF Yakında', 'Bu doküman için PDF henüz eklenmedi — yakında eklenecek.');
   };
 
   return (
@@ -173,7 +178,12 @@ export default function DocumentDetailScreen() {
         <Card style={styles.card}>
           <Text style={styles.bolumBaslik}>Aksiyonlar</Text>
           <View style={styles.aksiyonlar}>
-            <Button label="📄 PDF Aç" variant="primary" onPress={pdfAc} style={{ flex: 1 }} />
+            <Button
+              label={pdfVar ? "📄 PDF'yi Aç" : 'PDF Yakında'}
+              variant={pdfVar ? 'primary' : 'secondary'}
+              onPress={pdfAc}
+              style={{ flex: 1 }}
+            />
             <Button
               label={favori ? '★ Favoride' : '☆ Favorilere Ekle'}
               variant={favori ? 'primary' : 'secondary'}
@@ -188,7 +198,9 @@ export default function DocumentDetailScreen() {
             style={{ marginTop: spacing.s }}
           />
           <Text style={styles.kaynakNot}>
-            PDF görüntüleme özelliği geliştirme aşamasındadır; bu buton şimdilik stub'tır.
+            {pdfVar
+              ? 'PDF görüntüleyici, doküman için sağlanan kaynağı açar.'
+              : 'Bu doküman için gerçek PDF henüz kütüphaneye eklenmedi.'}
           </Text>
         </Card>
       </ScrollView>

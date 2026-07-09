@@ -7,7 +7,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
 import { colors, radius, spacing, shadow, typography } from '@/theme';
-import { STATUS_LABELS, type Document, type DocumentStatus, type Institution } from '@/data/library';
+import { STATUS_LABELS, hasPdf, type Document, type DocumentStatus, type Institution } from '@/data/library';
 
 // Record<Institution,...> tamlığı için 11 kurumun tamamı renklendirilmiş
 // olmalı — bazılarında (Enerji Bakanlığı, CENELEC, TS EN, IEEE, Diğer)
@@ -67,7 +67,7 @@ export function DocumentRow({ document }: { document: Document }) {
         <View style={styles.ustSatir}>
           <InstitutionBadge institution={document.institution} />
           {document.status !== 'active' ? <StatusBadge status={document.status} /> : null}
-          {document.pdfPath ? (
+          {hasPdf(document) ? (
             <View style={styles.pdfRozet}>
               <Text style={styles.pdfRozetText}>PDF</Text>
             </View>
