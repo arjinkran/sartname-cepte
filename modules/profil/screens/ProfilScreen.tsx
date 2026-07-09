@@ -15,6 +15,13 @@ const AYARLAR = [
   { id: 'offline', ikon: '📥', ad: 'Offline Kütüphane', rota: '/offline-kutuphane' },
   { id: 'favoriler', ikon: '🔖', ad: 'Favoriler', rota: '/favoriler' },
   { id: 'veri-kaynaklari', ikon: '🏛️', ad: 'Veri Kaynakları', rota: '/veri-kaynaklari' },
+  {
+    id: 'pdf-kapsam',
+    ikon: '📄',
+    ad: 'PDF Kütüphane Durumu',
+    altBaslik: 'Hangi dokümanların PDF dosyası eklendiğini ve eksik olanları görüntüleyin.',
+    rota: '/pdf-kapsam',
+  },
   { id: 'gizlilik', ikon: '🔒', ad: 'Gizlilik Politikası', rota: '' },
   { id: 'kullanim', ikon: '📜', ad: 'Kullanım Şartları', rota: '' },
   { id: 'hakkinda', ikon: 'ℹ️', ad: 'Hakkında', rota: '/hakkinda' },
@@ -66,6 +73,7 @@ export default function ProfilScreen() {
               <ListItem
                 icon={a.ikon}
                 title={a.ad}
+                subtitle={'altBaslik' in a ? a.altBaslik : undefined}
                 onPress={() => satirTikla(a.rota)}
                 style={styles.listRow}
                 right={<Text style={styles.chevron}>›</Text>}

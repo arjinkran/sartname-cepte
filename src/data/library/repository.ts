@@ -23,6 +23,12 @@ import { DOCUMENTS as IEEE_DOCS, METADATA as IEEE_META } from './ieee/index.ts';
 import { DOCUMENTS as OTHER_DOCS, METADATA as OTHER_META } from './other/index.ts';
 import { kategoriGorunumu } from './categoryPresentation.ts';
 import type { Document, DocumentType, Institution, InstitutionMeta } from './types.ts';
+// Sprint 9: PDF manifest'i DOĞRUDAN import edilir (pdfChecker.ts ÜZERİNDEN
+// DEĞİL) — pdfChecker.ts zaten bu dosyayı (repository.ts) import ettiğinden,
+// tersi yönde bir import döngüsel bağımlılık yaratırdı. manifest.ts'in
+// kendisi hiçbir şeyi import etmez (yaprak modül), bu yüzden burada
+// güvenle kullanılabilir.
+import { PDF_MANIFEST } from '../../assets/pdfs/manifest.ts';
 
 interface InstitutionModule {
   docs: readonly Document[];
@@ -272,20 +278,25 @@ export function getStatistics(): LibraryStatistics {
   };
 }
 
-// ── PDF (Sprint 8) ───────────────────────────────────────────────────────
+// ── PDF (Sprint 8-9) ─────────────────────────────────────────────────────
 //
 // `document.pdfPath` (Sprint 4'ten kalan alan) HER belgede doludur (kurum
 // ana sayfası yer tutucusu) — bu yüzden gerçek bir PDF'in var olup
-// olmadığının TEK doğruluk kaynağı `pdfAvailable`dır. Bu bölümdeki
-// fonksiyonlar `document.pdfPath`e ASLA bakmaz.
+// olmadığı İKİ kaynaktan gelir (Sprint 9, madde 3): belgenin kendi
+// `pdfAvailable` alanı VEYA `src/assets/pdfs/manifest.ts`'te o belge
+// id'sine ait bir kayıt. Bu bölümdeki fonksiyonlar `document.pdfPath`e
+// ASLA bakmaz.
+const MANIFEST_DOCUMENT_IDS = new Set(PDF_MANIFEST.map((m) => m.documentId));
 
 /**
  * Bir belgenin ŞU AN gerçekten açılabilir bir PDF'i olup olmadığını döner.
  * `pdfAvailable` alanı tanımsız (undefined) olan belgeler de `false` kabul
  * edilir — "belirtilmemiş" ile "yok" arasında UI açısından fark yoktur.
+ * Sprint 9'dan itibaren, manifest'te bir kaydı olan belgeler de `true`
+ * sayılır (pdfAvailable alanı elle `true` yapılmamış olsa bile).
  */
 export function hasPdf(document: Document): boolean {
-  return document.pdfAvailable === true;
+  return document.pdfAvailable === true || MANIFEST_DOCUMENT_IDS.has(document.id);
 }
 
 /** Gerçek PDF'i olan belgeleri döner (madde 3). */
@@ -299,15 +310,16 @@ export function getMissingPdfDocuments(): readonly Document[] {
 }
 
 /**
- * Bir belgenin görüntülenebilir PDF kaynağını döner — yerel bundle
- * (`localAsset`) varsa o öncelenir, yoksa uzak `pdfUrl`. PDF yoksa (veya
- * belge bulunamazsa) `undefined` döner; hiçbir zaman `pdfPath`e (kurum ana
- * sayfası yer tutucusu) düşmez.
+ * Bir belgenin görüntülenebilir PDF kaynağını döner. Öncelik sırası:
+ * manifest kaydının `relativePath`i (Sprint 9) → belgenin kendi
+ * `localAsset`i → `pdfUrl`. PDF yoksa (veya belge bulunamazsa) `undefined`
+ * döner; hiçbir zaman `pdfPath`e (kurum ana sayfası yer tutucusu) düşmez.
  */
 export function getPdfPath(id: string): string | undefined {
   const doc = getDocumentById(id);
   if (!doc || !hasPdf(doc)) return undefined;
-  return doc.localAsset ?? doc.pdfUrl ?? undefined;
+  const manifestKaydi = PDF_MANIFEST.find((m) => m.documentId === id);
+  return manifestKaydi?.relativePath ?? doc.localAsset ?? doc.pdfUrl ?? undefined;
 }
 
 export interface PdfInstitutionStat {
@@ -330,6 +342,8 @@ export interface PdfStatistics {
   byCategory: readonly PdfCategoryStat[];
   /** `pageCount` alanı bilinen belgelerin toplamı — bilinmeyenler sayılmaz (uydurulmaz). */
   totalKnownPageCount: number;
+  /** `src/assets/pdfs/manifest.ts`'teki kayıt sayısı (Sprint 9) — `withPdf` ile AYNI olmak zorunda değildir: bir belge yalnızca `pdfAvailable: true` ile de (manifest kaydı olmadan) sayılabilir. */
+  manifestCount: number;
 }
 
 /**
@@ -365,5 +379,6 @@ export function getPdfStatistics(): PdfStatistics {
       .map(([category, v]) => ({ category, ...v }))
       .sort((a, b) => b.withPdf - a.withPdf || a.category.localeCompare(b.category, 'tr')),
     totalKnownPageCount: DOCUMENTS.reduce((sum, d) => sum + (d.pageCount ?? 0), 0),
+    manifestCount: PDF_MANIFEST.length,
   };
 }

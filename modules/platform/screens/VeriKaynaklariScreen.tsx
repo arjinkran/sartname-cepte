@@ -14,7 +14,7 @@ import { getStatistics, getPdfStatistics } from '@/data/library';
 
 const ISTATISTIK = getStatistics();
 const PDF_ISTATISTIK = getPdfStatistics();
-const PDF_KURUM_SAYISI = new Map(PDF_ISTATISTIK.byInstitution.map((k) => [k.institution, k.withPdf]));
+const PDF_KURUM_SAYISI = new Map(PDF_ISTATISTIK.byInstitution.map((k) => [k.institution, k]));
 
 export default function VeriKaynaklariScreen() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function VeriKaynaklariScreen() {
           şu an toplam {ISTATISTIK.totalDocuments} doküman bulunuyor ({PDF_ISTATISTIK.withPdf} PDF).
         </Text>
         {ISTATISTIK.byInstitution.map((kurum) => {
-          const pdfSayisi = PDF_KURUM_SAYISI.get(kurum.institution) ?? 0;
+          const pdfDurum = PDF_KURUM_SAYISI.get(kurum.institution);
           return (
             <Card key={kurum.institution} style={styles.card}>
               <Text style={styles.ad}>{kurum.ad}</Text>
@@ -37,8 +37,8 @@ export default function VeriKaynaklariScreen() {
                 <Text style={styles.durum}>
                   {kurum.count > 0 ? `Uygulamada ${kurum.count} doküman mevcut` : 'Doküman kütüphanesi yakında eklenecek'}
                 </Text>
-                {kurum.count > 0 && (
-                  <Text style={styles.pdfSayisi}>Toplam PDF: {pdfSayisi}</Text>
+                {kurum.count > 0 && pdfDurum && (
+                  <Text style={styles.pdfSayisi}>PDF: {pdfDurum.withPdf} / {pdfDurum.total}</Text>
                 )}
               </View>
             </Card>

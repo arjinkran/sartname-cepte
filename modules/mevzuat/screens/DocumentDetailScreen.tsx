@@ -58,7 +58,10 @@ export default function DocumentDetailScreen() {
       router.push(`/pdf/${document.id}`);
       return;
     }
-    Alert.alert('PDF Yakında', 'Bu doküman için PDF henüz eklenmedi — yakında eklenecek.');
+    Alert.alert(
+      'PDF henüz eklenmedi.',
+      'Bu dokümanın resmi PDF dosyası doğrulandıktan sonra kütüphaneye eklenecektir.'
+    );
   };
 
   return (
@@ -200,7 +203,7 @@ export default function DocumentDetailScreen() {
           <Text style={styles.kaynakNot}>
             {pdfVar
               ? 'PDF görüntüleyici, doküman için sağlanan kaynağı açar.'
-              : 'Bu doküman için gerçek PDF henüz kütüphaneye eklenmedi.'}
+              : 'PDF henüz eklenmedi. Bu dokümanın resmi PDF dosyası doğrulandıktan sonra kütüphaneye eklenecektir.'}
           </Text>
         </Card>
       </ScrollView>

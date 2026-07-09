@@ -38,6 +38,7 @@ export default function RootLayout() {
               <Stack.Screen name="profil" options={{ headerShown: false }} />
               <Stack.Screen name="favoriler" options={{ headerShown: false }} />
               <Stack.Screen name="veri-kaynaklari" options={{ headerShown: false }} />
+              <Stack.Screen name="pdf-kapsam" options={{ headerShown: false }} />
               <Stack.Screen name="offline-kutuphane" options={{ headerShown: false }} />
               <Stack.Screen name="hakkinda" options={{ headerShown: false }} />
               {/*
