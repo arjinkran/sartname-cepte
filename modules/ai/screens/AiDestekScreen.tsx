@@ -1,43 +1,44 @@
 // AI Mevzuat Asistanı — /ai
 //
-// ⚠️ Gerçek bir LLM/AI motoru YOK. "Önerileri Getir", Repository'deki
-// `searchKeywords()` fonksiyonunu çağırır — yalnızca her dokümanın
-// `keywords`/`tags`/`aliases` alanlarında eşleşme arar (title/summary
-// hariç), skor `searchWeight` ile çarpılır (Sprint 5, madde 12/24).
-// "Neden önerildi?" satırı gerçek bir AI gerekçelendirmesi DEĞİLDİR,
-// yalnızca eşleşme skoruna dayanır.
+// ⚠️ Gerçek bir LLM/AI motoru YOK. Sprint 7'den itibaren "Önerileri
+// Getir", src/ai/engine.ts'teki `recommendDocuments()` — kural tabanlı
+// bir "Mevzuat Tavsiye Motoru" — çağırır: niyet tespiti + eşanlamlı
+// terim normalizasyonu + çok alanlı ağırlıklı puanlama (bkz.
+// src/ai/README.md). Hâlâ LLM/RAG/API/internet KULLANMAZ. "Neden
+// önerildi?" satırları gerçek bir AI gerekçelendirmesi DEĞİLDİR —
+// `reasons` dizisinden gelen, hangi kuralların eşleştiğinin okunabilir
+// bir dökümüdür.
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AppBar, BottomNavigation, Button, Card, EmptyState, ListItem, Logo } from '@/components/ui';
 import { useRootTabBar } from '@/navigation/tabs';
 import { colors, radius, spacing, typography } from '@/theme';
-import { searchKeywords, type SearchResult } from '@/data/library';
+import { recommendDocuments } from '@/ai/engine';
+import type { DocumentRecommendation } from '@/ai/types';
+import { EXAMPLE_QUESTIONS } from '@/ai/examples';
 
 const ONERI_LIMIT = 10;
+const ORNEK_SORU_SAYISI = 8;
 
-// V3 mevzuat dönüşümü, madde 13-14: en az 8 örnek soru, yalnızca mevzuat
-// türü doküman önerir (Şartname/Yönetmelik/Standart/Tebliğ/Resmi Gazete/
-// TEDAŞ/TEİAŞ/EPDK/TS/IEC) — hesap önerisi YOK.
-const ORNEK_SORULAR = [
-  '2 km uzaktaki OG hattan branşman alınacak. Hangi şartnameler okunmalı?',
-  'Yeni trafo tesisi kurulacak. Hangi TEDAŞ şartnameleri gerekir?',
-  'XLPE kablo seçerken hangi standartlar kullanılmalı?',
-  'Parafudr seçimi için hangi dokümanlara bakılır?',
-  'Beton köşk kurulumu için hangi teknik şartnameler geçerlidir?',
-  'Topraklama ölçümü hangi yönetmeliğe göre yapılır?',
-  'OG ring şebekede hangi mevzuatlar uygulanır?',
-  'Yeni dağıtım hattı yapılacak. Hangi yönetmelikler birlikte okunmalıdır?',
-] as const;
+// src/ai/examples.ts, 50+ gerçek saha sorusunun TEK kaynağıdır (Sprint 7,
+// madde 10) — burada yalnızca ilk 8'i "Örnek Sorular" kartında gösterilir.
+const ORNEK_SORULAR = EXAMPLE_QUESTIONS.slice(0, ORNEK_SORU_SAYISI);
+
+/** confidence (0-100) → 5 üzerinden yıldız gösterimi, ör. 92 → ★★★★★. */
+function guvenYildizlari(confidence: number): string {
+  const doluYildiz = Math.round(confidence / 20);
+  return '★★★★★'.slice(0, doluYildiz) + '☆☆☆☆☆'.slice(0, 5 - doluYildiz);
+}
 
 export default function AiDestekScreen() {
   const router = useRouter();
   const tabBar = useRootTabBar();
   const [soru, setSoru] = useState('');
-  const [sonuclar, setSonuclar] = useState<SearchResult[] | null>(null);
+  const [sonuclar, setSonuclar] = useState<readonly DocumentRecommendation[] | null>(null);
 
   const oneriGetir = (metin: string) => {
-    setSonuclar(searchKeywords(metin));
+    setSonuclar(recommendDocuments(metin, ONERI_LIMIT).documents);
   };
 
   const ornekSec = (ornek: string) => {
@@ -113,12 +114,18 @@ export default function AiDestekScreen() {
             {sonuclar.length > 0 ? (
               sonuclar.slice(0, ONERI_LIMIT).map((s) => (
                 <Card key={s.document.id} style={styles.card}>
-                  <Text style={styles.sonucBaslik} numberOfLines={2}>{s.document.title}</Text>
+                  <View style={styles.sonucUstSatir}>
+                    <Text style={styles.sonucBaslik} numberOfLines={2}>{s.document.title}</Text>
+                    <View style={styles.guvenRozeti}>
+                      <Text style={styles.guvenYildiz}>{guvenYildizlari(s.confidence)}</Text>
+                      <Text style={styles.guvenYuzde}>{s.confidence}%</Text>
+                    </View>
+                  </View>
                   <Text style={styles.sonucAlt}>
                     {s.document.institution} · {s.document.category}
                   </Text>
                   <Text style={styles.nedenText}>
-                    Neden önerildi? Yazdığın ifadeyle anahtar kelime/etiket eşleşmesi (skor: {s.score}).
+                    {s.reasons.length > 0 ? `Neden önerildi? ${s.reasons.join(' ')}` : 'Neden önerildi? Genel eşleşme.'}
                   </Text>
                   <Button
                     label="Detaya Git"
@@ -183,12 +190,17 @@ const styles = StyleSheet.create({
   ornekRow: { paddingHorizontal: spacing.m },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: spacing.m },
   chevron: { fontSize: 20, color: colors.textSecondary, marginLeft: 2 },
+  sonucUstSatir: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: spacing.s },
   sonucBaslik: {
+    flex: 1,
     fontSize: typography.size.base,
     fontWeight: typography.weight.bold,
     fontFamily: typography.fontFamily,
     color: colors.textPrimary,
   },
+  guvenRozeti: { alignItems: 'flex-end' },
+  guvenYildiz: { fontSize: 12, color: colors.accent, letterSpacing: 1 },
+  guvenYuzde: { fontSize: 11, fontWeight: '700', color: colors.textSecondary, marginTop: 1 },
   sonucAlt: { fontSize: typography.size.sm, color: colors.textSecondary, marginTop: 3 },
   nedenText: { fontSize: typography.size.xs, color: colors.textSecondary, marginTop: spacing.s, lineHeight: 16 },
 });

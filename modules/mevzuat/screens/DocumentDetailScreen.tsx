@@ -15,6 +15,7 @@ import { useFavoriler } from '@/lib/favoriler';
 import { AppBar, Button, Card, Logo, PressableScale } from '@/components/ui';
 import { colors, radius, spacing, typography } from '@/theme';
 import { STATUS_LABELS, getDocumentById, getRelatedDocuments } from '@/data/library';
+import { recommendRelated } from '@/ai/engine';
 import { InstitutionBadge, StatusBadge } from '../components/DocumentRow';
 
 function KunyeSatiri({ etiket, deger }: { etiket: string; deger: string }) {
@@ -45,6 +46,11 @@ export default function DocumentDetailScreen() {
 
   const favori = favoriMi(document.id);
   const ilgiliDokumanlar = getRelatedDocuments(document.id);
+  // Sprint 7, madde 9: "çapraz öneriler" artık yalnızca elle yazılmış
+  // relatedDocuments/crossReferences alanlarıyla SINIRLI değil — AI
+  // motoru, belgenin kendi başlık/kategori/anahtar kelimelerinden
+  // türettiği bir sorguyla ek ilişkili belgeler de önerir.
+  const aiOnerileri = recommendRelated(document.id, 5).documents;
 
   const pdfAc = () => {
     Alert.alert('PDF Görüntüleyici', 'Bu özellik yakında eklenecek.');
@@ -129,6 +135,29 @@ export default function DocumentDetailScreen() {
             })
           ) : (
             <Text style={styles.ilgiliBos}>Bu doküman için henüz ilişkili yönetmelik/standart girilmedi.</Text>
+          )}
+        </Card>
+
+        {/* AI Önerileri — Sprint 7 madde 9, relatedDocuments/crossReferences'tan BAĞIMSIZ ek öneriler */}
+        <Card style={styles.card} padded={false}>
+          <Text style={[styles.bolumBaslik, { padding: spacing.m, paddingBottom: 0 }]}>AI Önerileri</Text>
+          {aiOnerileri.length > 0 ? (
+            aiOnerileri.map((oneri, i) => (
+              <View key={oneri.document.id}>
+                <PressableScale
+                  onPress={() => router.push(`/sartname/${oneri.document.id}`)}
+                  scaleTo={0.98}
+                  style={styles.ilgiliSatir}
+                >
+                  <Text style={styles.ilgiliText} numberOfLines={1}>{oneri.document.title}</Text>
+                  <Text style={styles.aiOneriYuzde}>{oneri.confidence}%</Text>
+                  <Text style={styles.ilgiliOk}>›</Text>
+                </PressableScale>
+                {i < aiOnerileri.length - 1 && <View style={styles.divider} />}
+              </View>
+            ))
+          ) : (
+            <Text style={[styles.ilgiliBos, { padding: spacing.m }]}>Bu belge için AI önerisi bulunamadı.</Text>
           )}
         </Card>
 
@@ -218,6 +247,7 @@ const styles = StyleSheet.create({
   },
   ilgiliText: { flex: 1, fontSize: 14, fontWeight: '600', color: colors.textPrimary },
   ilgiliOk: { fontSize: 20, color: colors.textSecondary, paddingLeft: spacing.s },
+  aiOneriYuzde: { fontSize: 12, fontWeight: '700', color: colors.accent },
   ilgiliBos: { fontSize: 14, color: colors.textSecondary },
   mevzuatSatir: {
     fontSize: 14,
