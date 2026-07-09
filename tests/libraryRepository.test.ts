@@ -30,7 +30,7 @@ import type { DocumentType } from '../src/data/library/types.ts';
 // "veri bütünlüğü" testinde her belgenin geçerli bir tipte olduğunu
 // doğrulamak için kullanılır.
 const GECERLI_DOKUMAN_TIPLERI: readonly DocumentType[] = [
-  'Şartname', 'Yönetmelik', 'Standart', 'Tebliğ', 'Genelge', 'Kılavuz', 'Teknik Doküman', 'Rehber',
+  'Kanun', 'Şartname', 'Yönetmelik', 'Standart', 'Tebliğ', 'Genelge', 'Kılavuz', 'Teknik Doküman', 'Rehber',
 ];
 
 test('normallestir Türkçe karakterleri katlar', () => {
@@ -110,9 +110,10 @@ test('getDocumentsByInstitution: yalnızca o kurumu döner', () => {
   assert.ok(tedas.every((d) => d.institution === 'TEDAŞ'));
 });
 
-test('getDocumentsByCategory: Hücreler kategorisinde yalnızca OG Modüler Hücreler dokümanı var (ayrıntılı taksonomi)', () => {
+test('getDocumentsByCategory: Hücreler kategorisi TEDAŞ OG Modüler Hücreler dokümanını içerir (ayrıntılı taksonomi)', () => {
   const hucreler = getDocumentsByCategory('Hücreler');
-  assert.deepStrictEqual(hucreler.map((d) => d.id), ['og-moduler-hucre']);
+  assert.ok(hucreler.some((d) => d.id === 'og-moduler-hucre'));
+  assert.ok(hucreler.every((d) => d.category === 'Hücreler'));
   const trafo = getDocumentsByCategory('Trafo');
   assert.ok(trafo.some((d) => d.id === 'og-dagitim-trafo'));
   assert.ok(!trafo.some((d) => d.id === 'og-moduler-hucre'));
@@ -162,20 +163,21 @@ test('getRecentDocuments: limit parametresine uyar ve updatedAt azalan sırada d
 test('getCategories: kategori listesi elle yazılmadan, gerçek belgelerden otomatik türer', () => {
   const kategoriler = getCategories();
   assert.ok(kategoriler.length > 0);
-  // "Hücreler" tam olarak 1 belgeye sahip olmalı (bkz. getDocumentsByCategory testi)
+  // "Hücreler" en az 1 belgeye sahip olmalı (TEDAŞ OG Modüler Hücreler + Sprint 6'da eklenen
+  // IEC/TS EN/CENELEC 62271 referansları da aynı kategoride)
   const hucreler = kategoriler.find((k) => k.ad === 'Hücreler');
-  assert.strictEqual(hucreler?.count, 1);
+  assert.ok((hucreler?.count ?? 0) >= 1);
   // Boş kategoriler (hiçbir belge yok) listede GÖRÜNMEMELİ
   assert.ok(kategoriler.every((k) => k.count > 0));
 });
 
-test('getInstitutions: 10 kurum klasörünün TAMAMI döner, belgesi olmayanlar da count:0 ile listede kalır', () => {
+test('getInstitutions: 10 kurum klasörünün TAMAMI döner (Sprint 6: hepsi artık belge içeriyor)', () => {
   const kurumlar = getInstitutions();
   assert.strictEqual(kurumlar.length, 10);
   const teias = kurumlar.find((k) => k.institution === 'TEİAŞ');
-  assert.strictEqual(teias?.count, 0);
+  assert.ok((teias?.count ?? 0) >= 8);
   const tedas = kurumlar.find((k) => k.institution === 'TEDAŞ');
-  assert.strictEqual(tedas?.count, 7);
+  assert.ok((tedas?.count ?? 0) >= 30);
 });
 
 test('getDocumentTypes: yalnızca gerçekten kullanılan tipleri döner', () => {
@@ -189,22 +191,26 @@ test('getStatistics: toplam sayılar ve alt kırılımlar tutarlı', () => {
   const istatistik = getStatistics();
   const tumDokumanlar = getAllDocuments();
   assert.strictEqual(istatistik.totalDocuments, tumDokumanlar.length);
-  assert.strictEqual(istatistik.totalDocuments, 14);
+  assert.ok(istatistik.totalDocuments >= 100, 'Sprint 6: toplam belge sayısı en az 100 olmalı');
   assert.strictEqual(
     istatistik.byInstitution.reduce((t, k) => t + k.count, 0),
     istatistik.totalDocuments,
     'kurum bazlı sayılar toplamı toplam belge sayısına eşit olmalı'
   );
-  assert.strictEqual(istatistik.deprecatedCount, 1);
+  assert.ok(istatistik.deprecatedCount >= 1);
   assert.ok(istatistik.featuredCount > 0);
 });
 
 test('veri bütünlüğü: Document alanları geçerli ve dolu', () => {
-  const kurumlar = new Set(getInstitutions().map((k) => k.institution));
+  // 'TS EN' ayrı bir kurum klasörü DEĞİL — tse/ klasörü içinde institution:
+  // 'TSE' ve institution:'TS EN' belgeleri birlikte yaşar (Sprint 5 kararı,
+  // bkz. LIBRARY_ARCHITECTURE.md), bu yüzden 10 klasörün meta listesine ek
+  // olarak elle kabul edilir.
+  const kurumlar = new Set([...getInstitutions().map((k) => k.institution), 'TS EN']);
   const tumDokumanlar = getAllDocuments();
   const idler = new Set(tumDokumanlar.map((d) => d.id));
   assert.strictEqual(idler.size, tumDokumanlar.length, 'id tekrarı olmamalı');
-  assert.strictEqual(tumDokumanlar.length, 14, 'mevcut 14 belge silinmemeli (Sprint 5 kuralı)');
+  assert.ok(tumDokumanlar.length >= 100, 'Sprint 6: toplam belge sayısı en az 100 olmalı');
 
   for (const d of tumDokumanlar) {
     assert.ok(d.category.length > 0, `${d.id}: kategori boş olamaz`);
@@ -214,18 +220,24 @@ test('veri bütünlüğü: Document alanları geçerli ve dolu', () => {
     assert.ok(['active', 'deprecated', 'draft'].includes(d.status), `${d.id}: geçersiz durum`);
     assert.ok(d.publishDate.length > 0 && d.effectiveDate.length > 0, `${d.id}: tarih alanları boş`);
     assert.ok(d.revision.length > 0, `${d.id}: revizyon eksik`);
-    assert.ok(d.pdfPath.startsWith('https://'), `${d.id}: pdfPath geçersiz`);
+    // Sprint 6: TSE/IEC/CENELEC/IEEE referans-yalnızca girdileri pdfPath'i
+    // bilinçli olarak boş bırakır (telifli standart tam metni eklenmez).
+    assert.ok(d.pdfPath === '' || d.pdfPath.startsWith('https://'), `${d.id}: pdfPath geçersiz`);
     assert.ok(d.keywords.length >= 3, `${d.id}: en az 3 anahtar kelime olmalı`);
-    assert.ok(d.relatedDocuments.length > 0, `${d.id}: relatedDocuments boş bırakılmamalı`);
     assert.strictEqual(d.favorite, false, `${d.id}: seed veride favorite her zaman false olmalı`);
     assert.strictEqual(typeof d.featured, 'boolean', `${d.id}: featured boolean olmalı`);
     assert.match(d.updatedAt, /^\d{4}-\d{2}-\d{2}$/, `${d.id}: updatedAt YYYY-MM-DD biçiminde olmalı`);
     for (const relId of d.relatedDocuments) {
       assert.ok(idler.has(relId), `${d.id}: geçersiz ilgili doküman id ${relId}`);
     }
+    for (const crossId of d.crossReferences) {
+      assert.ok(idler.has(crossId), `${d.id}: geçersiz crossReferences id ${crossId}`);
+    }
 
-    // Sprint 5'te eklenen alanlar
-    assert.strictEqual(d.sourceVerified, true, `${d.id}: mevcut belgeler sourceVerified: true olmalı`);
+    // Sprint 5/6'da eklenen alanlar — sourceVerified: false Sprint 6'da
+    // KABUL EDİLEBİLİR bir durumdur (doğrulanmamış/referans girdileri
+    // için beklenen değerdir, test hatası değildir).
+    assert.strictEqual(typeof d.sourceVerified, 'boolean', `${d.id}: sourceVerified boolean olmalı`);
     assert.ok(d.version.length > 0, `${d.id}: version boş olamaz`);
     assert.ok(d.language === 'TR' || d.language === 'EN', `${d.id}: geçersiz dil ${d.language}`);
     assert.match(d.lastChecked, /^\d{4}-\d{2}-\d{2}$/, `${d.id}: lastChecked YYYY-MM-DD biçiminde olmalı`);

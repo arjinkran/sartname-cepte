@@ -1,11 +1,15 @@
-# Ulusal Elektrik Mevzuat Kütüphanesi — Mimari (Sprint 5)
+# Ulusal Elektrik Mevzuat Kütüphanesi — Mimari (Sprint 5, içerik Sprint 6'da genişletildi)
 
 Bu belge, Şartname Cepte'nin **ölçeklenebilir mevzuat kütüphanesi**
 altyapısını anlatır: yüzlerce şartname/yönetmelik/standardın rahatça
 eklenebileceği veri mimarisi. Önceki tek-dosyalı model
-(`src/data/documents/documents.ts`, bkz. Sprint 4) bu sprintte
-**kurum-bazlı klasör yapısına** geçirildi; hiçbir ekran veya davranış
-değişmedi, yalnızca veri katmanı yeniden düzenlendi.
+(`src/data/documents/documents.ts`, bkz. Sprint 4) Sprint 5'te
+**kurum-bazlı klasör yapısına** geçirildi; mimari o zamandan beri
+DEĞİŞMEDİ. Sprint 6, bu mimariyi hiç değiştirmeden yalnızca **içeriği**
+büyüttü (14 → 121 belge) — bu, mimarinin "büyüyen kütüphane" hedefinin
+kanıtı: yeni belgeler yalnızca ilgili `<kurum>/documents.ts` dosyasına
+eklendi, `repository.ts` da dahil hiçbir mimari dosya değişmedi. Güncel
+içerik dökümü için bkz. [`CONTENT_COVERAGE.md`](./CONTENT_COVERAGE.md).
 
 ## 1. Klasör yapısı
 
@@ -21,21 +25,24 @@ src/data/library/
 │   ├── metadata.ts         — { institution, ad, aciklama }
 │   ├── index.ts            — documents.ts + metadata.ts'i dışa aktarır
 │   └── README.md           — kurum notu + yeni belge ekleme adımları
-├── teias/      (aynı yapı, documents.ts boş — henüz belge yok)
-├── epdk/       (aynı yapı, 3 belge)
-├── enerjiBakanligi/ (aynı yapı, boş)
-├── resmiGazete/     (aynı yapı, 4 belge)
-├── tse/        (aynı yapı, boş — TS ve TS EN belgelerinin ikisi de burada yaşar)
-├── iec/        (aynı yapı, boş)
-├── cenelec/    (aynı yapı, boş)
-├── ieee/       (aynı yapı, boş)
-└── other/      (aynı yapı, boş — yukarıdaki 9 kuruma girmeyen kaynaklar için)
+├── teias/           (aynı yapı, 8 belge)
+├── epdk/            (aynı yapı, 15 belge)
+├── enerjiBakanligi/ (aynı yapı, 5 belge)
+├── resmiGazete/     (aynı yapı, 15 belge)
+├── tse/             (aynı yapı, 20 belge — TS ve TS EN belgelerinin ikisi de burada yaşar)
+├── iec/             (aynı yapı, 15 belge)
+├── cenelec/         (aynı yapı, 8 belge)
+├── ieee/            (aynı yapı, 5 belge)
+├── referenceEntry.ts — TSE/IEC/CENELEC/IEEE'nin ortak `referansGirdisi()`
+│                        fabrika fonksiyonu (metadata-yalnızca girdiler için
+│                        tekrarlayan alanları tek yerden doldurur)
+└── other/           (aynı yapı, boş — yukarıdaki 9 kuruma girmeyen kaynaklar için)
 ```
 
-**Mevcut belge sayısı: 14** (TEDAŞ 7, EPDK 3, Resmî Gazete 4) — Sprint 4'ten
-hiçbir içerik kaybı olmadan taşındı. Diğer 7 klasör şu an boş
-(`documents.ts` → `DOCUMENTS: readonly Document[] = []`); mock/uydurma
-belge **eklenmedi**.
+**Mevcut belge sayısı: 121** (Sprint 6 sonrası; Sprint 5'te 14'tü). Tek boş
+klasör `other/` — mock/uydurma belge hâlâ **eklenmedi**; bkz.
+[`CONTENT_COVERAGE.md`](./CONTENT_COVERAGE.md) kurum bazlı tam döküm ve
+`sourceVerified: false` işaretli belgelerin listesi için.
 
 ## 2. Kurum sistemi
 
@@ -68,10 +75,10 @@ vardı (birçoğu 0 belgeyle). Sprint 5'te bu değişti:
   onu listeye ekler; ekran genel bir 📁 ikonuyla gösterir.
 
 Aynı prensip `documentType` için de geçerlidir: `getDocumentTypes()`
-yalnızca gerçekten kullanılan tipleri (`Şartname`, `Yönetmelik`) döner;
-`types.ts`'teki 8 değerlik tam küme, gelecekte kullanılabilecek
-GEÇERLİ değerleri tanımlar (derleme zamanı kısıtı), runtime listesi
-değildir.
+yalnızca gerçekten kullanılan tipleri (`Şartname`, `Yönetmelik`, ...) döner;
+`types.ts`'teki 9 değerlik tam küme (Sprint 6'da `'Kanun'` eklendi — ör.
+Elektrik Piyasası Kanunu, İSG Kanunu), gelecekte kullanılabilecek GEÇERLİ
+değerleri tanımlar (derleme zamanı kısıtı), runtime listesi değildir.
 
 ## 4. Repository mantığı
 
@@ -129,7 +136,7 @@ Sprint 4'teki modele Sprint 5'te 15 alan eklendi:
 | `priority` | Ana sayfa gösterim önceliği | featured'lar 1-5, diğerleri 10 (UI'da henüz kullanılmıyor) |
 | `deprecated` | `status==='deprecated'` ile senkron bayrak | yalnızca `epdk-musteri-mulga` `true` |
 | `replacementDocumentId` | Yerine geçen belge | `epdk-musteri-mulga` → `epdk-tuketici` |
-| `crossReferences` | Kütüphanede henüz kaydı olmayan dış standart adları | bazı belgelerde dolu (ör. "IEC 60502") |
+| `crossReferences` | İlişkili standart/mevzuatların Document **id**'leri | bkz. aşağıdaki "Sprint 6: crossReferences artık gerçek id" |
 | `legalHierarchy` | Kanun/Yönetmelik/Şartname/Standart/Tebliğ/Genelge | `documentType` ile 1:1 (şu an) |
 
 ### `favorite` alanı — model şeması vs. gerçek durum
@@ -147,6 +154,18 @@ Standartlar" bölümü **tüm belgelerde aynı** statik bir örnek listeydi
 (`ILGILI_MEVZUAT_ORNEK`). Sprint 5'te bu kaldırıldı; bölüm artık her
 belgenin kendi `crossReferences` alanından besleniyor — gerçek,
 doküman-özel içerik.
+
+### Sprint 6: `crossReferences` artık gerçek id
+
+Sprint 5'te `crossReferences` serbest metin taşıyordu (ör. `"IEC 60502"`)
+çünkü TSE/IEC/CENELEC/IEEE'nin henüz kendi kayıtları yoktu. Sprint 6 bu
+kurumları da kataloğa eklediğinden, `crossReferences` artık **gerçek
+Document id'leri** taşır (ör. `["ts-en-60502", "iec-60502"]`) — serbest
+metin DEĞİL. `tests/libraryContent.test.ts` ve
+`tests/libraryRepository.test.ts`'teki "veri bütünlüğü" testi, her
+`crossReferences` id'sinin kütüphanede gerçekten var olduğunu doğrular.
+`DocumentDetailScreen.tsx`, bu id'leri `getDocumentById()` ile başlığa
+çözer (bulunamazsa ham id'yi gösterir).
 
 ## 6. AI entegrasyonu
 
@@ -167,7 +186,9 @@ eşleşme skorunu gösterir; bu, uygulamanın en başından beri korunan
    arayüzüne uyan yeni bir nesne ekleyin. **Hiçbir kurum kendi tipini
    tanımlamaz** — ortak model kullanılır.
 3. `sourceVerified: false` ile başlayın (bkz. §8 "Doğrulama süreci").
-4. `relatedDocuments` alanını boş bırakmayın.
+4. Mümkünse `relatedDocuments` alanını boş bırakmayın — yalnızca TSE/IEC/
+   CENELEC/IEEE gibi tek başına duran metadata-referans girdilerinde (bkz.
+   `referenceEntry.ts`) boş kalması kabul edilebilir.
 5. `keywords` alanını AI arama motoru için zengin tutun (eş anlamlılar,
    kısaltmalar, yaygın saha terimleri).
 6. Yeni bir kurum tamamen eksikse (10 klasörün hiçbirine uymuyorsa),
@@ -185,12 +206,21 @@ eşleşme skorunu gösterir; bu, uygulamanın en başından beri korunan
   kanalı) doğrulanana kadar bu durumda kalır.
 - Doğrulama tamamlandığında: `sourceVerified: true`, `sourceUrl` gerçek
   bağlantıya güncellenir, `lastChecked` doğrulama tarihine çekilir.
-- Mevcut 14 belge `sourceVerified: true` olarak işaretlendi ANCAK
+- Sprint 5'in 14 belgesi `sourceVerified: true` olarak işaretlendi ANCAK
   içerikleri (özet, madde numaraları, tarihler) hâlâ TASLAK örnektir —
   `sourceVerified`, "bu kayıt kütüphaneye resmî süreçten geçirilerek
   eklendi" anlamına gelir, "her kelimesi resmî metinle karşılaştırıldı"
   anlamına GELMEZ. Yayın öncesi tam metin karşılaştırması hâlâ gereklidir
   (bkz. her kurum klasörünün kendi README.md'si).
+- Sprint 6'da eklenen 107 belgenin TAMAMI `sourceVerified: false` ile
+  eklendi — bunlar TEDAŞ/EPDK/Resmî Gazete/TEİAŞ/Enerji Bakanlığı'nın
+  bilinen kategori/başlık düzeyinde gerçek şartname/yönetmelikleri ile
+  TSE/IEC/CENELEC/IEEE'nin bilinen standart numaralarıdır, ANCAK tam
+  doküman numarası/tarih/URL doğrulanmadığı için `sourceVerified: false`
+  ve `"Doğrulanacak"` olarak işaretlenmiştir. Bu, Sprint 6'nın "belge
+  uydurma" yasağının doğrudan uygulanmasıdır: emin olunmayan alan
+  boş/"Doğrulanacak" bırakılır, hiçbir tarih veya URL uydurulmaz. Tam
+  liste için bkz. [`CONTENT_COVERAGE.md`](./CONTENT_COVERAGE.md).
 
 ## 9. Sürümleme mantığı
 

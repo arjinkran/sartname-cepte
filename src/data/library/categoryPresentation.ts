@@ -19,6 +19,7 @@ export const CATEGORY_PRESENTATION: Record<string, { ikon: string; aciklama: str
   'Sayaç': { ikon: '📟', aciklama: 'Elektronik/elektromekanik sayaçlar' },
   'Ölçü': { ikon: '📊', aciklama: 'Ölçü trafoları, akım/gerilim trafoları' },
   'Direkler': { ikon: '🗼', aciklama: 'Beton, demir, ahşap direkler' },
+  'İzolatörler': { ikon: '🔘', aciklama: 'AG/OG post, askı ve zincir izolatörleri' },
   'İletkenler': { ikon: '➰', aciklama: 'ACSR iletkenler ve donanımları' },
   'İSG': { ikon: '🦺', aciklama: 'İş sağlığı ve güvenliği, emniyet mevzuatı' },
   'Hizmet Kalitesi': { ikon: '📈', aciklama: 'Kesinti süreleri, tazminatlar, kalite göstergeleri' },

@@ -1,8 +1,198 @@
-// TSE (Türk Standardları Enstitüsü) belgeleri — TS ve TS EN kurum
-// etiketli standartların ikisi de bu klasörde yaşar (TSE'nin Avrupa
-// standartlarını uyumlaştırdığı "TS EN" için ayrı bir klasör yok, bkz.
-// README.md). Henüz katalogda gerçek bir belge yok — mock/uydurma belge
-// EKLENMEDİ.
+// TSE / TS EN standart REFERANSLARI.
+//
+// ⚠️ YALNIZCA METADATA/REFERANS — telifli standartların tam metni
+// EKLENMEDİ (Sprint 6 kuralı). Standart numaraları elektrik mühendisliği
+// literatüründe yaygın bilinen, genel kabul görmüş numaralardır; ancak
+// güncel baskı/yıl ve tam Türkçe resmi başlık doğrulanmadığından tümü
+// `sourceVerified: false`, `sourceUrl` boş bırakıldı — bkz.
+// docs/CONTENT_COVERAGE.md "Telifli standartlar için not".
+// Sprint 6 — madde 6: en az 20 referans hedefi.
 import type { Document } from '../types.ts';
+import { referansGirdisi } from '../referenceEntry.ts';
 
-export const DOCUMENTS: readonly Document[] = [];
+export const DOCUMENTS: readonly Document[] = [
+  referansGirdisi({
+    id: 'ts-hd-60364',
+    no: 'TS HD 60364',
+    title: 'Alçak Gerilim Elektrik Tesisleri',
+    institution: 'TSE',
+    category: 'AG Şebeke',
+    summary: 'Alçak gerilim elektrik tesislerinin tasarım, tesis ve muayenesine ilişkin temel seri standarttır (IEC/CENELEC 60364 serisinin ulusal uyumlaştırılmış hâli).',
+    keywords: ['hd 60364', 'ag tesis standardı', 'elektrik tesisi tasarımı'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-50522',
+    no: 'TS EN 50522',
+    title: '1 kV\'u Aşan AA Elektrik Tesislerinde Topraklama',
+    institution: 'TS EN',
+    category: 'Topraklama',
+    summary: '1 kV üzeri AA elektrik tesislerinde topraklama sisteminin tasarım ve boyutlandırma esaslarını tanımlar.',
+    keywords: ['topraklama', 'og yg topraklama', 'dokunma gerilimi', '1kv üzeri'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-61936-1',
+    no: 'TS EN 61936-1',
+    title: '1 kV\'u Aşan Kuvvetli Akım Tesisleri — Bölüm 1: Genel Kurallar',
+    institution: 'TS EN',
+    category: 'YG',
+    summary: '1 kV üzeri kuvvetli akım tesislerinin genel tasarım ve güvenlik kurallarını tanımlar.',
+    keywords: ['kuvvetli akım tesisi', 'yg tesis', '1kv üzeri tesis'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-62271',
+    no: 'TS EN 62271',
+    title: 'Yüksek Gerilim Anahtarlama ve Kumanda Cihazları (Seri)',
+    institution: 'TS EN',
+    category: 'Hücreler',
+    summary: 'OG/YG hücrelerde kullanılan kesici, ayırıcı ve modüler hücre gruplarının tip deney ve performans gereklerini kapsayan seri standarttır.',
+    keywords: ['og hücre', 'anahtarlama cihazı', 'yüksek gerilim şalt', 'tip deney'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-60529',
+    no: 'TS EN 60529',
+    title: 'Muhafazalar Tarafından Sağlanan Koruma Dereceleri (IP Kodu)',
+    institution: 'TS EN',
+    category: 'Genel',
+    summary: 'Elektrik ekipmanı muhafazalarının katı cisim ve suya karşı koruma derecelerini (IP kodu) tanımlar.',
+    keywords: ['ip derecesi', 'ip44', 'ip65', 'muhafaza koruma sınıfı'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-61439',
+    no: 'TS EN 61439',
+    title: 'Alçak Gerilim Anahtarlama ve Kumanda Düzenleri (Seri)',
+    institution: 'TS EN',
+    category: 'Dağıtım Panoları',
+    summary: 'AG dağıtım panoları ve kumanda düzenlerinin tasarım doğrulama, ısınma sınırı ve kısa devre dayanımı gereklerini tanımlayan seri standarttır.',
+    keywords: ['ag pano standardı', 'anahtarlama düzeni', 'kumanda panosu', 'kısa devre dayanımı'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-60076',
+    no: 'TS EN 60076',
+    title: 'Güç Transformatörleri (Seri)',
+    institution: 'TS EN',
+    category: 'Trafo',
+    summary: 'Güç transformatörlerinin anma değerleri, kayıp sınıfları, ısınma ve dielektrik deney gereklerini tanımlayan temel seri standarttır.',
+    keywords: ['güç trafosu standardı', 'trafo deneyi', 'kayıp sınıfı', 'dielektrik deney'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-60269',
+    no: 'TS EN 60269',
+    title: 'Alçak Gerilim Sigortaları (Seri)',
+    institution: 'TS EN',
+    category: 'Koruma',
+    summary: 'AG sigortalarının (NH, D tipi vb.) anma akımı, kesme kapasitesi ve zaman-akım karakteristiği gereklerini tanımlar.',
+    keywords: ['ag sigorta standardı', 'nh sigorta', 'kesme kapasitesi'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-60898',
+    no: 'TS EN 60898',
+    title: 'Ev ve Benzeri Yerler İçin Devre Kesiciler',
+    institution: 'TS EN',
+    category: 'Koruma',
+    summary: 'Konut tipi tesisatlarda kullanılan otomatik sigorta (devre kesici) cihazlarının anma akımı ve kesme kapasitesi sınıflarını tanımlar.',
+    keywords: ['otomatik sigorta', 'devre kesici', 'ev tipi kesici', 'b tipi c tipi'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-60947',
+    no: 'TS EN 60947',
+    title: 'Alçak Gerilim Anahtarlama ve Kumanda Cihazları (Seri)',
+    institution: 'TS EN',
+    category: 'Kesiciler',
+    summary: 'Kontaktör, şalter ve kompakt kesici gibi AG anahtarlama cihazlarının genel kurallarını ve deney gereklerini tanımlayan seri standarttır.',
+    keywords: ['ag anahtarlama cihazı', 'kontaktör', 'kompakt şalter', 'ag kesici standardı'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-60502',
+    no: 'TS EN 60502',
+    title: 'Anma Gerilimi 1 kV - 30 kV Güç Kabloları',
+    institution: 'TS EN',
+    category: 'Kablolar',
+    summary: 'Ekstrüzyonla izole edilmiş (XLPE/PVC) 1-30 kV güç kablolarının yapım ve deney gereklerini tanımlar.',
+    keywords: ['güç kablosu standardı', 'xlpe kablo', '1-30 kv kablo'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-62305',
+    no: 'TS EN 62305',
+    title: 'Yıldırımdan Korunma (Seri)',
+    institution: 'TS EN',
+    category: 'Topraklama',
+    summary: 'Yapıların ve tesislerin yıldırımdan korunması için risk değerlendirmesi, dış/iç yıldırımlık sistemi ve topraklama gereklerini tanımlayan seri standarttır.',
+    keywords: ['yıldırımdan korunma', 'paratoner', 'risk değerlendirmesi', 'yıldırımlık'],
+    crossReferences: ['topraklama-elektrot'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-50160',
+    no: 'TS EN 50160',
+    title: 'Kamu Elektrik Dağıtım Şebekelerinde Gerilim Özellikleri',
+    institution: 'TS EN',
+    category: 'Hizmet Kalitesi',
+    summary: 'Dağıtım şebekesinden alıcılara sunulan gerilimin frekans, genlik ve harmonik açısından karşılaması gereken karakteristikleri tanımlar — hizmet kalitesi göstergelerinin teknik dayanağıdır.',
+    keywords: ['gerilim kalitesi', 'şebeke gerilim karakteristiği', 'flicker', 'harmonik distorsiyon'],
+    crossReferences: ['epdk-hizmet-kalitesi'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-61557',
+    no: 'TS EN 61557',
+    title: '1 kV AA / 1,5 kV DA Tesislerde Elektriksel Güvenlik — Ölçüm/İzleme Cihazları (Seri)',
+    institution: 'TS EN',
+    category: 'Ölçü',
+    summary: 'İzolasyon direnci, toprak direnci ve kaçak akım gibi elektriksel güvenlik testlerinde kullanılan ölçüm cihazlarının gereklerini tanımlar.',
+    keywords: ['izolasyon direnci ölçümü', 'toprak direnci ölçümü', 'kaçak akım test cihazı'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-60228',
+    no: 'TS EN 60228',
+    title: 'Kabloların İletkenleri',
+    institution: 'TS EN',
+    category: 'İletkenler',
+    summary: 'İzoleli kablolarda kullanılan iletkenlerin (bakır/alüminyum) kesit, tel sayısı ve direnç gereklerini tanımlar.',
+    keywords: ['kablo iletkeni', 'iletken kesiti', 'bakır iletken', 'alüminyum iletken'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-61140',
+    no: 'TS EN 61140',
+    title: 'Elektrik Çarpmasına Karşı Koruma — Tesis ve Cihazlar İçin Ortak Kurallar',
+    institution: 'TS EN',
+    category: 'Koruma',
+    summary: 'Doğrudan ve dolaylı temasa karşı koruma önlemlerinin (yalıtım, topraklama, otomatik kesme) ortak temel kurallarını tanımlar.',
+    keywords: ['elektrik çarpması koruması', 'dolaylı temas', 'otomatik kesme', 'koruma iletkeni'],
+    crossReferences: ['kuvvetli-akim'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-60204-1',
+    no: 'TS EN 60204-1',
+    title: 'Makinelerin Elektrik Teçhizatı — Bölüm 1: Genel Kurallar',
+    institution: 'TS EN',
+    category: 'Genel',
+    summary: 'Sanayi tesislerindeki makinelerin elektrik teçhizatının güvenlik ve fonksiyonel tasarım gereklerini tanımlar; dağıtım merkezlerindeki yardımcı ekipmanlarla da ilişkilidir.',
+    keywords: ['makine elektrik teçhizatı', 'acil durdurma', 'kumanda devresi güvenliği'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-50525',
+    no: 'TS EN 50525',
+    title: 'Anma Gerilimi 450/750 V ve Altı Kablolar (Seri)',
+    institution: 'TS EN',
+    category: 'Kablolar',
+    summary: 'Bina içi ve genel amaçlı düşük gerilimli (450/750V altı) kabloların yapım ve işaretleme gereklerini tanımlar.',
+    keywords: ['ag kablo standardı', '450/750v kablo', 'yvv', 'nyy'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-62262',
+    no: 'TS EN 62262',
+    title: 'Elektrikli Ekipmanın Muhafazaları İçin Dış Mekanik Darbelere Karşı Koruma Dereceleri (IK Kodu)',
+    institution: 'TS EN',
+    category: 'Genel',
+    summary: 'Pano ve kofra gibi elektrik ekipmanı muhafazalarının mekanik darbeye karşı koruma sınıflandırmasını (IK kodu) tanımlar.',
+    keywords: ['ik kodu', 'mekanik darbe koruması', 'muhafaza dayanımı'],
+  }),
+  referansGirdisi({
+    id: 'ts-en-50110-1',
+    no: 'TS EN 50110-1',
+    title: 'Elektrik Tesislerinin İşletilmesi',
+    institution: 'TS EN',
+    category: 'İSG',
+    summary: 'Elektrik tesislerinde çalışma (gerilimli/gerilimsiz çalışma, yaklaşma mesafeleri, yetkilendirme) sırasında uyulması gereken temel işletme ve emniyet kurallarını tanımlar.',
+    keywords: ['elektrik tesisi işletilmesi', 'gerilimsiz çalışma', 'yaklaşma mesafesi', 'yetkili kişi'],
+    crossReferences: ['kuvvetli-akim'],
+  }),
+];

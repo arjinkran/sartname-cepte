@@ -120,9 +120,12 @@ export default function DocumentDetailScreen() {
         <Card style={styles.card}>
           <Text style={styles.bolumBaslik}>İlgili Yönetmelikler ve Standartlar</Text>
           {document.crossReferences.length > 0 ? (
-            document.crossReferences.map((madde) => (
-              <Text key={madde} style={styles.mevzuatSatir}>↓ {madde}</Text>
-            ))
+            document.crossReferences.map((id) => {
+              const hedef = getDocumentById(id);
+              return (
+                <Text key={id} style={styles.mevzuatSatir}>↓ {hedef ? hedef.title : id}</Text>
+              );
+            })
           ) : (
             <Text style={styles.ilgiliBos}>Bu doküman için henüz ilişkili yönetmelik/standart girilmedi.</Text>
           )}

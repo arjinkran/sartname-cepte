@@ -24,8 +24,13 @@ export type Institution =
   | 'IEEE'
   | 'Diğer';
 
-/** Dokümanın türü — kategoriden bağımsız, resmî doküman sınıfı. */
+/**
+ * Dokümanın türü — kategoriden bağımsız, resmî doküman sınıfı. `Kanun`,
+ * Sprint 6'da eklendi (ör. Elektrik Piyasası Kanunu) — additive bir
+ * genişletme, mevcut hiçbir değeri değiştirmez/kaldırmaz.
+ */
 export type DocumentType =
+  | 'Kanun'
   | 'Şartname'
   | 'Yönetmelik'
   | 'Standart'
@@ -127,7 +132,11 @@ export interface Document {
   deprecated: boolean;
   /** `deprecated: true` ise, yerine geçen belgenin id'si. */
   replacementDocumentId?: string;
-  /** Kütüphanede henüz kendi Document kaydı olmayan dış standart/mevzuat adları
-   * (serbest metin, id DEĞİL). Kaynak doğrulaması gerekli — bkz. LIBRARY_ARCHITECTURE.md. */
+  /** İlişkili standart/mevzuatların Document id'leri (bu dizinin başka bir
+   * yerinde kayıtlı olmalı — serbest metin DEĞİL). Sprint 6'dan itibaren
+   * TSE/IEC/CENELEC/IEEE gibi kurumlar da kendi Document kaydına sahip
+   * olduğundan artık gerçek id referansı taşır; testlerde tüm id'lerin
+   * mevcut olduğu doğrulanır. Kaynak doğrulaması gerekli — bkz.
+   * LIBRARY_ARCHITECTURE.md. */
   crossReferences: readonly string[];
 }
