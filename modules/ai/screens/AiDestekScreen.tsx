@@ -46,7 +46,7 @@ export default function AiDestekScreen() {
 
   return (
     <View style={styles.root}>
-      <AppBar title="AI Mevzuat Asistanı" onBack={router.canGoBack() ? () => router.back() : undefined} />
+      <AppBar title="AI Mevzuat Asistanı" logo onBack={router.canGoBack() ? () => router.back() : undefined} />
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={styles.scrollContent}

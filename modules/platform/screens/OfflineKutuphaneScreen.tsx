@@ -12,10 +12,10 @@ export default function OfflineKutuphaneScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.secondaryBackground }}>
-      <AppBar title="Offline Kütüphane" onBack={router.canGoBack() ? () => router.back() : undefined} />
+      <AppBar title="Offline Kütüphane" logo onBack={router.canGoBack() ? () => router.back() : undefined} />
       <View style={{ flex: 1, justifyContent: 'center' }}>
         <EmptyState
-          icon="📥"
+          logo
           title="Yakında"
           description="Favori şartnamelerini cihazına indirerek internetsiz kullanabileceksin."
         />

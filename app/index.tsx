@@ -116,6 +116,7 @@ export default function Home() {
     <View style={styles.root}>
       <AppBar
         title="Şartname Cepte"
+        logo
         right={<IconButton icon="🔔" badge />}
       />
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent}>

@@ -45,7 +45,7 @@ export default function DocumentDetailScreen() {
   if (!document) {
     return (
       <View style={styles.root}>
-        <AppBar title="Doküman Detayı" onBack={router.canGoBack() ? () => router.back() : undefined} />
+        <AppBar title="Doküman Detayı" logo onBack={router.canGoBack() ? () => router.back() : undefined} />
         <View style={styles.bosKap}>
           <Text style={styles.bosText}>Doküman bulunamadı.</Text>
         </View>
@@ -64,6 +64,7 @@ export default function DocumentDetailScreen() {
     <View style={styles.root}>
       <AppBar
         title={document.title.length > 28 ? `${document.title.slice(0, 28)}…` : document.title}
+        logo
         onBack={router.canGoBack() ? () => router.back() : undefined}
       />
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent}>

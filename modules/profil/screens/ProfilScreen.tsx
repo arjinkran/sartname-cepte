@@ -1,8 +1,8 @@
 // Profil ekranı — /profil
 // Şimdilik gerçek auth YOK (src/lib/supabase.ts hâlâ stub) — mock profil
-// kartı gösterilir. "Favoriler", "Offline Kütüphane" ve "Veri Kaynakları"
-// gerçek rotalara gider; diğerleri mevcut "PDF Aç" stub'ıyla aynı desende
-// (Alert) "yakında" mesajı gösterir — yeni bir servis eklenmedi.
+// kartı gösterilir. "Favoriler", "Offline Kütüphane", "Veri Kaynakları" ve
+// "Hakkında" gerçek rotalara gider; diğerleri mevcut "PDF Aç" stub'ıyla
+// aynı desende (Alert) "yakında" mesajı gösterir — yeni bir servis eklenmedi.
 import React from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -17,7 +17,7 @@ const AYARLAR = [
   { id: 'veri-kaynaklari', ikon: '🏛️', ad: 'Veri Kaynakları', rota: '/veri-kaynaklari' },
   { id: 'gizlilik', ikon: '🔒', ad: 'Gizlilik Politikası', rota: '' },
   { id: 'kullanim', ikon: '📜', ad: 'Kullanım Şartları', rota: '' },
-  { id: 'hakkinda', ikon: 'ℹ️', ad: 'Hakkında', rota: '' },
+  { id: 'hakkinda', ikon: 'ℹ️', ad: 'Hakkında', rota: '/hakkinda' },
 ] as const;
 
 export default function ProfilScreen() {
@@ -34,7 +34,7 @@ export default function ProfilScreen() {
 
   return (
     <View style={styles.root}>
-      <AppBar title="Profil" />
+      <AppBar title="Profil" logo />
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent}>
         <Card style={styles.card}>
           <View style={styles.kullaniciSatir}>

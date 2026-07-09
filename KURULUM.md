@@ -106,6 +106,7 @@ sartname-cepte/
 │   ├── favoriler.tsx             ← İnce rota → modules/mevzuat/screens/FavorilerScreen
 │   ├── veri-kaynaklari.tsx       ← İnce rota → modules/platform/screens/VeriKaynaklariScreen (V3, YENİ)
 │   ├── offline-kutuphane.tsx     ← İnce rota → modules/platform/screens/OfflineKutuphaneScreen (V3, YENİ — "yakında")
+│   ├── hakkinda.tsx              ← İnce rota → modules/profil/screens/HakkindaScreen (Sprint 4.1, YENİ)
 │   │
 │   │   ⚠️ Aşağıdaki iki rota grubu V3'te UI'dan (Ana Sayfa dahil hiçbir
 │   │   ekrandan) bağlantısı kaldırıldı — dosyalar/kod SİLİNMEDİ, yalnızca
@@ -155,10 +156,10 @@ sartname-cepte/
 │   │                                animations + index.ts barrel. Eski `src/theme.ts`'in yerine geçti;
 │   │                                `colors` sözlüğü eski alan adlarını da içerir (geriye dönük uyumluluk).
 │   ├── components/
-│   │   ├── ui/                   ← Ortak UI kit (Sprint UI-1A, EmptyState UI-1B'de eklendi): Screen, AppBar
-│   │   │                            (opsiyonel geri oku, UI-1B), Card, Button, Chip, SectionTitle, IconButton,
-│   │   │                            ListItem, BottomNavigation, PressableScale, EmptyState
-│   │   └── AppSplash.tsx         ← JS splash ekranı (useAppSplash hook + AppSplash bileşeni) — app.json'daki
+│   │   ├── ui/                   ← Ortak UI kit: Screen, AppBar (opsiyonel geri oku + logo, Sprint 4.1), Card,
+│   │   │                            Button, Chip, SectionTitle, IconButton, ListItem, BottomNavigation,
+│   │   │                            PressableScale, EmptyState (opsiyonel logo, Sprint 4.1), Logo (Sprint 4.1, YENİ)
+│   │   └── AppSplash.tsx         ← JS splash ekranı (useAppSplash hook + AppSplash bileşeni + logo) — app.json'daki
 │   │                                native splash'tan AYRI, yalnızca ilk açılışta bir kez gösterilir
 │   ├── navigation/tabs.ts        ← ROOT_TABS + useRootTabBar() — Ana Sayfa/Ara/AI/Profil'in tümünde aynı
 │   │                                BottomNavigation'ı ve doğru aktif sekmeyi verir (Sprint UI-1B, YENİ)
@@ -185,5 +186,16 @@ sartname-cepte/
 │   ├── calculations/voltageDrop.test.ts  ← DEMO motor testleri
 │   ├── documentRepository.test.ts ← src/data/documents/repository.ts testleri (eski arama.test.ts'in yerine geçti)
 │   └── gerilimDusumu.test.ts      ← (legacy) src/logic/gerilimDusumu.ts testleri
+├── assets/
+│   ├── icon.png                  ← App Icon (1024×1024, Sprint 4.1)
+│   ├── adaptive-icon.png         ← Android adaptive icon foreground (1024×1024, Sprint 4.1)
+│   ├── favicon.png               ← 48×48 (Sprint 4.1 — proje web hedeflemiyor, yalnızca config şeması için)
+│   └── branding/                 ← Sprint 4.1, YENİ — TEK resmi logo kaynağı, bkz. docs/BRANDING.md
+│       ├── logo.png                 (1254×1254 kayıpsız PNG)
+│       ├── logo@2x.png              (128px)
+│       └── logo@3x.png              (192px)
+├── docs/
+│   ├── DOCUMENT_ARCHITECTURE.md  ← Doküman veri modeli, kategori/kurum yapısı, Repository mantığı
+│   └── BRANDING.md               ← Resmi logo kullanım kuralları (Sprint 4.1)
 └── app.json / package.json / tsconfig.json
 ```

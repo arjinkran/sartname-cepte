@@ -36,6 +36,7 @@ export default function RootLayout() {
             <Stack.Screen name="favoriler" options={{ headerShown: false }} />
             <Stack.Screen name="veri-kaynaklari" options={{ headerShown: false }} />
             <Stack.Screen name="offline-kutuphane" options={{ headerShown: false }} />
+            <Stack.Screen name="hakkinda" options={{ headerShown: false }} />
             {/*
               Aşağıdaki hesaplayicilar/* ve enh-bilgi/* rotaları V3 mevzuat
               dönüşümünde UI'dan (Ana Sayfa dahil hiçbir ekrandan) bağlantı

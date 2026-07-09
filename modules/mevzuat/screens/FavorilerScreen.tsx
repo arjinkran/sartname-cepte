@@ -21,10 +21,10 @@ export default function FavorilerScreen() {
 
   return (
     <View style={styles.root}>
-      <AppBar title="Favoriler" onBack={router.canGoBack() ? () => router.back() : undefined} />
+      <AppBar title="Favoriler" logo onBack={router.canGoBack() ? () => router.back() : undefined} />
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent}>
         {favoriler.length === 0 ? (
-          <EmptyState icon="🔖" title="Henüz favori doküman eklemediniz." />
+          <EmptyState logo title="Henüz favori doküman eklemediniz." />
         ) : (
           favoriler.map((d) => (
             <PressableScale key={d.id} onPress={() => router.push(`/sartname/${d.id}`)} scaleTo={0.98}>

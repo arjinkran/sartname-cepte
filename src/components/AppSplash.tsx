@@ -1,12 +1,13 @@
-// Uygulama içi splash ekranı (Sprint UI-1A) — app.json'daki native/statik
-// splash'tan AYRIDIR; JS yüklendikten sonra bir kez gösterilir: 3 sn sabit
-// lacivert zemin + "Şartname Cepte" yazısı, ardından 350ms fade out → fade
-// in ile ana içeriğe geçer. Yalnızca React Native Animated API kullanılır.
-// `useAppSplash`, kök layout'ta (app/_layout.tsx) bir kez çağrılır; route
-// değişimlerinde RootLayout yeniden mount edilmediği için splash tekrar
-// görünmez.
+// Uygulama içi splash ekranı — app.json'daki native/statik splash'tan
+// AYRIDIR; JS yüklendikten sonra bir kez gösterilir: 3 sn sabit lacivert
+// zemin + resmi logo + "Şartname Cepte" yazısı, ardından 350ms fade out →
+// fade in ile ana içeriğe geçer. Yalnızca React Native Animated API
+// kullanılır. `useAppSplash`, kök layout'ta (app/_layout.tsx) bir kez
+// çağrılır; route değişimlerinde RootLayout yeniden mount edilmediği için
+// splash tekrar görünmez.
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text } from 'react-native';
+import { Logo } from './ui/Logo.tsx';
 import { colors, durations, typography } from '../theme/index.ts';
 
 export function useAppSplash() {
@@ -39,6 +40,7 @@ export function useAppSplash() {
 export function AppSplash({ opacity }: { opacity: Animated.Value }) {
   return (
     <Animated.View style={[StyleSheet.absoluteFill, styles.root, { opacity }]} pointerEvents="none">
+      <Logo size={100} style={styles.logo} />
       <Text style={styles.text}>Şartname Cepte</Text>
     </Animated.View>
   );
@@ -50,6 +52,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  logo: { marginBottom: 20 },
   text: {
     color: '#FFFFFF',
     fontSize: typography.size.display,

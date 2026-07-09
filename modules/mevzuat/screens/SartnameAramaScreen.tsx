@@ -68,7 +68,7 @@ export default function SartnameAramaScreen() {
 
   return (
     <View style={styles.root}>
-      <AppBar title="Şartname Ara" onBack={router.canGoBack() ? () => router.back() : undefined} />
+      <AppBar title="Şartname Ara" logo onBack={router.canGoBack() ? () => router.back() : undefined} />
 
       <ScrollView
         style={{ flex: 1 }}

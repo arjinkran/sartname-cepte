@@ -33,7 +33,7 @@ export default function VeriKaynaklariScreen() {
 
   return (
     <View style={styles.root}>
-      <AppBar title="Veri Kaynakları" onBack={router.canGoBack() ? () => router.back() : undefined} />
+      <AppBar title="Veri Kaynakları" logo onBack={router.canGoBack() ? () => router.back() : undefined} />
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent}>
         <Text style={styles.ustAciklama}>
           Şartname Cepte içeriği aşağıdaki kurum ve standart kaynaklarına dayanır.
