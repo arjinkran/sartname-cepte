@@ -6,7 +6,7 @@
 import React from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { AppBar, BottomNavigation, Card, ListItem } from '@/components/ui';
+import { AppBar, BottomNavigation, Card, ListItem, Logo } from '@/components/ui';
 import { useRootTabBar } from '@/navigation/tabs';
 import { colors, radius, spacing, typography } from '@/theme';
 
@@ -51,10 +51,13 @@ export default function ProfilScreen() {
         </Card>
 
         <View style={styles.planKart}>
-          <Text style={styles.planBaslik}>Şartname Cepte Pro</Text>
-          <Text style={styles.planAciklama}>
-            AI özetleme, offline kütüphane ve değişiklik bildirimleri yakında.
-          </Text>
+          <Logo size={32} variant="smallReverse" style={styles.planLogo} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.planBaslik}>Şartname Cepte Pro</Text>
+            <Text style={styles.planAciklama}>
+              AI özetleme, offline kütüphane ve değişiklik bildirimleri yakında.
+            </Text>
+          </View>
         </View>
 
         <Card style={styles.listCard} padded={false}>
@@ -111,7 +114,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     padding: spacing.m,
     marginBottom: spacing.m,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.m,
   },
+  planLogo: { opacity: 0.85 },
   planBaslik: { fontSize: typography.size.md, fontWeight: '800', color: '#FFFFFF' },
   planAciklama: { fontSize: typography.size.sm, color: 'rgba(255,255,255,0.75)', marginTop: 4, lineHeight: 18 },
   listCard: { marginBottom: spacing.m, paddingVertical: spacing.xs },

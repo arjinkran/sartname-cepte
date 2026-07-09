@@ -21,7 +21,7 @@ export function EmptyState({
 }) {
   return (
     <View style={styles.root}>
-      {logo ? <Logo size={40} style={styles.logo} /> : <Text style={styles.icon}>{icon}</Text>}
+      {logo ? <Logo size={40} variant="small" style={styles.logo} /> : <Text style={styles.icon}>{icon}</Text>}
       <Text style={styles.title}>{title}</Text>
       {description ? <Text style={styles.desc}>{description}</Text> : null}
     </View>

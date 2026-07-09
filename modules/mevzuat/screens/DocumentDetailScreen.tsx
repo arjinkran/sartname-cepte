@@ -12,7 +12,7 @@ import React from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
-import { AppBar, Button, Card, PressableScale } from '@/components/ui';
+import { AppBar, Button, Card, Logo, PressableScale } from '@/components/ui';
 import { colors, radius, spacing, typography } from '@/theme';
 import { STATUS_LABELS, getDocumentById, getRelatedDocuments } from '@/data/library';
 import { InstitutionBadge, StatusBadge } from '../components/DocumentRow';
@@ -65,6 +65,7 @@ export default function DocumentDetailScreen() {
             <StatusBadge status={document.status} />
           </View>
           <Text style={styles.baslik}>{document.title}</Text>
+          <Logo size={22} variant="small" style={styles.baslikLogo} />
         </Card>
 
         {/* Künye kartı */}
@@ -180,6 +181,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     lineHeight: 27,
   },
+  baslikLogo: { marginTop: spacing.s, opacity: 0.6 },
   bolumBaslik: {
     fontSize: typography.size.sm,
     fontWeight: typography.weight.extrabold,

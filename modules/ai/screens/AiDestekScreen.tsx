@@ -9,7 +9,7 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { AppBar, BottomNavigation, Button, Card, EmptyState, ListItem } from '@/components/ui';
+import { AppBar, BottomNavigation, Button, Card, EmptyState, ListItem, Logo } from '@/components/ui';
 import { useRootTabBar } from '@/navigation/tabs';
 import { colors, radius, spacing, typography } from '@/theme';
 import { searchKeywords, type SearchResult } from '@/data/library';
@@ -53,6 +53,10 @@ export default function AiDestekScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
+        <View style={styles.markaSatiri}>
+          <Logo size={36} variant="small" />
+        </View>
+
         <Text style={styles.altAciklama}>
           Problemini yaz. Yapay zekâ sana ilgili şartname, yönetmelik, standart ve teknik
           dokümanları önersin.
@@ -142,6 +146,7 @@ export default function AiDestekScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.secondaryBackground },
   scrollContent: { padding: spacing.m, paddingBottom: spacing.xl },
+  markaSatiri: { alignItems: 'center', marginBottom: spacing.m },
   altAciklama: {
     fontSize: typography.size.base,
     fontFamily: typography.fontFamily,

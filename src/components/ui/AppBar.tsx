@@ -16,7 +16,7 @@ export function AppBar({
   title: string;
   right?: React.ReactNode;
   onBack?: () => void;
-  /** Solda, geri okundan sonra/başlıktan önce resmi marka logosunu gösterir (28px). */
+  /** Solda, geri okundan sonra/başlıktan önce resmi marka logosunu gösterir (31px). */
   logo?: boolean;
 }) {
   const insets = useSafeAreaInsets();
@@ -28,7 +28,7 @@ export function AppBar({
             <Text style={styles.backIcon}>‹</Text>
           </Pressable>
         ) : null}
-        {logo ? <Logo size={28} style={styles.logo} /> : null}
+        {logo ? <Logo size={31} variant="navbar" style={styles.logo} /> : null}
         <Text style={styles.title} numberOfLines={1}>
           {title}
         </Text>

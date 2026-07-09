@@ -40,7 +40,7 @@ export function useAppSplash() {
 export function AppSplash({ opacity }: { opacity: Animated.Value }) {
   return (
     <Animated.View style={[StyleSheet.absoluteFill, styles.root, { opacity }]} pointerEvents="none">
-      <Logo size={100} style={styles.logo} />
+      <Logo size={116} variant="splash" style={styles.logo} />
       <Text style={styles.text}>Şartname Cepte</Text>
     </Animated.View>
   );
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logo: { marginBottom: 20 },
+  logo: { marginBottom: 24 },
   text: {
     color: '#FFFFFF',
     fontSize: typography.size.display,

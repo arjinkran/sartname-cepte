@@ -21,6 +21,7 @@ import {
   Chip,
   IconButton,
   ListItem,
+  Logo,
   PressableScale,
   SectionTitle,
 } from '../src/components/ui/index.ts';
@@ -62,22 +63,6 @@ const PASIF_MODULLER: readonly ModulKarti[] = [
 ];
 
 const MODULLER: readonly ModulKarti[] = [...AKTIF_MODULLER, ...PASIF_MODULLER];
-
-function WelcomeIllustration() {
-  return (
-    <View style={styles.illuWrap}>
-      <View style={styles.illuDocBack} />
-      <View style={styles.illuDocFront}>
-        <View style={styles.illuLine} />
-        <View style={[styles.illuLine, { width: '60%' }]} />
-        <View style={[styles.illuLine, { width: '75%' }]} />
-      </View>
-      <View style={styles.illuBadge}>
-        <Text style={styles.illuBadgeText}>✓</Text>
-      </View>
-    </View>
-  );
-}
 
 function QuickAction({
   icon,
@@ -133,7 +118,7 @@ export default function Home() {
                 ile aradığınız bilgiyi saniyeler içinde bulun.
               </Text>
             </View>
-            <WelcomeIllustration />
+            <Logo size={72} variant="small" style={styles.welcomeLogo} />
           </View>
         </Card>
 
@@ -177,7 +162,7 @@ export default function Home() {
         <View style={styles.aiCard}>
           <View style={styles.aiTopRow}>
             <View style={styles.aiIconWrap}>
-              <Text style={{ fontSize: 22 }}>✨</Text>
+              <Logo size={26} variant="smallReverse" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.aiTitle}>AI Mevzuat Asistanı</Text>
@@ -257,50 +242,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.s,
   },
 
-  illuWrap: { width: 68, height: 80, marginLeft: spacing.xs },
-  illuDocBack: {
-    position: 'absolute',
-    top: 8,
-    right: 0,
-    width: 52,
-    height: 66,
-    borderRadius: 12,
-    backgroundColor: colors.secondaryBackground,
-    borderWidth: 1,
-    borderColor: colors.border,
-    transform: [{ rotate: '8deg' }],
-  },
-  illuDocFront: {
-    position: 'absolute',
-    top: 0,
-    right: 14,
-    width: 52,
-    height: 66,
-    borderRadius: 12,
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 9,
-    justifyContent: 'center',
-    gap: 6,
-    transform: [{ rotate: '-6deg' }],
-    ...shadow.sm,
-  },
-  illuLine: { height: 4, borderRadius: 2, backgroundColor: colors.border, width: '85%' },
-  illuBadge: {
-    position: 'absolute',
-    bottom: -2,
-    left: 4,
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: colors.background,
-  },
-  illuBadgeText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+  welcomeLogo: { marginLeft: spacing.s, opacity: 0.55 },
 
   quickRow: { flexDirection: 'row', gap: spacing.s, marginBottom: spacing.m },
   quickCard: {

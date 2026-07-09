@@ -1,124 +1,164 @@
-# Marka Kimliği — Şartname Cepte (Sprint 4.1)
+# Marka Kimliği — Şartname Cepte (Sprint 6.5)
 
 Bu belge, Şartname Cepte'nin resmî logosunu ve kullanım kurallarını
-tanımlar. Amaç: logonun uygulama genelinde **tek, tutarlı ve bozulmamış**
+tanımlar. Sprint 6.5'te logo tamamen değiştirildi — eski "SC" (belge
+ikonlu) logo ve tüm türevleri kod tabanından **tamamen kaldırıldı**.
+Amaç: yeni logonun uygulama genelinde **tek, tutarlı ve bozulmamış**
 şekilde görünmesini garanti altına almak.
 
 ## 1. Resmî logo
 
-**Tek kaynak dosya:** [`assets/branding/logo.png`](../assets/branding/logo.png)
-(1254×1254px, kayıpsız PNG). Yoğunluk varyantları aynı klasörde:
-`logo@2x.png`, `logo@3x.png` — bunlar **aynı görselin** farklı piksel
-yoğunluklarındaki kopyalarıdır (React Native/Metro'nun otomatik
-`@2x`/`@3x` çözümlemesi için), farklı bir logo DEĞİLDİR.
+**Kaynak marka**: kullanıcı tarafından sağlanan "S/C" monogram logosu
+(lacivert gövde + mavi üçgen aksan + beyaz nokta). Tüm boyut/renk
+varyantları `assets/branding/` klasöründe, tek bir temiz (gerçek alfa
+şeffaflığına sahip) ana görselden üretildi:
 
-Uygulama içinde logo yalnızca `src/components/ui/Logo.tsx` bileşeni
+| Dosya | Boyut | Renk | Kullanım |
+| --- | --- | --- | --- |
+| `app-icon.png` | 1024×1024 | Koyu (orijinal) | `expo.icon` (iOS + genel) |
+| `adaptive-icon.png` | 1024×1024 | **Beyaz** (ters) | `expo.android.adaptiveIcon.foregroundImage` |
+| `favicon.png` | 256×256 | Koyu (orijinal) | `expo.web.favicon` |
+| `logo-navbar.png` | ~243×256 | **Beyaz** (ters) | `Logo variant="navbar"` |
+| `logo-splash.png` | ~451×480 | **Beyaz** (ters) | `Logo variant="splash"` |
+| `logo-small.png` | ~301×320 | Koyu (orijinal) | `Logo variant="small"` |
+| `logo-small-reverse.png` | ~301×320 | **Beyaz** (ters) | `Logo variant="smallReverse"` |
+
+Uygulama içinde logo **yalnızca** `src/components/ui/Logo.tsx` bileşeni
 üzerinden render edilir:
 
 ```tsx
 import { Logo } from '@/components/ui';
 
-<Logo size={28} />
+<Logo size={31} variant="navbar" />
 ```
 
-**Hiçbir ekran veya bileşen `assets/branding/logo.png`'yi `Logo`
-bileşeni dışında doğrudan `require()` ETMEMELİDİR** — tek giriş noktası
-tutarlılığı garanti eder (boyut, `resizeMode`, erişilebilirlik etiketi
-hep aynı kalır).
+**Hiçbir ekran veya bileşen bu PNG dosyalarını `Logo` bileşeni dışında
+doğrudan `require()` ETMEMELİDİR** — tek giriş noktası tutarlılığı
+garanti eder (boyut, `resizeMode`, erişilebilirlik etiketi hep aynı
+kalır).
 
-## 2. Logo kullanım kuralları
+## 2. Zemine göre logo seçimi — KRİTİK KURAL
+
+Logonun kendi koyu rengi (`#081D3A`) uygulamanın lacivert marka rengiyle
+(`colors.primary`, `#0B1F3A`) **neredeyse özdeştir** (yalnızca birkaç
+birim RGB farkı). Bu yüzden orijinal (koyu) logo, lacivert bir zemin
+üzerine yerleştirilirse **görünmez** hâle gelir — yalnızca mavi üçgen
+aksan ve beyaz nokta seçilir kalır, ana "S/C" gövdesi kaybolur.
+
+Bunu çözmek için logonun tüm opak piksellerini beyaza çeviren bir
+**ters (reverse/mono) varyant** üretildi — bu, marka kılavuzlarında
+standart bir uygulamadır (bir "dark on light" ve bir "light on dark"
+versiyonu bulundurmak), efekt/gölge/gradient sayılmaz ve logonun
+kendi biçimini/oranını hiçbir şekilde bozmaz.
+
+**Karar tablosu** — `Logo` kullanılacak her yerde önce zemin rengine
+bakılır:
+
+| Zemin | Kullanılacak varyant |
+| --- | --- |
+| Açık zemin (`colors.background`, `colors.secondaryBackground`, beyaz kart) | `variant="small"` (veya `navbar`/`splash` DEĞİL — bunlar her zaman beyaz) |
+| Lacivert zemin (`colors.primary`) — AppBar, Splash | `variant="navbar"` / `variant="splash"` (zaten beyaz, başka seçim gerekmez) |
+| Lacivert zeminli KÜÇÜK kart/rozet (ör. AI kartı ikonu, Profil Pro kartı) | `variant="smallReverse"` |
+
+Yeni bir yere logo eklerken **her zaman önce o alanın arka plan rengini
+kontrol edin** — yanlış varyant seçimi logoyu görünmez kılar.
+
+## 3. Logo kullanım kuralları
 
 | Kural | Açıklama |
 | --- | --- |
-| Tek logo | Bu, uygulamanın **tek** resmî logosudur. Alternatif ikon, yeniden çizilmiş SVG, farklı renk varyasyonu üretilmedi ve üretilmemelidir. |
-| Emoji yasak | Marka temsili gereken hiçbir yerde (splash, navbar, App Icon, Hakkında) logonun yerine emoji kullanılmaz. (Uygulamanın geri kalanındaki fonksiyonel emoji ikonlar — doküman kartları, kategori ikonları, bottom nav — bu kuralın kapsamı DIŞINDADIR; onlar marka logosu değil, işlevsel UI ikonlarıdır.) |
+| Tek logo | Bu, uygulamanın **tek** resmî logosudur (dört renk/boyut varyantı — hepsi aynı marka görselinin türevidir). Alternatif ikon, yeniden çizilmiş SVG üretilmedi. |
+| Emoji yasak | Marka temsili gereken hiçbir yerde (splash, navbar, App Icon, Hakkında) logonun yerine emoji kullanılmaz. (Uygulamanın geri kalanındaki fonksiyonel emoji ikonlar — doküman kartları, kategori ikonları, bottom nav — bu kuralın kapsamı DIŞINDADIR.) |
 | Oran korunur | Logo her zaman `resizeMode="contain"` ile, en-boy oranı bozulmadan render edilir. Stretch/crop yapılmaz. |
-| Efekt yasak | `borderRadius`/clip, `shadow`, `tint`, gradient overlay gibi hiçbir efekt logonun üzerine eklenmez. Logo zaten kendi köşeleri ve arka planıyla birlikte tek parça, bitmiş bir görseldir. |
+| Efekt yasak | `borderRadius`/clip, `shadow`, `tint`, gradient overlay gibi hiçbir efekt logonun üzerine eklenmez. |
 | Döndürme yasak | Logo hiçbir yerde döndürülmez. |
-| Transparanlık | Logonun kendi opaklığı değiştirilmez (kaynak dosyada alfa kanalı yoktur — tamamen opak). |
-| Renk değişimi yasak | `tintColor` veya benzeri bir renklendirme uygulanmaz. |
+| Gerçek transparanlık | Tüm PNG'ler gerçek alfa kanalına sahiptir (dış kenar VE harfler arası boşluklar/nokta gerçekten şeffaftır) — hiçbir dosyada beyaz canvas/arka plan YOKTUR. |
+| Renk değişimi yasak | İki resmî renk varyantı (koyu/beyaz) dışında `tintColor` veya benzeri bir renklendirme uygulanmaz. |
 
-## 3. Minimum boşluk ve ölçekleme
+## 4. Minimum boşluk ve ölçekleme
 
 - Logo her zaman **kare** (1:1) alan içinde render edilir; `size` prop'u
-  hem genişlik hem yükseklik olarak kullanılır.
+  hem genişlik hem yükseklik olarak kullanılır (kaynak görsel kare
+  olmasa da `resizeMode="contain"` en-boy oranını korur).
 - Metinle (başlık, uygulama adı) yan yana kullanıldığında logo ile metin
   arasında **en az 12px** boşluk bırakılır (bkz. `AppBar.tsx`
   `styles.logo.marginRight`).
-- Splash ekranında logo ile alt metin arasında **20px** dikey boşluk
+- Splash ekranında logo ile alt metin arasında **24px** dikey boşluk
   vardır (bkz. `AppSplash.tsx`).
-- Küçültme sınırı: pratikte 24px altına inilmemesi önerilir (kaynak
-  görseldeki ince detaylar — belge çizgileri, "SC" harfleri — bu
-  boyutun altında okunaksızlaşabilir).
+- Küçültme sınırı: pratikte 20px altına inilmemesi önerilir (ince
+  detaylar — S'nin kıvrımı, C'nin açıklığı — bu boyutun altında
+  okunaksızlaşabilir).
 
-## 4. Kullanım alanları ve boyutlar
+## 5. Kullanım alanları ve boyutlar
 
-| Yer | Boyut | Bileşen |
-| --- | --- | --- |
-| Splash ekranı | 100px | `AppSplash.tsx` (90–110px aralığında) |
-| Navbar (AppBar) | 28px | `AppBar logo` prop'u — Ana Sayfa, Arama, AI Asistanı, Profil, Veri Kaynakları, Favoriler, Offline Kütüphane, Doküman Detay |
-| Boş durumlar (Empty State) | 40px | `EmptyState logo` prop'u — yalnızca "kütüphanede içerik yok" türü tüm-ekran boş durumlarında (Favoriler, Offline Kütüphane); "sonuç bulunamadı" arama durumlarında KULLANILMAZ (gereksiz tekrar olmasın diye, bkz. `EmptyState.tsx` üst yorumu) |
-| Hakkında ekranı | 110px | `HakkindaScreen.tsx` — büyük, ortalanmış |
-| App Icon / Adaptive Icon | 1024×1024 | `assets/icon.png`, `assets/adaptive-icon.png` |
-| Favicon | 48×48 | `assets/favicon.png` |
+| Yer | Boyut | Varyant | Bileşen |
+| --- | --- | --- | --- |
+| Splash ekranı | 116px | `splash` (beyaz) | `AppSplash.tsx` (110–120px aralığında) |
+| Navbar (AppBar) | 31px | `navbar` (beyaz) | `AppBar logo` prop'u — tüm ekranlarda |
+| Boş durumlar (Empty State) | 40px | `small` (koyu) | `EmptyState logo` prop'u — yalnızca "kütüphanede içerik yok" tüm-ekran boş durumlarında |
+| Hakkında ekranı | 110px | `small` (koyu) | `HakkindaScreen.tsx` — açık zeminli hero, büyük ortalanmış |
+| Ana Sayfa "Hoş Geldiniz" kartı | 72px, %55 opaklık | `small` (koyu) | Eski belge illüstrasyonunun yerini alır, kurumsal/hafif arka plan motifi gibi |
+| Ana Sayfa AI kartı ikonu | 26px | `smallReverse` (beyaz) | Lacivert `aiCard` zemini üzerinde |
+| AI Asistanı ekranı üst kısmı | 36px | `small` (koyu) | Yalnızca marka göstergesi, açık zemin |
+| Doküman Detay, başlık altı | 22px, %60 opaklık | `small` (koyu) | Açık kart zemini |
+| Profil, Pro kartının solu | 32px | `smallReverse` (beyaz) | Lacivert `planKart` zemini üzerinde, avatar DEĞİŞMEDİ |
+| App Icon | 1024×1024 | Koyu (orijinal) | `assets/branding/app-icon.png` |
+| Adaptive Icon (Android) | 1024×1024, safe-zone içinde ~660px | Beyaz (ters) | `assets/branding/adaptive-icon.png` — `backgroundColor: #0B1F3A` ile eşleşir |
+| Favicon | 256×256 | Koyu (orijinal) | `assets/branding/favicon.png` |
 
-## 5. Yasak kullanımlar (özet)
+## 6. Yasak kullanımlar (özet)
 
 Logo hiçbir yerde:
 
 - Stretch/crop edilmez.
 - Döndürülmez.
-- Transparanlığı değiştirilmez.
-- Üzerine efekt (gölge, glow, gradient) eklenmez.
+- Efekt (gölge, glow, gradient) eklenmez.
 - Outline/border eklenmez.
-- Rengi değiştirilmez.
-- Farklı bir versiyonu/varyasyonu üretilmez (ör. yalnızca "SC" harfleri,
-  yalnızca belge ikonu gibi kırpılmış alt-versiyonlar oluşturulmadı).
-- AI Kartı (Ana Sayfa) ve doküman kartlarında (DocumentRow) **kullanılmaz**
-  — bu alanlar kendi işlevsel ikonlarını (✨, 📄) korur; logo tekrarı
-  görsel gürültü yaratır.
+- İki resmî varyant (koyu/beyaz) dışında rengi değiştirilmez.
+- Yanlış zemin üzerinde yanlış varyantla kullanılmaz (bkz. §2 — kontrol
+  etmeden koyu varyantı lacivert zemine koymak logoyu görünmez kılar).
 - Bottom Navigation'da **kullanılmaz** — sekmeler kendi ikonlarını korur.
+- Doküman kartlarında (DocumentRow) **kullanılmaz** — kendi kurum
+  rozetlerini korur.
 
-## 6. Renk paleti (bağlam için)
-
-Logo, uygulamanın mevcut kurumsal paletiyle zaten uyumludur (bkz.
-`src/theme/colors.ts`):
+## 7. Renk paleti (bağlam için)
 
 | Token | Hex | Kullanım |
 | --- | --- | --- |
-| `colors.primary` | `#0B1F3A` | Logonun arka plan rengi; splash zemini; App Icon/Adaptive Icon arka planı |
-| `colors.accent` | `#2563EB` | Vurgu — logoda kullanılmaz, UI aksanlarında kullanılır |
-| `colors.background` | `#FFFFFF` | Logo işaretinin (belge/"SC") rengi |
+| `colors.primary` | `#0B1F3A` | Uygulamanın lacivert marka rengi; navbar/splash/AI kartı/Pro kartı zemini |
+| Logo koyu tonu | `#081D3A` | Logonun kendi "S/C" gövde rengi (colors.primary'ye neredeyse özdeş — bkz. §2) |
+| Logo mavi aksanı | ~`#1E56C8`→`#2E6FE0` (gradyan) | Logonun kendi üçgen aksanı, UI'da AYRICA kullanılmaz |
+| `colors.accent` | `#2563EB` | UI aksanları — logodan bağımsız |
+| `colors.background` | `#FFFFFF` | Açık zeminler |
 
-## 7. Uygulama İkonu (App Icon)
+## 8. Uygulama İkonu (App Icon)
 
-- `assets/icon.png` (iOS + genel) ve `assets/adaptive-icon.png`
-  (Android adaptive icon foreground) **aynı kaynak logodan** 1024×1024
-  olarak üretildi (`Resize-Square`, .NET `System.Drawing`
-  `HighQualityBicubic` — kayıpsız yeniden örnekleme, yeni bir paket
-  eklenmedi).
-- `android.adaptiveIcon.backgroundColor` → `#0B1F3A`. Kaynak logo zaten
-  kendi opak arka planını (lacivert yuvarlatılmış kare, beyaz kenarlıklı
-  kanvas) içerdiğinden, Android'in adaptive icon "safe zone" davranışı
-  logonun kendi köşe yuvarlaklığıyla örtüşür; ekstra bir maskeleme veya
-  yeniden kırpma **yapılmadı** ("logo kırpılmamalı" kuralı gereği).
-- `web.favicon` → 48×48, yalnızca Expo config şeması bunu istediği için
-  var; bu proje web hedeflemiyor (bkz. KURULUM.md).
+- `app-icon.png` — 1024×1024, logo kendi oranında canvasın ~%86'sını
+  kaplayacak şekilde ortalanmış (OS köşe maskeleme payı için küçük bir
+  kenar boşluğu bırakılır), koyu/orijinal renk.
+- `adaptive-icon.png` — 1024×1024, logo Android'in "safe zone" kuralına
+  uygun şekilde canvasın ~%64'ünü kaplar (ortalanmış), **beyaz/ters**
+  renk — çünkü `android.adaptiveIcon.backgroundColor` yine `#0B1F3A`
+  olarak ayarlıdır ve koyu logo bu zeminde kaybolurdu (bkz. §2).
+- `favicon.png` — 256×256, koyu/orijinal renk (web sekmesi genelde açık
+  zeminlidir); bu proje web hedeflemiyor, yalnızca Expo config şeması
+  bunu istediği için var (bkz. KURULUM.md).
 
-## 8. Splash kullanımı
+## 9. Splash kullanımı
 
 İki ayrı splash katmanı vardır:
 
 1. **Native/statik splash** (`app.json` → `expo.splash`): `image` alanı
-   artık `assets/branding/logo.png`'ye işaret eder, `backgroundColor:
-   #0B1F3A`, `resizeMode: contain`. JS yüklenmeden önceki çok kısa an
-   için gösterilir.
+   `assets/branding/logo-splash.png`'ye işaret eder (beyaz/ters varyant),
+   `backgroundColor: #0B1F3A`, `resizeMode: contain`. JS yüklenmeden
+   önceki çok kısa an için gösterilir.
 2. **JS splash** (`src/components/AppSplash.tsx`): 3 saniye sabit
-   lacivert zemin + 100px logo + 20px boşluk + beyaz "Şartname Cepte"
-   yazısı, ardından mevcut 350ms fade-out → fade-in animasyonuyla ana
-   içeriğe geçer (animasyon davranışı DEĞİŞMEDİ, yalnızca logo eklendi).
+   lacivert zemin + 116px beyaz logo + 24px boşluk + beyaz "Şartname
+   Cepte" yazısı, ardından mevcut 350ms fade-out → fade-in
+   animasyonuyla ana içeriğe geçer (animasyon davranışı ve süresi
+   DEĞİŞMEDİ, yalnızca logo görseli ve boşluk değerleri güncellendi).
 
-## 9. Navbar kullanımı
+## 10. Navbar kullanımı
 
 `src/components/ui/AppBar.tsx`, opsiyonel `logo` prop'u alır:
 
@@ -126,6 +166,6 @@ Logo, uygulamanın mevcut kurumsal paletiyle zaten uyumludur (bkz.
 <AppBar title="Şartname Ara" logo onBack={...} />
 ```
 
-Sıralama (soldan sağa): geri oku (varsa) → logo (varsa, 28px, sağında
-12px boşluk) → başlık. Doküman Detay ekranında da aynı sıralama
-kullanılır (geri oku → küçük logo → başlık).
+Sıralama (soldan sağa): geri oku (varsa) → logo (varsa, 31px beyaz,
+`variant="navbar"`, sağında 12px boşluk) → başlık. Doküman Detay
+ekranında da aynı sıralama kullanılır.

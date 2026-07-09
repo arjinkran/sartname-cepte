@@ -23,7 +23,7 @@ export default function HakkindaScreen() {
       <AppBar title="Hakkında" logo onBack={router.canGoBack() ? () => router.back() : undefined} />
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent}>
         <View style={styles.hero}>
-          <Logo size={110} />
+          <Logo size={110} variant="small" />
           <Text style={styles.appAdi}>Şartname Cepte</Text>
           <View style={styles.surumRozet}>
             <Text style={styles.surumText}>Sürüm {SURUM}</Text>
