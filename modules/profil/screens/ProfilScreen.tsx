@@ -25,6 +25,11 @@ const AYARLAR = [
   { id: 'gizlilik', ikon: '🔒', ad: 'Gizlilik Politikası', rota: '' },
   { id: 'kullanim', ikon: '📜', ad: 'Kullanım Şartları', rota: '' },
   { id: 'hakkinda', ikon: 'ℹ️', ad: 'Hakkında', rota: '/hakkinda' },
+  // Sprint 14, madde 15: yalnızca geliştirme ortamında görünür — `__DEV__`
+  // production build'de her zaman `false`'tur, bu satır orada HİÇ render edilmez.
+  ...(__DEV__
+    ? ([{ id: 'evidence-debug', ikon: '🧪', ad: 'Evidence Debug', rota: '/evidence-debug' }] as const)
+    : []),
 ] as const;
 
 export default function ProfilScreen() {

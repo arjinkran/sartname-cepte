@@ -26,6 +26,7 @@ import type { SourceAccessType } from '@/sourceResolver/types';
 import type { NetworkCandidate, NetworkSearchResponse } from '@/sourceResolver/network/types';
 import { deleteDownloadedPdf } from '@/offline/downloadManager';
 import { enqueueDownload, getQueueState, subscribeToQueue, type QueueItem } from '@/offline/downloadQueue';
+import { buildUsageQuestions } from '@/evidence/explanations';
 import { InstitutionBadge, StatusBadge } from '../components/DocumentRow';
 
 /** `candidateParser.ts`'in STRONG_SCORE_THRESHOLD'ü ile AYNI değer — UI, network katmanını doğrudan import ETMEZ, bu yüzden burada yalnızca görüntüleme eşiği olarak tekrarlanır. */
@@ -112,6 +113,8 @@ export default function DocumentDetailScreen() {
   // motoru, belgenin kendi başlık/kategori/anahtar kelimelerinden
   // türettiği bir sorguyla ek ilişkili belgeler de önerir.
   const aiOnerileri = recommendRelated(document.id, 5).documents;
+  // Sprint 14: Evidence Engine — template tabanlı, LLM'siz örnek soru üretimi.
+  const kullanimSorulari = buildUsageQuestions(document);
   const pdfVar = hasPdf(document);
   const kaynakDurumu = getSourceStatus(document);
 
@@ -311,6 +314,18 @@ export default function DocumentDetailScreen() {
           ) : (
             <Text style={[styles.ilgiliBos, { padding: spacing.m }]}>Bu belge için AI önerisi bulunamadı.</Text>
           )}
+        </Card>
+
+        {/* Bu Belge Hangi Sorularda Kullanılır? — Sprint 14 Evidence Engine
+            madde 14. Template tabanlı, LLM KULLANILMAZ. */}
+        <Card style={styles.card}>
+          <Text style={styles.bolumBaslik}>Bu Belge Hangi Sorularda Kullanılır?</Text>
+          {kullanimSorulari.map((soru, i) => (
+            <View key={soru}>
+              <Text style={styles.kullanimSorusu}>💬 {soru}</Text>
+              {i < kullanimSorulari.length - 1 && <View style={styles.divider} />}
+            </View>
+          ))}
         </Card>
 
         {/* Resmî Kaynak Durumu — Sprint 11 madde 9 */}
@@ -529,6 +544,7 @@ const styles = StyleSheet.create({
   },
   etiketText: { fontSize: 13, fontWeight: '600', color: colors.primaryLight },
   ozet: { fontSize: 15, color: colors.textPrimary, lineHeight: 23 },
+  kullanimSorusu: { fontSize: 14, color: colors.textPrimary, paddingVertical: spacing.s, lineHeight: 20 },
   ilgiliSatir: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -18,6 +18,8 @@ import { recommendDocuments } from '@/ai/engine';
 import type { DocumentRecommendation } from '@/ai/types';
 import { EXAMPLE_QUESTIONS } from '@/ai/examples';
 import { hasPdf } from '@/data/library';
+import { collectEvidence } from '@/evidence/engine';
+import type { EvidenceConfidenceBand, EvidenceResult } from '@/evidence/types';
 
 const ONERI_LIMIT = 10;
 const ORNEK_SORU_SAYISI = 8;
@@ -32,14 +34,24 @@ function guvenYildizlari(confidence: number): string {
   return '★★★★★'.slice(0, doluYildiz) + '☆☆☆☆☆'.slice(0, 5 - doluYildiz);
 }
 
+const KANIT_BANT_RENK: Record<EvidenceConfidenceBand, string> = {
+  green: colors.success,
+  yellow: colors.warning,
+  red: colors.danger,
+};
+
 export default function AiDestekScreen() {
   const router = useRouter();
   const tabBar = useRootTabBar();
   const [soru, setSoru] = useState('');
   const [sonuclar, setSonuclar] = useState<readonly DocumentRecommendation[] | null>(null);
+  const [kanitSonucu, setKanitSonucu] = useState<EvidenceResult | null>(null);
 
   const oneriGetir = (metin: string) => {
     setSonuclar(recommendDocuments(metin, ONERI_LIMIT).documents);
+    // Sprint 14: Kanıt Toplama Motoru — AI HENÜZ bir cevap ÜRETMEZ,
+    // yalnızca ilgili mevzuatı bulur/puanlar/gruplar (bkz. src/evidence/README.md).
+    setKanitSonucu(collectEvidence(metin, ONERI_LIMIT));
   };
 
   const ornekSec = (ornek: string) => {
@@ -152,6 +164,65 @@ export default function AiDestekScreen() {
             )}
           </>
         )}
+
+        {/* Kanıtlar — Sprint 14 Evidence Engine. AI henüz bir CEVAP
+            üretmiyor; yalnızca ilgili mevzuatı bulup puanlıyor
+            (bkz. src/evidence/README.md, PROJECT_CONSTITUTION.md). */}
+        {kanitSonucu !== null && (
+          <>
+            <Text style={styles.bolumBaslik}>Kanıtlar</Text>
+            <Card style={[styles.card, styles.kanitOzetKart]}>
+              <Text style={styles.kanitOzetText}>{kanitSonucu.summary}</Text>
+            </Card>
+            {kanitSonucu.collection.evidences.length > 0 ? (
+              kanitSonucu.collection.evidences.slice(0, ONERI_LIMIT).map((kanit) => (
+                <Card key={kanit.reference.documentId} style={styles.card}>
+                  <View style={styles.sonucUstSatir}>
+                    <Text style={styles.sonucBaslik} numberOfLines={2}>{kanit.reference.title}</Text>
+                    <View style={styles.guvenRozeti}>
+                      <Text style={[styles.kanitGuvenNokta, { color: KANIT_BANT_RENK[kanit.confidence.band] }]}>●</Text>
+                      <Text style={styles.guvenYuzde}>{kanit.confidence.score}%</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.sonucAlt}>{kanit.reference.institution} · {kanit.reference.category}</Text>
+                  <View style={styles.kanitEtiketSatiri}>
+                    <View style={styles.kanitEtiket}>
+                      <Text style={styles.kanitEtiketText}>{kanit.confidence.label}</Text>
+                    </View>
+                    {kanit.reference.officialSourceStatus !== 'manualRequired' && kanit.reference.officialSourceStatus !== 'notFound' && (
+                      <View style={styles.kanitEtiket}>
+                        <Text style={styles.kanitEtiketText}>Resmî Kaynak</Text>
+                      </View>
+                    )}
+                    {kanit.reference.pdfAvailable && (
+                      <View style={styles.kanitEtiket}>
+                        <Text style={styles.kanitEtiketText}>PDF</Text>
+                      </View>
+                    )}
+                    {kanit.crossReferenceDepth > 0 && (
+                      <View style={styles.kanitEtiket}>
+                        <Text style={styles.kanitEtiketText}>Çapraz Referans</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.nedenText}>{kanit.explanation}</Text>
+                  <Button
+                    label="Detaya Git"
+                    variant="secondary"
+                    onPress={() => router.push(`/sartname/${kanit.reference.documentId}`)}
+                    style={{ marginTop: spacing.s, alignSelf: 'flex-start' }}
+                  />
+                </Card>
+              ))
+            ) : (
+              <EmptyState
+                icon="📭"
+                title="Kanıt bulunamadı"
+                description="Bu soru için doğrulanmış bir kaynak bulunamadı."
+              />
+            )}
+          </>
+        )}
       </ScrollView>
       <BottomNavigation tabs={tabBar.tabs} activeId={tabBar.activeId} onChange={tabBar.onChange} />
     </View>
@@ -221,4 +292,15 @@ const styles = StyleSheet.create({
   },
   pdfEtiketText: { color: colors.textSecondary, fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
   nedenText: { fontSize: typography.size.xs, color: colors.textSecondary, marginTop: spacing.s, lineHeight: 16 },
+  kanitOzetKart: { backgroundColor: colors.primary },
+  kanitOzetText: { color: '#FFFFFF', fontSize: typography.size.sm, fontWeight: '700', lineHeight: 19 },
+  kanitGuvenNokta: { fontSize: 14 },
+  kanitEtiketSatiri: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: spacing.xs },
+  kanitEtiket: {
+    backgroundColor: colors.secondaryBackground,
+    borderRadius: radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  kanitEtiketText: { fontSize: 11, fontWeight: '700', color: colors.primaryLight },
 });
