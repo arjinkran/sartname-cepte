@@ -165,3 +165,13 @@ Bir PDF'i kütüphaneye eklemeden/yayınlamadan önce:
 - [ ] `npm run typecheck` temiz mi?
 - [ ] Profil → PDF Kütüphane Durumu ekranında yeni kayıt doğru sayılıyor mu?
 - [ ] Doküman Detay ekranında "PDF'yi Aç" butonu görünüyor ve `/pdf/:id` açılıyor mu?
+
+## 10. Sprint 13: Kullanıcı İndirmeleri vs. Küratörlü Manifest
+
+Bu dokümandaki iş akışı (manuel PDF ekleme + `manifest.ts` küratörlüğü)
+hâlâ geçerlidir ve DEĞİŞMEDİ. Sprint 13, BUNUN YANINA, kullanıcının
+kendi cihazına indirdiği dosyalar için AYRI bir katman ekledi
+(`src/offline/runtimePdfManifest.ts` + `downloadRepository.ts`) — bu
+katman `manifest.ts`'i hiç değiştirmez, yalnızca çalışma anında
+`repository.ts`'in `hasPdf()`/`getPdfPath()` sonucuna dahil edilir.
+Ayrıntılar için bkz. [`docs/OFFICIAL_PDF_DOWNLOAD.md`](./OFFICIAL_PDF_DOWNLOAD.md).

@@ -16,14 +16,15 @@
 // Lazy: WebView yalnızca gerçek bir PDF kaynağı (`pdfKaynagi`) varken
 // mount edilir; ekran kapandığında (route'tan çıkıldığında) WebView de
 // unmount olur — PDF içeriği bellekte gereksiz tutulmaz (madde 17).
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFavoriler } from '@/lib/favoriler';
 import { useSonSayfa } from '@/lib/sonSayfa';
-import { getDocumentById, getPdfPath, hasPdf } from '@/data/library';
+import { getDocumentById, getPdfPath, hasPdf, isPdfDownloadedLocally } from '@/data/library';
+import { updateLastOpenedAt } from '@/offline/downloadRepository';
 import { colors, radius, spacing, typography } from '@/theme';
 
 export default function DocumentViewerScreen() {
@@ -40,6 +41,15 @@ export default function DocumentViewerScreen() {
   const [gecerliSayfa, setGecerliSayfa] = useState(() =>
     document ? sonSayfaGetir(document.id) ?? 1 : 1
   );
+
+  // Sprint 13, madde 13: yerel (indirilmiş) bir dosya açılıyorsa son açılma
+  // tarihi kalıcı kayda işlenir — Viewer, download MANAGER'ı ÇAĞIRMAZ,
+  // yalnızca basit bir kayıt güncellemesi için repository'yi kullanır.
+  useEffect(() => {
+    if (document && isPdfDownloadedLocally(document.id)) {
+      updateLastOpenedAt(document.id).catch(() => {});
+    }
+  }, [document?.id]);
 
   const geriDon = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
@@ -62,6 +72,7 @@ export default function DocumentViewerScreen() {
   const pdfKaynagi = getPdfPath(document.id);
   const toplamSayfa = document.pageCount;
   const favori = favoriMi(document.id);
+  const cevrimdisi = isPdfDownloadedLocally(document.id);
 
   const sayfaDegistir = (yeniSayfa: number) => {
     const altSinir = Math.max(1, yeniSayfa);
@@ -80,6 +91,11 @@ export default function DocumentViewerScreen() {
         <View style={{ flex: 1 }}>
           <Text style={styles.baslikText} numberOfLines={1}>{document.title}</Text>
         </View>
+        {cevrimdisi && (
+          <View style={[styles.pdfEtiket, styles.cevrimdisiEtiket]}>
+            <Text style={styles.pdfEtiketText}>Çevrimdışı</Text>
+          </View>
+        )}
         <View style={styles.pdfEtiket}>
           <Text style={styles.pdfEtiketText}>PDF</Text>
         </View>
@@ -189,6 +205,7 @@ const styles = StyleSheet.create({
     marginLeft: spacing.s,
   },
   pdfEtiketText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
+  cevrimdisiEtiket: { backgroundColor: 'rgba(46,204,113,0.35)' },
   toolbar: {
     flexDirection: 'row',
     justifyContent: 'space-around',

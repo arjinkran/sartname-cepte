@@ -3,7 +3,7 @@
 // doküman sayıları, kurum ve kategori bazlı kırılımlar, eksik PDF
 // listesi. Tüm sayılar `getPdfStatistics()`/`pdfChecker.ts`'ten gelir —
 // elle yazılan hiçbir sayı YOKTUR (Sprint 6'dan beri korunan ilke).
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AppBar, Card } from '@/components/ui';
@@ -15,6 +15,8 @@ import {
   getDocumentsNeedingSourceVerification,
 } from '@/data/library';
 import { getPdfMissingDocuments } from '@/assets/pdfs/pdfChecker';
+import { getAllDownloadRecords, getDownloadedCountByInstitution } from '@/offline/downloadRepository';
+import { pruneInvalidDownloadRecords } from '@/offline/downloadManager';
 
 const EKSIK_LISTE_LIMIT = 20;
 
@@ -26,8 +28,37 @@ const KAYNAK_UYGUNLUGU = {
   manuelBekleyen: getDocumentsNeedingSourceVerification().length,
 };
 
+function boyutGoster(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+interface IndirilenIstatistik {
+  toplam: number;
+  kurumBazli: Record<string, number>;
+  toplamAlan: number;
+  gecersizKayit: number;
+}
+
 export default function PdfKapsamScreen() {
   const router = useRouter();
+  // Sprint 13, madde 16: "Cihaza İndirilenler" — sayılar download
+  // repository'den (AsyncStorage) gelir, elle yazılan bir sayı YOKTUR.
+  const [indirilen, setIndirilen] = useState<IndirilenIstatistik | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const gecersizKayit = await pruneInvalidDownloadRecords().catch(() => 0);
+      const [kayitlar, kurumBazli] = await Promise.all([getAllDownloadRecords(), getDownloadedCountByInstitution()]);
+      setIndirilen({
+        toplam: kayitlar.length,
+        kurumBazli,
+        toplamAlan: kayitlar.reduce((acc, k) => acc + k.fileSize, 0),
+        gecersizKayit,
+      });
+    })().catch(() => setIndirilen({ toplam: 0, kurumBazli: {}, toplamAlan: 0, gecersizKayit: 0 }));
+  }, []);
 
   return (
     <View style={styles.root}>
@@ -52,6 +83,43 @@ export default function PdfKapsamScreen() {
             <Text style={styles.ozetEtiket}>PDF Bekleyen</Text>
           </Card>
         </View>
+
+        {/* Cihaza İndirilenler — Sprint 13 madde 16 */}
+        <Text style={styles.bolumBaslik}>Cihaza İndirilenler</Text>
+        <Card style={styles.card} padded={false}>
+          <View style={styles.satir}>
+            <Text style={styles.satirBaslik}>Toplam İndirilen PDF</Text>
+            <Text style={styles.satirDeger}>{indirilen ? indirilen.toplam : '—'}</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.satir}>
+            <Text style={styles.satirBaslik}>Toplam Kullanılan Alan</Text>
+            <Text style={styles.satirDeger}>{indirilen ? boyutGoster(indirilen.toplamAlan) : '—'}</Text>
+          </View>
+          {indirilen && indirilen.gecersizKayit > 0 && (
+            <>
+              <View style={styles.divider} />
+              <View style={styles.satir}>
+                <Text style={styles.satirBaslik}>Geçersiz/Kayıp Dosya Kaydı</Text>
+                <Text style={[styles.satirDeger, { color: colors.warning }]}>{indirilen.gecersizKayit}</Text>
+              </View>
+            </>
+          )}
+          {indirilen && Object.keys(indirilen.kurumBazli).length > 0 && (
+            <>
+              <View style={styles.divider} />
+              {Object.entries(indirilen.kurumBazli).map(([kurum, sayi], i, arr) => (
+                <View key={kurum}>
+                  <View style={styles.satir}>
+                    <Text style={styles.satirBaslik}>{kurum}</Text>
+                    <Text style={styles.satirDeger}>{sayi}</Text>
+                  </View>
+                  {i < arr.length - 1 && <View style={styles.divider} />}
+                </View>
+              ))}
+            </>
+          )}
+        </Card>
 
         {/* Resmî Kaynak Uygunluğu — Sprint 11 madde 11 */}
         <Text style={styles.bolumBaslik}>Resmî Kaynak Uygunluğu</Text>

@@ -33,6 +33,10 @@ import { PDF_MANIFEST } from '../../assets/pdfs/manifest.ts';
 // Document/Institution TİPLERİNİ kullanır) — bu yüzden tek yönlü, döngüsel
 // olmayan bir bağımlılık (bkz. src/sourceResolver/README.md).
 import { getSourceStatus } from '../../sourceResolver/resolver.ts';
+// Sprint 13: runtime (indirilen) PDF manifest'i SALT-OKUNUR olarak import
+// edilir — `runtimePdfManifest.ts` bu dosyayı (repository.ts) ASLA import
+// ETMEZ, bu yüzden döngüsel bağımlılık YOKTUR (bkz. src/offline/README.md).
+import { findRuntimePdfByDocumentId } from '../../offline/runtimePdfManifest.ts';
 
 interface InstitutionModule {
   docs: readonly Document[];
@@ -296,11 +300,17 @@ const MANIFEST_DOCUMENT_IDS = new Set(PDF_MANIFEST.map((m) => m.documentId));
  * Bir belgenin ŞU AN gerçekten açılabilir bir PDF'i olup olmadığını döner.
  * `pdfAvailable` alanı tanımsız (undefined) olan belgeler de `false` kabul
  * edilir — "belirtilmemiş" ile "yok" arasında UI açısından fark yoktur.
- * Sprint 9'dan itibaren, manifest'te bir kaydı olan belgeler de `true`
- * sayılır (pdfAvailable alanı elle `true` yapılmamış olsa bile).
+ * Sprint 9'dan itibaren manifest kaydı olan belgeler, Sprint 13'ten
+ * itibaren de kullanıcının CİHAZA GERÇEKTEN indirdiği belgeler `true`
+ * sayılır (bkz. `src/offline/runtimePdfManifest.ts`).
  */
 export function hasPdf(document: Document): boolean {
-  return document.pdfAvailable === true || MANIFEST_DOCUMENT_IDS.has(document.id);
+  return document.pdfAvailable === true || MANIFEST_DOCUMENT_IDS.has(document.id) || findRuntimePdfByDocumentId(document.id) !== undefined;
+}
+
+/** Bir belgenin cihaza GERÇEKTEN indirilmiş (runtime manifest'te kayıtlı) olup olmadığını döner (Sprint 13). */
+export function isPdfDownloadedLocally(id: string): boolean {
+  return findRuntimePdfByDocumentId(id) !== undefined;
 }
 
 /** Gerçek PDF'i olan belgeleri döner (madde 3). */
@@ -314,14 +324,18 @@ export function getMissingPdfDocuments(): readonly Document[] {
 }
 
 /**
- * Bir belgenin görüntülenebilir PDF kaynağını döner. Öncelik sırası:
- * manifest kaydının `relativePath`i (Sprint 9) → belgenin kendi
- * `localAsset`i → `pdfUrl`. PDF yoksa (veya belge bulunamazsa) `undefined`
- * döner; hiçbir zaman `pdfPath`e (kurum ana sayfası yer tutucusu) düşmez.
+ * Bir belgenin görüntülenebilir PDF kaynağını döner. Öncelik sırası
+ * (Sprint 13'ten itibaren): cihaza GERÇEKTEN indirilmiş dosyanın mutlak
+ * URI'si (varsa, her zaman ÖNCELİKLİDİR) → statik manifest kaydının
+ * `relativePath`i (Sprint 9) → belgenin kendi `localAsset`i → `pdfUrl`.
+ * PDF yoksa (veya belge bulunamazsa) `undefined` döner; hiçbir zaman
+ * `pdfPath`e (kurum ana sayfası yer tutucusu) düşmez.
  */
 export function getPdfPath(id: string): string | undefined {
   const doc = getDocumentById(id);
   if (!doc || !hasPdf(doc)) return undefined;
+  const runtimeKaydi = findRuntimePdfByDocumentId(id);
+  if (runtimeKaydi) return runtimeKaydi.localUri;
   const manifestKaydi = PDF_MANIFEST.find((m) => m.documentId === id);
   return manifestKaydi?.relativePath ?? doc.localAsset ?? doc.pdfUrl ?? undefined;
 }

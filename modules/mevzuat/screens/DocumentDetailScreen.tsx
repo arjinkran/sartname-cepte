@@ -14,7 +14,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
 import { AppBar, Button, Card, Logo, PressableScale } from '@/components/ui';
 import { colors, radius, spacing, typography } from '@/theme';
-import { STATUS_LABELS, getDocumentById, getRelatedDocuments, hasPdf } from '@/data/library';
+import { STATUS_LABELS, getDocumentById, getRelatedDocuments, hasPdf, isPdfDownloadedLocally } from '@/data/library';
 import { recommendRelated } from '@/ai/engine';
 import {
   clearSourceSearchState,
@@ -24,7 +24,12 @@ import {
 } from '@/sourceResolver/resolver';
 import type { SourceAccessType } from '@/sourceResolver/types';
 import type { NetworkCandidate, NetworkSearchResponse } from '@/sourceResolver/network/types';
+import { deleteDownloadedPdf } from '@/offline/downloadManager';
+import { enqueueDownload, getQueueState, subscribeToQueue, type QueueItem } from '@/offline/downloadQueue';
 import { InstitutionBadge, StatusBadge } from '../components/DocumentRow';
+
+/** `candidateParser.ts`'in STRONG_SCORE_THRESHOLD'ü ile AYNI değer — UI, network katmanını doğrudan import ETMEZ, bu yüzden burada yalnızca görüntüleme eşiği olarak tekrarlanır. */
+const GUCLU_ADAY_ESIGI = 70;
 
 function KunyeSatiri({ etiket, deger }: { etiket: string; deger: string }) {
   return (
@@ -61,11 +66,32 @@ export default function DocumentDetailScreen() {
   const [aramaSonucu, setAramaSonucu] = useState<NetworkSearchResponse | null>(null);
   const [adayModalAcik, setAdayModalAcik] = useState(false);
 
+  // Sprint 13: indirme onayı + kuyruk durumu.
+  const [indirmeOnayAdayi, setIndirmeOnayAdayi] = useState<NetworkCandidate | null>(null);
+  const [kuyrukOgesi, setKuyrukOgesi] = useState<QueueItem | null>(null);
+  const [pdfDurumTick, setPdfDurumTick] = useState(0);
+
   // Sayfadan ayrılırken (veya belge değişirse) devam eden aramayı iptal et.
   useEffect(() => {
     return () => {
       if (id) clearSourceSearchState(id);
     };
+  }, [id]);
+
+  // Kuyruk durumunu dinle — bu belgeye ait iş varsa yerel state'e yansıt.
+  // "Çevrimdışı Kullanılabilir" durumuna geçiş `hasPdf()`/`isPdfDownloadedLocally()`
+  // gibi SAF fonksiyonların yeniden değerlendirilmesini gerektirdiğinden,
+  // tamamlanma anında ayrı bir "tick" state'i re-render'ı tetikler.
+  useEffect(() => {
+    if (!id) return;
+    const mevcut = getQueueState().items.find((i) => i.request.documentId === id) ?? null;
+    setKuyrukOgesi(mevcut);
+    const unsubscribe = subscribeToQueue((state) => {
+      const item = state.items.find((i) => i.request.documentId === id) ?? null;
+      setKuyrukOgesi(item);
+      if (item?.status === 'completed') setPdfDurumTick((t) => t + 1);
+    });
+    return unsubscribe;
   }, [id]);
 
   if (!document) {
@@ -89,14 +115,43 @@ export default function DocumentDetailScreen() {
   const pdfVar = hasPdf(document);
   const kaynakDurumu = getSourceStatus(document);
 
+  // Sprint 13, madde 14: PDF durumu artık 4 hâlden biridir.
+  const cevrimdisiVar = isPdfDownloadedLocally(document.id);
+  const indiriliyorMu = kuyrukOgesi?.status === 'queued' || kuyrukOgesi?.status === 'downloading';
+  const pdfDurumu: 'cevrimdisi' | 'indiriliyor' | 'ac' | 'pdfBul' = cevrimdisiVar
+    ? 'cevrimdisi'
+    : indiriliyorMu
+    ? 'indiriliyor'
+    : pdfVar
+    ? 'ac'
+    : 'pdfBul';
+
   const pdfAc = () => {
     if (pdfVar) {
       router.push(`/pdf/${document.id}`);
       return;
     }
     Alert.alert(
-      'PDF henüz eklenmedi.',
-      'Bu dokümanın resmi PDF dosyası doğrulandıktan sonra kütüphaneye eklenecektir.'
+      'Bu dokümanın PDF\'i henüz cihazda değil.',
+      '"Resmî Kaynak Durumu" bölümündeki "PDF Bulmayı Dene" ile doğrulanmış resmî kaynaklarda arayabilirsiniz.'
+    );
+  };
+
+  const pdfCihazdanKaldir = () => {
+    Alert.alert(
+      'PDF cihazdan kaldırılsın mı?',
+      'Bu işlem yalnızca cihazınızdaki indirilmiş dosyayı kaldırır; doküman kütüphaneden silinmez.',
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        {
+          text: 'Kaldır',
+          style: 'destructive',
+          onPress: async () => {
+            await deleteDownloadedPdf(document.id);
+            setPdfDurumTick((t) => t + 1);
+          },
+        },
+      ]
     );
   };
 
@@ -130,6 +185,24 @@ export default function DocumentDetailScreen() {
     }
     Linking.openURL(aday.url).catch(() => {
       Alert.alert('Açılamadı', 'Bağlantı açılırken bir sorun oluştu.');
+    });
+  };
+
+  // Sprint 13, madde 10: kullanıcı adayın "Cihaza İndir" butonuna basınca
+  // ÖNCE onay modalı açılır — gerçek indirme yalnızca `indirmeyiOnayla()`
+  // ile, kullanıcı AÇIKÇA "İndir" dediğinde tetiklenir.
+  const indirmeyiOnayla = () => {
+    if (!indirmeOnayAdayi) return;
+    const aday = indirmeOnayAdayi;
+    setIndirmeOnayAdayi(null);
+    setAdayModalAcik(false);
+    enqueueDownload({
+      documentId: document.id,
+      institution: document.institution,
+      title: document.title,
+      url: aday.url,
+      providerId: aday.providerId,
+      suggestedFileName: `${document.id}.pdf`,
     });
   };
 
@@ -281,9 +354,18 @@ export default function DocumentDetailScreen() {
           <Text style={styles.bolumBaslik}>Aksiyonlar</Text>
           <View style={styles.aksiyonlar}>
             <Button
-              label={pdfVar ? "📄 PDF'yi Aç" : 'PDF Yakında'}
-              variant={pdfVar ? 'primary' : 'secondary'}
+              label={
+                pdfDurumu === 'indiriliyor'
+                  ? kuyrukOgesi?.status === 'downloading'
+                    ? 'İndiriliyor…'
+                    : 'Kuyrukta…'
+                  : pdfDurumu === 'pdfBul'
+                  ? 'PDF Bul'
+                  : "📄 PDF'yi Aç"
+              }
+              variant={pdfDurumu === 'cevrimdisi' || pdfDurumu === 'ac' ? 'primary' : 'secondary'}
               onPress={pdfAc}
+              disabled={pdfDurumu === 'indiriliyor'}
               style={{ flex: 1 }}
             />
             <Button
@@ -293,6 +375,17 @@ export default function DocumentDetailScreen() {
               style={{ flex: 1 }}
             />
           </View>
+          {pdfDurumu === 'cevrimdisi' && (
+            <Button label="Cihazdan Kaldır" variant="ghost" onPress={pdfCihazdanKaldir} style={{ marginTop: spacing.s }} />
+          )}
+          {pdfDurumu === 'indiriliyor' && (
+            <View style={styles.indirmeIlerlemeSatir}>
+              <ActivityIndicator color={colors.primary} size="small" />
+              <Text style={styles.indirmeIlerlemeText}>
+                {kuyrukOgesi?.status === 'downloading' ? 'PDF cihaza indiriliyor…' : 'İndirme kuyrukta bekliyor…'}
+              </Text>
+            </View>
+          )}
           <Button
             label="✨ AI ile Açıkla"
             variant="secondary"
@@ -300,16 +393,20 @@ export default function DocumentDetailScreen() {
             style={{ marginTop: spacing.s }}
           />
           <Text style={styles.kaynakNot}>
-            {pdfVar
+            {pdfDurumu === 'cevrimdisi'
+              ? 'Bu PDF cihazınıza indirildi — çevrimdışı da açılabilir.'
+              : pdfDurumu === 'indiriliyor'
+              ? 'İndirme tamamlanınca PDF çevrimdışı kullanılabilir olacak.'
+              : pdfDurumu === 'ac'
               ? 'PDF görüntüleyici, doküman için sağlanan kaynağı açar.'
-              : 'PDF henüz eklenmedi. Bu dokümanın resmi PDF dosyası doğrulandıktan sonra kütüphaneye eklenecektir.'}
+              : 'PDF henüz cihaza indirilmedi. "Resmî Kaynak Durumu" bölümünden arayabilir, doğrulanmış bir kaynak bulunursa indirebilirsiniz.'}
           </Text>
         </Card>
       </ScrollView>
 
-      {/* Aday Kaynaklar Modalı — Sprint 12, madde 14. Yalnızca RN yerleşik
-          Modal bileşeni kullanılır; yeni paket eklenmedi. Bu aşamada
-          İNDİRME/manifest güncellemesi YAPILMAZ — yalnızca tarayıcıda açma. */}
+      {/* Aday Kaynaklar Modalı — Sprint 12 madde 14 + Sprint 13 madde 10
+          ("Cihaza İndir"). Yalnızca RN yerleşik Modal bileşeni kullanılır;
+          yeni paket eklenmedi. */}
       <Modal
         visible={adayModalAcik}
         animationType="slide"
@@ -340,13 +437,48 @@ export default function DocumentDetailScreen() {
                   {aday.matchReasons.length > 0 && (
                     <Text style={styles.adayNedenler}>{aday.matchReasons.join(' · ')}</Text>
                   )}
-                  <Button label="Kaynağı Aç" variant="secondary" onPress={() => kaynagiAc(aday)} style={{ marginTop: spacing.s }} />
+                  <View style={[styles.aksiyonlar, { marginTop: spacing.s }]}>
+                    <Button label="Kaynağı Aç" variant="secondary" onPress={() => kaynagiAc(aday)} style={{ flex: 1 }} />
+                    {aday.isPdf && aday.score >= GUCLU_ADAY_ESIGI && (
+                      <Button label="Cihaza İndir" variant="primary" onPress={() => setIndirmeOnayAdayi(aday)} style={{ flex: 1 }} />
+                    )}
+                  </View>
                 </View>
               ))}
               {(aramaSonucu?.candidates.length ?? 0) === 0 && (
                 <Text style={styles.ilgiliBos}>Aday bulunamadı.</Text>
               )}
             </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* İndirme Onay Modalı — Sprint 13, madde 10. Kullanıcı AÇIKÇA "İndir"
+          demeden hiçbir indirme başlamaz. */}
+      <Modal
+        visible={indirmeOnayAdayi !== null}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setIndirmeOnayAdayi(null)}
+      >
+        <View style={styles.onayModalArkaPlan}>
+          <View style={styles.onayModalKap}>
+            <Text style={styles.modalBaslik}>PDF indirilsin mi?</Text>
+            <Text style={styles.onayModalMetin}>
+              Bu dosya doğrulanmış resmî kaynaktan cihazınıza indirilecek ve çevrimdışı kullanılabilecektir.
+            </Text>
+            {indirmeOnayAdayi && (
+              <View style={styles.onayModalDetay}>
+                <KunyeSatiri etiket="Belge" deger={document.title} />
+                <KunyeSatiri etiket="Kurum" deger={document.institution} />
+                <KunyeSatiri etiket="Domain" deger={domainGoster(indirmeOnayAdayi.url)} />
+                <KunyeSatiri etiket="Tür" deger={indirmeOnayAdayi.isPdf ? 'PDF' : 'Resmî Sayfa'} />
+              </View>
+            )}
+            <View style={[styles.aksiyonlar, { marginTop: spacing.m }]}>
+              <Button label="Vazgeç" variant="secondary" onPress={() => setIndirmeOnayAdayi(null)} style={{ flex: 1 }} />
+              <Button label="İndir" variant="primary" onPress={indirmeyiOnayla} style={{ flex: 1 }} />
+            </View>
           </View>
         </View>
       </Modal>
@@ -422,6 +554,7 @@ const styles = StyleSheet.create({
   aramaDurumSatiri: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.s },
   aramaDurumText: { fontSize: 12, color: colors.textSecondary, flex: 1 },
   modalArkaPlan: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  onayModalArkaPlan: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center' },
   modalKap: {
     backgroundColor: colors.background,
     borderTopLeftRadius: radius.l,
@@ -460,4 +593,14 @@ const styles = StyleSheet.create({
   },
   adayEtiketText: { fontSize: 11, fontWeight: '700', color: colors.primaryLight },
   adayNedenler: { fontSize: 11, color: colors.textSecondary, marginTop: spacing.xs, lineHeight: 15 },
+  indirmeIlerlemeSatir: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.s },
+  indirmeIlerlemeText: { fontSize: 12, color: colors.textSecondary, flex: 1 },
+  onayModalKap: {
+    backgroundColor: colors.background,
+    borderRadius: radius.l,
+    padding: spacing.l,
+    marginHorizontal: spacing.l,
+  },
+  onayModalMetin: { fontSize: 14, color: colors.textSecondary, marginTop: spacing.s, lineHeight: 20 },
+  onayModalDetay: { marginTop: spacing.m },
 });

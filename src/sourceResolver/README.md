@@ -121,12 +121,21 @@ const sonuc = await findOfficialSourceCandidates(document); // NetworkSearchResp
   [`network/README.md`](./network/README.md) ve
   [`docs/OFFICIAL_SOURCE_NETWORK_SEARCH.md`](../../docs/OFFICIAL_SOURCE_NETWORK_SEARCH.md).
 
-## İleride: Gerçek Arama ve İndirme
+## Sprint 13: Gerçek İndirme
+
+Sprint 12 yalnızca arama + doğrulama yapıyordu; kullanıcı onaylı gerçek
+indirme (dosyayı cihaza yazma, checksum, offline depolama) artık
+`src/offline/` katmanında uygulandı — bkz.
+[`docs/OFFICIAL_PDF_DOWNLOAD.md`](../../docs/OFFICIAL_PDF_DOWNLOAD.md).
+`src/sourceResolver/` bu katmanı import ETMEZ (tersi yönde: `downloadManager.ts`
+yalnızca bu modülün `validators.ts`/`network/httpClient.ts` fonksiyonlarını
+yeniden kullanır) — kaynak bulma ve indirme sorumlulukları ayrı kalır.
+
+## İleride: Bulut Senkronizasyonu
 
 Bkz. [`docs/SOURCE_RESOLVER_ARCHITECTURE.md`](../../docs/SOURCE_RESOLVER_ARCHITECTURE.md)
-"Gelecekte otomatik PDF indirme akışı" — bu modülün API yüzeyi
-(`SourceResolverResult` sözleşmesi), gerçek bir arama/indirme motoru
-eklendiğinde ekranlarda hiçbir değişiklik gerektirmeyecek şekilde
-tasarlandı. Sprint 12 bu vizyonun İLK YARISINI (arama + doğrulama)
-gerçekleştirdi — indirme ve manifest güncellemesi hâlâ gelecek bir
-sprint'in kapsamındadır (bkz. `network/README.md` "NOT yapılanlar").
+"Gelecekte otomatik PDF indirme akışı" ve
+[`docs/OFFICIAL_PDF_DOWNLOAD.md`](../../docs/OFFICIAL_PDF_DOWNLOAD.md)
+"Gelecekte: arka plan indirme ve bulut senkronizasyonu" — Sprint 12
+(arama), Sprint 13 (indirme) tamamlandı; kalan tek parça hesaplar arası
+senkronizasyon ve arka plan indirmedir.

@@ -229,3 +229,17 @@ arama yapılabilir. `RecommendationResult` sözleşmesi bu geçişe hazır
 tasarlandığından (bkz. `docs/AI_ENGINE.md` §"RAG"), PDF içerik
 katmanının eklenmesi yalnızca indeksleme kaynağını genişletir —
 ekranlarda hiçbir değişiklik gerekmez.
+
+## 11. Sprint 13: Gerçek Kullanıcı Onaylı İndirme
+
+Yukarıdaki tüm mimari (manifest, `hasPdf()`, Viewer) Sprint 8-9'da
+kuruldu ama gerçek bir indirme mekanizması YOKTU. Sprint 12, resmî
+kaynaklarda güvenli arama ekledi; Sprint 13 bu adayları kullanıcı
+onayıyla CİHAZA GERÇEKTEN İNDİRME özelliğini uyguladı — bkz.
+[`docs/OFFICIAL_PDF_DOWNLOAD.md`](./OFFICIAL_PDF_DOWNLOAD.md).
+
+Kısa özet: `src/offline/runtimePdfManifest.ts` (bellek-içi, senkron)
+artık `hasPdf()`/`getPdfPath()`'in ÜÇÜNCÜ sinyalidir ve GERÇEKTEN
+indirilmiş bir dosya varsa her zaman ÖNCELİKLİDİR. `src/offline/
+downloadRepository.ts` (AsyncStorage) kalıcılığı sağlar. Viewer artık
+yerel dosyayı tercih eder ve "Çevrimdışı" rozeti gösterir.
