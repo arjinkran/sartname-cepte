@@ -1,15 +1,27 @@
 // Resmî Kaynak Bulucu — ana çözümleyici (Sprint 11, madde 6).
 //
-// ⚠️ Bu dosyadaki HİÇBİR fonksiyon gerçek bir ağ isteği YAPMAZ. Tamamı,
+// ⚠️ `resolveOfficialSource`/`getSourceStatus`/`resolveByInstitution`/
+// `resolveByTitle` HİÇBİR ZAMAN gerçek bir ağ isteği YAPMAZ — tamamı,
 // zaten kütüphanede duran belge alanlarına (institution, sourceUrl,
 // pdfAvailable, documentType, category) bakarak KURAL TABANLI bir
-// sınıflandırma üretir — gerçek bir "arama" veya "indirme" yalnızca
-// gelecekte eklenecektir (bkz. docs/SOURCE_RESOLVER_ARCHITECTURE.md
-// "Gelecekte otomatik PDF indirme akışı").
+// sınıflandırma üretir. Bu dosyanın SONUNDAKİ `findOfficialSourceCandidates`
+// (Sprint 12) İSTİSNADIR — kullanıcı "PDF Bulmayı Dene" dediğinde GERÇEK
+// (ama sıkı sınırlı) bir ağ araması başlatır (bkz.
+// docs/OFFICIAL_SOURCE_NETWORK_SEARCH.md).
 import type { Document, Institution } from '../data/library/types.ts';
 import { getSourceProviderById, getSourceProviders } from './registry.ts';
-import { isOfficialDomain, looksLikePdfUrl } from './validators.ts';
+import { isOfficialDomain, isSafeRequestUrl, looksLikePdfUrl } from './validators.ts';
 import type { SourceDocumentCandidate, SourceProvider, SourceResolverResult, SourceSearchInput } from './types.ts';
+import {
+  cancelSearch as cancelNetworkSearch,
+  clearSearchState as clearNetworkSearchState,
+  getActiveSearch as getActiveNetworkSearch,
+  getProviderRequestCounts,
+  getSearchSessionStats,
+  searchOfficialSources,
+} from './network/searchCoordinator.ts';
+import { getCacheStats } from './network/cache.ts';
+import type { NetworkSearchResponse } from './network/types.ts';
 
 /** `Document.institution` → sağlayıcı id eşlemesi. Enerji Bakanlığı/Diğer için KASITLI OLARAK kayıtlı bir sağlayıcı yok. */
 const INSTITUTION_PROVIDER_ID: Partial<Record<Institution, string>> = {
@@ -215,3 +227,45 @@ export function resolveByTitle(titleOrInput: string | SourceSearchInput): Source
     reason: `Başlıkta '${enIyi.provider.name}' geçtiği için bu sağlayıcı önerildi (düşük güven — otomatik arama henüz aktif değil).`,
   };
 }
+
+// ── Sprint 12: gerçek ağ araması (yalnızca kullanıcı "PDF Bulmayı Dene" ────
+// dediğinde tetiklenir) ─────────────────────────────────────────────────
+//
+// UI, `network/*` modüllerini ASLA doğrudan import ETMEZ — yalnızca bu
+// dosya üzerinden erişir (bkz. network/README.md bağımlılık diyagramı).
+
+/**
+ * Bir belge için kayıtlı resmî kaynaklarda GERÇEK (ama sıkı sınırlı) bir
+ * ağ araması başlatır. Senkron `resolveOfficialSource()`'u DEĞİŞTİRMEZ —
+ * onun tamamlayıcısıdır ve yalnızca kullanıcı eylemiyle tetiklenmelidir.
+ */
+export async function findOfficialSourceCandidates(document: Document): Promise<NetworkSearchResponse> {
+  return searchOfficialSources(document);
+}
+
+/** Devam eden bir ağ aramasını iptal eder (ör. kullanıcı sayfadan ayrılırsa). */
+export function cancelSourceSearch(documentId: string): void {
+  cancelNetworkSearch(documentId);
+}
+
+/** Bir belge için şu anda aktif bir ağ araması olup olmadığını döner. */
+export function isSourceSearchActive(documentId: string): boolean {
+  return getActiveNetworkSearch(documentId);
+}
+
+/** Sayfa terk edilirken çağrılır — aktif arama varsa iptal edip durumu temizler. */
+export function clearSourceSearchState(documentId: string): void {
+  clearNetworkSearchState(documentId);
+}
+
+/**
+ * Doğrulanmış bir aday URL'sini açmadan HEMEN ÖNCE tekrar doğrular
+ * (madde 15) — `Linking.openURL` çağrılmadan önce UI bunu kullanmalıdır.
+ */
+export function isCandidateUrlSafeToOpen(url: string, providerId: string): boolean {
+  return isSafeRequestUrl(url, providerId);
+}
+
+// ── Madde 17: debug/test amaçlı istatistikler (UI'da GÖSTERİLMEZ) ────────
+export { getSearchSessionStats, getProviderRequestCounts, getCacheStats };
+export type { NetworkSearchResponse, NetworkCandidate, NetworkSearchStatus } from './network/types.ts';

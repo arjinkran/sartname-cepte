@@ -100,10 +100,33 @@ ile eşleşip eşleşmediğini kontrol eder — alt alan adları kabul edilir
 REDDEDİLİR. Bu, sahte/uydurma kaynak bağlantılarının "doğrulanmış"
 görünmesini engelleyen tek mekanizmadır.
 
+## Sprint 12: Gerçek Ağ Araması (`network/`)
+
+Yukarıdaki her şey (`resolver.ts` dahil) **senkron ve ağ-erişimsizdir**.
+Sprint 12, kullanıcı Doküman Detay ekranında "PDF Bulmayı Dene" dediğinde
+tetiklenen **gerçek ama sıkı sınırlı** bir ağ arama katmanını
+`src/sourceResolver/network/` altına EKLEDİ — bu dosyaların hiçbiri
+değiştirilmedi/silinmedi.
+
+```ts
+import { findOfficialSourceCandidates, cancelSourceSearch, clearSourceSearchState, isCandidateUrlSafeToOpen } from '@/sourceResolver/resolver';
+
+const sonuc = await findOfficialSourceCandidates(document); // NetworkSearchResponse
+```
+
+- UI, `network/*` modüllerini **asla doğrudan import etmez** — yalnızca
+  `resolver.ts`'in re-export ettiği fonksiyonları kullanır.
+- Ayrıntılı mimari, güvenlik kuralları, sağlayıcı adaptör yapısı, aday
+  puanlama, rate limiting ve önbellekleme için:
+  [`network/README.md`](./network/README.md) ve
+  [`docs/OFFICIAL_SOURCE_NETWORK_SEARCH.md`](../../docs/OFFICIAL_SOURCE_NETWORK_SEARCH.md).
+
 ## İleride: Gerçek Arama ve İndirme
 
 Bkz. [`docs/SOURCE_RESOLVER_ARCHITECTURE.md`](../../docs/SOURCE_RESOLVER_ARCHITECTURE.md)
 "Gelecekte otomatik PDF indirme akışı" — bu modülün API yüzeyi
 (`SourceResolverResult` sözleşmesi), gerçek bir arama/indirme motoru
 eklendiğinde ekranlarda hiçbir değişiklik gerektirmeyecek şekilde
-tasarlandı.
+tasarlandı. Sprint 12 bu vizyonun İLK YARISINI (arama + doğrulama)
+gerçekleştirdi — indirme ve manifest güncellemesi hâlâ gelecek bir
+sprint'in kapsamındadır (bkz. `network/README.md` "NOT yapılanlar").

@@ -68,3 +68,50 @@ export function validateCandidate(candidate: SourceDocumentCandidate): SourceVal
 
   return { valid: reasons.length === 0, reasons };
 }
+
+// ── Ağ isteği güvenlik kapısı (Sprint 12, madde 4) ───────────────────────
+// `isSafeRequestUrl()`, GERÇEK bir ağ isteği yapılmadan ÖNCE her zaman
+// çağrılması gereken TEK güvenlik kapısıdır (bkz. network/httpClient.ts
+// ve network/searchCoordinator.ts). `isOfficialDomain()`den FARKLI olarak
+// yalnızca domain eşleşmesine değil, protokole ve host'un "gerçek bir genel
+// internet domaini" olup olmadığına da bakar.
+
+const PRIVATE_OR_RESERVED_HOST_PATTERNS: readonly RegExp[] = [
+  /^localhost$/i,
+  /^127\./,
+  /^0\.0\.0\.0$/,
+  /^10\./,
+  /^192\.168\./,
+  /^169\.254\./,
+  /^172\.(1[6-9]|2\d|3[0-1])\./,
+  /^::1$/,
+  /^\[::1\]$/,
+];
+
+function isRawIpAddress(host: string): boolean {
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return true; // IPv4
+  if (host.includes(':')) return true; // IPv6 (basit tespit — host içinde ":" varsa)
+  return false;
+}
+
+/**
+ * Bir URL'e GERÇEKTEN ağ isteği atılıp atılamayacağını belirler:
+ * - Yalnızca `https:` kabul edilir (`http:`/`file:` REDDEDİLİR).
+ * - `localhost`, ham IP adresleri (v4/v6) ve özel/ayrılmış ağ aralıkları REDDEDİLİR.
+ * - Geri kalan kontrol `isOfficialDomain()`e devredilir (lookalike domain
+ *   reddi zaten oradaki katı alt-domain eşleşmesiyle sağlanır, ör.
+ *   "tedas.gov.tr.evil.com" "tedas.gov.tr" ile EŞLEŞMEZ).
+ */
+export function isSafeRequestUrl(url: string, providerId: string): boolean {
+  const trimmed = url.trim();
+  if (!/^https:\/\//i.test(trimmed)) return false;
+
+  const hostMatch = trimmed.match(/^https:\/\/([^/?#]+)/i);
+  if (!hostMatch) return false;
+  const host = hostMatch[1]!.toLowerCase().split(':')[0]!; // port varsa at
+
+  if (PRIVATE_OR_RESERVED_HOST_PATTERNS.some((p) => p.test(host))) return false;
+  if (isRawIpAddress(host)) return false;
+
+  return isOfficialDomain(trimmed, providerId);
+}

@@ -8,16 +8,22 @@
 // dokümanlarda aynı gösterilen TEMSİLİ statik liste kaldırıldı).
 // Kartlar: Başlık, Künye, Anahtar Kelimeler, Özet, İlgili Dokümanlar,
 // İlgili Yönetmelikler ve Standartlar, Revizyon Bilgisi, Aksiyonlar.
-import React from 'react';
-import { Alert, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Linking, Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
 import { AppBar, Button, Card, Logo, PressableScale } from '@/components/ui';
 import { colors, radius, spacing, typography } from '@/theme';
 import { STATUS_LABELS, getDocumentById, getRelatedDocuments, hasPdf } from '@/data/library';
 import { recommendRelated } from '@/ai/engine';
-import { getSourceStatus } from '@/sourceResolver/resolver';
+import {
+  clearSourceSearchState,
+  findOfficialSourceCandidates,
+  getSourceStatus,
+  isCandidateUrlSafeToOpen,
+} from '@/sourceResolver/resolver';
 import type { SourceAccessType } from '@/sourceResolver/types';
+import type { NetworkCandidate, NetworkSearchResponse } from '@/sourceResolver/network/types';
 import { InstitutionBadge, StatusBadge } from '../components/DocumentRow';
 
 function KunyeSatiri({ etiket, deger }: { etiket: string; deger: string }) {
@@ -37,11 +43,30 @@ const ERISIM_TIPI_ETIKETLERI: Record<SourceAccessType, string> = {
   notFound: 'Bulunamadı',
 };
 
+/** URL'den yalnızca host kısmını görüntüleme amaçlı çıkarır. */
+function domainGoster(url: string): string {
+  const eslesme = url.match(/^https?:\/\/([^/?#]+)/i);
+  return eslesme ? eslesme[1]!.replace(/^www\./, '') : url;
+}
+
 export default function DocumentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const document = id ? getDocumentById(id) : undefined;
   const { favoriMi, favoriDegistir } = useFavoriler();
+
+  // Sprint 12, madde 13/16: ağ araması durumu — yalnızca kullanıcı "PDF
+  // Bulmayı Dene" dediğinde tetiklenir, oturum içi bellek durumu.
+  const [aramaDevamEdiyor, setAramaDevamEdiyor] = useState(false);
+  const [aramaSonucu, setAramaSonucu] = useState<NetworkSearchResponse | null>(null);
+  const [adayModalAcik, setAdayModalAcik] = useState(false);
+
+  // Sayfadan ayrılırken (veya belge değişirse) devam eden aramayı iptal et.
+  useEffect(() => {
+    return () => {
+      if (id) clearSourceSearchState(id);
+    };
+  }, [id]);
 
   if (!document) {
     return (
@@ -85,12 +110,30 @@ export default function DocumentDetailScreen() {
     });
   };
 
-  const pdfBulmayiDene = () => {
-    Alert.alert(
-      'PDF Bulmayı Dene',
-      'Resmî kaynak arama altyapısı hazırlandı. Otomatik arama sonraki sürümde aktif edilecektir.'
-    );
+  const pdfBulmayiDene = async () => {
+    if (aramaDevamEdiyor) return; // ikinci eşzamanlı arama başlatılmaz (madde 13)
+    setAramaDevamEdiyor(true);
+    setAramaSonucu(null);
+    try {
+      const sonuc = await findOfficialSourceCandidates(document);
+      setAramaSonucu(sonuc);
+      if (sonuc.candidates.length > 0) setAdayModalAcik(true);
+    } finally {
+      setAramaDevamEdiyor(false);
+    }
   };
+
+  const kaynagiAc = (aday: NetworkCandidate) => {
+    if (!isCandidateUrlSafeToOpen(aday.url, aday.providerId)) {
+      Alert.alert('Bağlantı doğrulanamadı', 'Bu bağlantı doğrulanmış resmî bir kaynağa ait değil.');
+      return;
+    }
+    Linking.openURL(aday.url).catch(() => {
+      Alert.alert('Açılamadı', 'Bağlantı açılırken bir sorun oluştu.');
+    });
+  };
+
+  const aramaDurumMesaji = aramaDevamEdiyor ? 'Resmî kaynaklarda aranıyor…' : aramaSonucu?.message ?? null;
 
   return (
     <View style={styles.root}>
@@ -207,9 +250,21 @@ export default function DocumentDetailScreen() {
           <KunyeSatiri etiket="Telif durumu" deger={kaynakDurumu.copyrightRestricted ? 'Telifli / Kısıtlı' : 'Kısıtlama yok'} />
           <KunyeSatiri etiket="Manuel doğrulama gerekli mi?" deger={kaynakDurumu.requiresManualVerification ? 'Evet' : 'Hayır'} />
           <Text style={styles.kaynakDurumAciklama}>{kaynakDurumu.reason}</Text>
+          {aramaDurumMesaji && (
+            <View style={styles.aramaDurumSatiri}>
+              {aramaDevamEdiyor && <ActivityIndicator color={colors.primary} size="small" />}
+              <Text style={styles.aramaDurumText}>{aramaDurumMesaji}</Text>
+            </View>
+          )}
           <View style={[styles.aksiyonlar, { marginTop: spacing.s }]}>
             <Button label="Resmî Kaynağı Aç" variant="secondary" onPress={resmiKaynagiAc} style={{ flex: 1 }} />
-            <Button label="PDF Bulmayı Dene" variant="secondary" onPress={pdfBulmayiDene} style={{ flex: 1 }} />
+            <Button
+              label="PDF Bulmayı Dene"
+              variant="secondary"
+              onPress={pdfBulmayiDene}
+              disabled={aramaDevamEdiyor}
+              style={{ flex: 1 }}
+            />
           </View>
         </Card>
 
@@ -251,6 +306,50 @@ export default function DocumentDetailScreen() {
           </Text>
         </Card>
       </ScrollView>
+
+      {/* Aday Kaynaklar Modalı — Sprint 12, madde 14. Yalnızca RN yerleşik
+          Modal bileşeni kullanılır; yeni paket eklenmedi. Bu aşamada
+          İNDİRME/manifest güncellemesi YAPILMAZ — yalnızca tarayıcıda açma. */}
+      <Modal
+        visible={adayModalAcik}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setAdayModalAcik(false)}
+      >
+        <View style={styles.modalArkaPlan}>
+          <View style={styles.modalKap}>
+            <View style={styles.modalBaslikSatir}>
+              <Text style={styles.modalBaslik}>Resmî Kaynak Adayları</Text>
+              <PressableScale onPress={() => setAdayModalAcik(false)}>
+                <Text style={styles.modalKapat}>Kapat</Text>
+              </PressableScale>
+            </View>
+            <ScrollView style={styles.modalScroll}>
+              {(aramaSonucu?.candidates ?? []).map((aday, i) => (
+                <View key={`${aday.url}-${i}`} style={styles.adayKart}>
+                  <Text style={styles.adayBaslik} numberOfLines={2}>{aday.title ?? document.title}</Text>
+                  <Text style={styles.adayAltSatir}>{aday.provider.name} · {domainGoster(aday.url)}</Text>
+                  <View style={styles.adayEtiketSatiri}>
+                    <View style={styles.adayEtiket}>
+                      <Text style={styles.adayEtiketText}>{aday.isPdf ? 'PDF' : 'Resmî Sayfa'}</Text>
+                    </View>
+                    <View style={styles.adayEtiket}>
+                      <Text style={styles.adayEtiketText}>Güven: {aday.score}%</Text>
+                    </View>
+                  </View>
+                  {aday.matchReasons.length > 0 && (
+                    <Text style={styles.adayNedenler}>{aday.matchReasons.join(' · ')}</Text>
+                  )}
+                  <Button label="Kaynağı Aç" variant="secondary" onPress={() => kaynagiAc(aday)} style={{ marginTop: spacing.s }} />
+                </View>
+              ))}
+              {(aramaSonucu?.candidates.length ?? 0) === 0 && (
+                <Text style={styles.ilgiliBos}>Aday bulunamadı.</Text>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -320,4 +419,45 @@ const styles = StyleSheet.create({
   aksiyonlar: { flexDirection: 'row', gap: spacing.s },
   kaynakDurumAciklama: { fontSize: 12, color: colors.textSecondary, marginTop: spacing.s, lineHeight: 17 },
   kaynakNot: { fontSize: 12, color: colors.textSecondary, marginTop: spacing.s, lineHeight: 17 },
+  aramaDurumSatiri: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.s },
+  aramaDurumText: { fontSize: 12, color: colors.textSecondary, flex: 1 },
+  modalArkaPlan: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  modalKap: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: radius.l,
+    borderTopRightRadius: radius.l,
+    maxHeight: '80%',
+    padding: spacing.m,
+  },
+  modalBaslikSatir: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.s,
+  },
+  modalBaslik: {
+    fontSize: typography.size.lg,
+    fontWeight: typography.weight.extrabold,
+    fontFamily: typography.fontFamily,
+    color: colors.textPrimary,
+  },
+  modalKapat: { fontSize: 14, fontWeight: '700', color: colors.accent },
+  modalScroll: { flexGrow: 0 },
+  adayKart: {
+    backgroundColor: colors.secondaryBackground,
+    borderRadius: radius.m,
+    padding: spacing.m,
+    marginBottom: spacing.s,
+  },
+  adayBaslik: { fontSize: 14, fontWeight: '700', color: colors.textPrimary },
+  adayAltSatir: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
+  adayEtiketSatiri: { flexDirection: 'row', gap: spacing.xs, marginTop: spacing.xs },
+  adayEtiket: {
+    backgroundColor: colors.background,
+    borderRadius: radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  adayEtiketText: { fontSize: 11, fontWeight: '700', color: colors.primaryLight },
+  adayNedenler: { fontSize: 11, color: colors.textSecondary, marginTop: spacing.xs, lineHeight: 15 },
 });
