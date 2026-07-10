@@ -9,13 +9,15 @@
 // Kartlar: Başlık, Künye, Anahtar Kelimeler, Özet, İlgili Dokümanlar,
 // İlgili Yönetmelikler ve Standartlar, Revizyon Bilgisi, Aksiyonlar.
 import React from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFavoriler } from '@/lib/favoriler';
 import { AppBar, Button, Card, Logo, PressableScale } from '@/components/ui';
 import { colors, radius, spacing, typography } from '@/theme';
 import { STATUS_LABELS, getDocumentById, getRelatedDocuments, hasPdf } from '@/data/library';
 import { recommendRelated } from '@/ai/engine';
+import { getSourceStatus } from '@/sourceResolver/resolver';
+import type { SourceAccessType } from '@/sourceResolver/types';
 import { InstitutionBadge, StatusBadge } from '../components/DocumentRow';
 
 function KunyeSatiri({ etiket, deger }: { etiket: string; deger: string }) {
@@ -26,6 +28,14 @@ function KunyeSatiri({ etiket, deger }: { etiket: string; deger: string }) {
     </View>
   );
 }
+
+const ERISIM_TIPI_ETIKETLERI: Record<SourceAccessType, string> = {
+  publicPdf: 'Kamuya Açık PDF',
+  officialPage: 'Resmî Sayfa',
+  restrictedStandard: 'Kısıtlı / Telifli Standart',
+  manualRequired: 'Manuel Doğrulama Gerekli',
+  notFound: 'Bulunamadı',
+};
 
 export default function DocumentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -52,6 +62,7 @@ export default function DocumentDetailScreen() {
   // türettiği bir sorguyla ek ilişkili belgeler de önerir.
   const aiOnerileri = recommendRelated(document.id, 5).documents;
   const pdfVar = hasPdf(document);
+  const kaynakDurumu = getSourceStatus(document);
 
   const pdfAc = () => {
     if (pdfVar) {
@@ -61,6 +72,23 @@ export default function DocumentDetailScreen() {
     Alert.alert(
       'PDF henüz eklenmedi.',
       'Bu dokümanın resmi PDF dosyası doğrulandıktan sonra kütüphaneye eklenecektir.'
+    );
+  };
+
+  const resmiKaynagiAc = () => {
+    if (!kaynakDurumu.url) {
+      Alert.alert('Kaynak bağlantısı yok', 'Bu doküman için henüz doğrulanmış bir resmî kaynak bağlantısı kayıtlı değil.');
+      return;
+    }
+    Linking.openURL(kaynakDurumu.url).catch(() => {
+      Alert.alert('Açılamadı', 'Bağlantı açılırken bir sorun oluştu.');
+    });
+  };
+
+  const pdfBulmayiDene = () => {
+    Alert.alert(
+      'PDF Bulmayı Dene',
+      'Resmî kaynak arama altyapısı hazırlandı. Otomatik arama sonraki sürümde aktif edilecektir.'
     );
   };
 
@@ -169,6 +197,22 @@ export default function DocumentDetailScreen() {
           )}
         </Card>
 
+        {/* Resmî Kaynak Durumu — Sprint 11 madde 9 */}
+        <Card style={styles.card}>
+          <Text style={styles.bolumBaslik}>Resmî Kaynak Durumu</Text>
+          <KunyeSatiri etiket="Kaynak sağlayıcı" deger={kaynakDurumu.provider?.name ?? 'Kayıtlı değil'} />
+          <KunyeSatiri etiket="Erişim tipi" deger={ERISIM_TIPI_ETIKETLERI[kaynakDurumu.status]} />
+          <KunyeSatiri etiket="Doğrulama durumu" deger={kaynakDurumu.verified ? 'Doğrulandı' : 'Doğrulanmadı'} />
+          <KunyeSatiri etiket="PDF uygunluğu" deger={kaynakDurumu.status === 'publicPdf' ? 'Uygun' : 'Uygun değil / bilinmiyor'} />
+          <KunyeSatiri etiket="Telif durumu" deger={kaynakDurumu.copyrightRestricted ? 'Telifli / Kısıtlı' : 'Kısıtlama yok'} />
+          <KunyeSatiri etiket="Manuel doğrulama gerekli mi?" deger={kaynakDurumu.requiresManualVerification ? 'Evet' : 'Hayır'} />
+          <Text style={styles.kaynakDurumAciklama}>{kaynakDurumu.reason}</Text>
+          <View style={[styles.aksiyonlar, { marginTop: spacing.s }]}>
+            <Button label="Resmî Kaynağı Aç" variant="secondary" onPress={resmiKaynagiAc} style={{ flex: 1 }} />
+            <Button label="PDF Bulmayı Dene" variant="secondary" onPress={pdfBulmayiDene} style={{ flex: 1 }} />
+          </View>
+        </Card>
+
         {/* Revizyon Bilgisi */}
         <Card style={styles.card}>
           <Text style={styles.bolumBaslik}>Revizyon Bilgisi</Text>
@@ -274,5 +318,6 @@ const styles = StyleSheet.create({
   },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: spacing.m },
   aksiyonlar: { flexDirection: 'row', gap: spacing.s },
+  kaynakDurumAciklama: { fontSize: 12, color: colors.textSecondary, marginTop: spacing.s, lineHeight: 17 },
   kaynakNot: { fontSize: 12, color: colors.textSecondary, marginTop: spacing.s, lineHeight: 17 },
 });

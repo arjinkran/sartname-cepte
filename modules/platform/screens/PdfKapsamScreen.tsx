@@ -8,13 +8,23 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AppBar, Card } from '@/components/ui';
 import { colors, radius, spacing, typography } from '@/theme';
-import { getPdfStatistics } from '@/data/library';
+import {
+  getPdfStatistics,
+  getPublicPdfEligibleDocuments,
+  getRestrictedStandardDocuments,
+  getDocumentsNeedingSourceVerification,
+} from '@/data/library';
 import { getPdfMissingDocuments } from '@/assets/pdfs/pdfChecker';
 
 const EKSIK_LISTE_LIMIT = 20;
 
 const ISTATISTIK = getPdfStatistics();
 const EKSIK_BELGELER = getPdfMissingDocuments();
+const KAYNAK_UYGUNLUGU = {
+  pdfEklenebilir: getPublicPdfEligibleDocuments().length,
+  telifliKisitli: getRestrictedStandardDocuments().length,
+  manuelBekleyen: getDocumentsNeedingSourceVerification().length,
+};
 
 export default function PdfKapsamScreen() {
   const router = useRouter();
@@ -42,6 +52,25 @@ export default function PdfKapsamScreen() {
             <Text style={styles.ozetEtiket}>PDF Bekleyen</Text>
           </Card>
         </View>
+
+        {/* Resmî Kaynak Uygunluğu — Sprint 11 madde 11 */}
+        <Text style={styles.bolumBaslik}>Resmî Kaynak Uygunluğu</Text>
+        <Card style={styles.card} padded={false}>
+          <View style={styles.satir}>
+            <Text style={styles.satirBaslik}>PDF Eklenebilir Kamu Dokümanları</Text>
+            <Text style={styles.satirDeger}>{KAYNAK_UYGUNLUGU.pdfEklenebilir}</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.satir}>
+            <Text style={styles.satirBaslik}>Telifli / Kısıtlı Standartlar</Text>
+            <Text style={styles.satirDeger}>{KAYNAK_UYGUNLUGU.telifliKisitli}</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.satir}>
+            <Text style={styles.satirBaslik}>Manuel Doğrulama Bekleyenler</Text>
+            <Text style={styles.satirDeger}>{KAYNAK_UYGUNLUGU.manuelBekleyen}</Text>
+          </View>
+        </Card>
 
         {/* Kurum bazlı */}
         <Text style={styles.bolumBaslik}>Kurum Bazlı PDF Durumu</Text>

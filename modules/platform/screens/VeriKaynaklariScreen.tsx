@@ -10,11 +10,24 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AppBar, Card } from '@/components/ui';
 import { colors, spacing, typography } from '@/theme';
-import { getStatistics, getPdfStatistics } from '@/data/library';
+import {
+  getStatistics,
+  getPdfStatistics,
+  getDocumentsWithOfficialSources,
+  getDocumentsNeedingSourceVerification,
+  getRestrictedStandardDocuments,
+  getPublicPdfEligibleDocuments,
+} from '@/data/library';
 
 const ISTATISTIK = getStatistics();
 const PDF_ISTATISTIK = getPdfStatistics();
 const PDF_KURUM_SAYISI = new Map(PDF_ISTATISTIK.byInstitution.map((k) => [k.institution, k]));
+const KAYNAK_DURUMU = {
+  resmiKaynakli: getDocumentsWithOfficialSources().length,
+  manuelBekleyen: getDocumentsNeedingSourceVerification().length,
+  telifli: getRestrictedStandardDocuments().length,
+  pdfUygun: getPublicPdfEligibleDocuments().length,
+};
 
 export default function VeriKaynaklariScreen() {
   const router = useRouter();
@@ -27,6 +40,28 @@ export default function VeriKaynaklariScreen() {
           Şartname Cepte içeriği aşağıdaki kurum ve standart kaynaklarına dayanır. Kütüphanede
           şu an toplam {ISTATISTIK.totalDocuments} doküman bulunuyor ({PDF_ISTATISTIK.withPdf} PDF).
         </Text>
+
+        <Text style={styles.bolumBaslik}>Kaynak Durumu</Text>
+        <View style={styles.kaynakGrid}>
+          <Card style={styles.kaynakKart}>
+            <Text style={styles.kaynakSayi}>{KAYNAK_DURUMU.resmiKaynakli}</Text>
+            <Text style={styles.kaynakEtiket}>Resmî Kaynaklı Belge</Text>
+          </Card>
+          <Card style={styles.kaynakKart}>
+            <Text style={[styles.kaynakSayi, { color: colors.warning }]}>{KAYNAK_DURUMU.manuelBekleyen}</Text>
+            <Text style={styles.kaynakEtiket}>Manuel Doğrulama Bekleyen</Text>
+          </Card>
+          <Card style={styles.kaynakKart}>
+            <Text style={[styles.kaynakSayi, { color: colors.textSecondary }]}>{KAYNAK_DURUMU.telifli}</Text>
+            <Text style={styles.kaynakEtiket}>Telifli Standart Referansı</Text>
+          </Card>
+          <Card style={styles.kaynakKart}>
+            <Text style={[styles.kaynakSayi, { color: colors.success }]}>{KAYNAK_DURUMU.pdfUygun}</Text>
+            <Text style={styles.kaynakEtiket}>PDF'ye Uygun Kamu Dokümanı</Text>
+          </Card>
+        </View>
+
+        <Text style={styles.bolumBaslik}>Kurumlar</Text>
         {ISTATISTIK.byInstitution.map((kurum) => {
           const pdfDurum = PDF_KURUM_SAYISI.get(kurum.institution);
           return (
@@ -59,6 +94,24 @@ const styles = StyleSheet.create({
     marginBottom: spacing.m,
     lineHeight: 19,
   },
+  bolumBaslik: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.extrabold,
+    fontFamily: typography.fontFamily,
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.s,
+  },
+  kaynakGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.s, marginBottom: spacing.m },
+  kaynakKart: { width: '47%', alignItems: 'center', paddingVertical: spacing.m },
+  kaynakSayi: {
+    fontSize: typography.size.xl,
+    fontWeight: typography.weight.extrabold,
+    fontFamily: typography.fontFamily,
+    color: colors.textPrimary,
+  },
+  kaynakEtiket: { fontSize: 11, fontWeight: '700', color: colors.textSecondary, marginTop: 4, textAlign: 'center' },
   card: { marginBottom: spacing.s },
   ad: {
     fontSize: typography.size.md,

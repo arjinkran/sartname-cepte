@@ -29,6 +29,10 @@ import type { Document, DocumentType, Institution, InstitutionMeta } from './typ
 // kendisi hiçbir şeyi import etmez (yaprak modül), bu yüzden burada
 // güvenle kullanılabilir.
 import { PDF_MANIFEST } from '../../assets/pdfs/manifest.ts';
+// Sprint 11: source resolver de repository.ts'i import ETMEZ (yalnızca
+// Document/Institution TİPLERİNİ kullanır) — bu yüzden tek yönlü, döngüsel
+// olmayan bir bağımlılık (bkz. src/sourceResolver/README.md).
+import { getSourceStatus } from '../../sourceResolver/resolver.ts';
 
 interface InstitutionModule {
   docs: readonly Document[];
@@ -381,4 +385,42 @@ export function getPdfStatistics(): PdfStatistics {
     totalKnownPageCount: DOCUMENTS.reduce((sum, d) => sum + (d.pageCount ?? 0), 0),
     manifestCount: PDF_MANIFEST.length,
   };
+}
+
+// ── Resmî Kaynak Durumu (Sprint 11) ──────────────────────────────────────
+//
+// Bu 4 fonksiyon, `src/sourceResolver/resolver.ts`'teki `getSourceStatus()`
+// ile UYUMLU çalışır — her belge için doğrudan resolver'ı çağırır (belge
+// başına O(1) saf hesaplama, ağ isteği YOK). Bir belgenin
+// `officialSourceStatus` alanı elle doldurulmuşsa o değer ÖNCELENİR
+// (manuel sabitleme), yoksa resolver'ın hesapladığı değer kullanılır.
+
+function cozumlenmisDurum(document: Document) {
+  return document.officialSourceStatus
+    ? { ...getSourceStatus(document), status: document.officialSourceStatus }
+    : getSourceStatus(document);
+}
+
+/** Kaynağı otomatik doğrulanamayan, manuel teyit gerektiren belgeler (madde 8). */
+export function getDocumentsNeedingSourceVerification(): readonly Document[] {
+  return DOCUMENTS.filter((d) => cozumlenmisDurum(d).requiresManualVerification);
+}
+
+/** Kaynağı resmî domainden otomatik doğrulanmış belgeler. */
+export function getDocumentsWithOfficialSources(): readonly Document[] {
+  return DOCUMENTS.filter((d) => cozumlenmisDurum(d).verified);
+}
+
+/** Telifli standart kuruluşlarına (TSE/IEC/CENELEC/IEEE) ait belgeler. */
+export function getRestrictedStandardDocuments(): readonly Document[] {
+  return DOCUMENTS.filter((d) => cozumlenmisDurum(d).copyrightRestricted);
+}
+
+/** PDF sağlanmaya UYGUN (kamuya açık, telifsiz) belgeler. */
+export function getPublicPdfEligibleDocuments(): readonly Document[] {
+  return DOCUMENTS.filter((d) => {
+    const durum = cozumlenmisDurum(d);
+    if (durum.copyrightRestricted) return false;
+    return durum.status === 'publicPdf' || durum.provider?.supportsPdf === true;
+  });
 }

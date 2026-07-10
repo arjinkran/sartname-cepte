@@ -173,4 +173,31 @@ export interface Document {
   /** İndirilen dosyanın bütünlük doğrulaması için hash (ör. SHA-256).
    * Gerçek dosya indirilmeden hesaplanamayacağından şimdilik tanımsızdır. */
   checksum?: string;
+
+  // ── Sprint 11'de eklenen Resmî Kaynak Durumu alanları ────────────────
+  // Hepsi OPSİYONEL ve REPOSITORY İÇİNDE TÜRETİLEBİLİR (Sprint 11, madde
+  // 7) — `src/sourceResolver/resolver.ts`'teki `getSourceStatus()`,
+  // belgenin institution/sourceUrl/pdfAvailable alanlarına bakarak bu
+  // değerleri ÇALIŞMA ZAMANINDA hesaplar; 121 belgenin HİÇBİRİ bu
+  // alanları elle doldurmak ZORUNDA değildir. Alanlar yalnızca ileride
+  // bir küratörün belirli bir belgeyi manuel olarak "sabitlemek"
+  // istemesi durumunda kullanılır (bkz. repository.ts "resmî kaynak"
+  // fonksiyonları, `doc.officialSourceStatus ?? getSourceStatus(doc).status` deseni).
+  //
+  // ⚠️ Buradaki literal union, `src/sourceResolver/types.ts`'teki
+  // `SourceAccessType` ile BİREBİR AYNI kalmalıdır — doğrudan import
+  // EDİLMEDİ çünkü sourceResolver zaten bu dosyadan `Document`/
+  // `Institution` tiplerini import eder; ters yönde bir import döngüsel
+  // bağımlılık yaratırdı (bkz. src/sourceResolver/README.md).
+  /** Resolver'ın hesapladığı erişim türü — manuel sabitleme için. */
+  officialSourceStatus?: 'publicPdf' | 'officialPage' | 'restrictedStandard' | 'manualRequired' | 'notFound';
+  /** İlişkili `SourceProvider.id` (ör. "tedas") — manuel sabitleme için. */
+  officialSourceProvider?: string;
+  /** Resolver'ın doğruladığı/önerdiği resmî URL — manuel sabitleme için. */
+  officialSourceUrl?: string;
+  /** `officialSourceStatus` ile AYNI anlamda — Sprint 11 spesifikasyonu
+   * iki ayrı alan istedi; ikisi de aynı `SourceAccessType` değerini taşır. */
+  sourceAccessType?: 'publicPdf' | 'officialPage' | 'restrictedStandard' | 'manualRequired' | 'notFound';
+  requiresManualVerification?: boolean;
+  copyrightRestricted?: boolean;
 }
